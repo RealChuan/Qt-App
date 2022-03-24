@@ -1310,32 +1310,37 @@ Please check the media service plugins are installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="43"/>
-        <source>Loading Font file: %1</source>
+        <location filename="../base/utils/utils.cpp" line="48"/>
+        <source>Loading Fonts file: %1 Failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="86"/>
+        <location filename="../base/utils/utils.cpp" line="50"/>
+        <source>Loading Fonts file: %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../base/utils/utils.cpp" line="95"/>
         <source>Build with: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="221"/>
+        <location filename="../base/utils/utils.cpp" line="230"/>
         <source>Cannot remove file &quot;%1&quot;: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="262"/>
+        <location filename="../base/utils/utils.cpp" line="271"/>
         <source>Cannot remove directory &quot;%1&quot;: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="293"/>
+        <location filename="../base/utils/utils.cpp" line="302"/>
         <source>Cannot open the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="306"/>
+        <location filename="../base/utils/utils.cpp" line="315"/>
         <source>%1
 Offset: %2</source>
         <translation type="unfinished"></translation>
@@ -1438,8 +1443,8 @@ Offset: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugintemplate/app/main.cpp" line="26"/>
         <location filename="../plugintemplate/app/main.cpp" line="27"/>
+        <location filename="../plugintemplate/app/main.cpp" line="28"/>
         <location filename="../picturetool/app/main.cpp" line="19"/>
         <location filename="../picturetool/app/main.cpp" line="20"/>
         <location filename="../mediaplayer/app/main.cpp" line="19"/>
@@ -1476,9 +1481,9 @@ Offset: %2</source>
     </message>
     <message>
         <location filename="../plugintemplate/plugins/coreplugin/coreplugin.cpp" line="25"/>
-        <location filename="../plugintemplate/app/main.cpp" line="23"/>
         <location filename="../plugintemplate/app/main.cpp" line="24"/>
         <location filename="../plugintemplate/app/main.cpp" line="25"/>
+        <location filename="../plugintemplate/app/main.cpp" line="26"/>
         <source>AppPlugin</source>
         <translation type="unfinished"></translation>
     </message>

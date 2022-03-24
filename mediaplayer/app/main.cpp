@@ -1,5 +1,5 @@
 #include <controls/waitwidget.h>
-#include <crashhandler/crashhandler.h>
+#include <crashhandler/breakpad.hpp>
 #include <media/mainwindow.h>
 #include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
 
-    Utils::setCrashHandler();
+    Utils::BreakPad breakPad;
     QDir::setCurrent(app.applicationDirPath());
     Utils::LanguageConfig::instance()->loadLanguage();
 

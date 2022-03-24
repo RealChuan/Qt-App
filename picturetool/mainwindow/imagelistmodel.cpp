@@ -27,7 +27,7 @@ QVariant ImageListModel::data(const QModelIndex &index, int role) const
 
     ImageInfo imageInfo = d_ptr->imageInfoList.at(index.row());
     switch (role) {
-    case Qt::DecorationRole: return imageInfo.image();
+    case Qt::DecorationRole: return QIcon(QPixmap::fromImage(imageInfo.image()));
     case Qt::WhatsThisRole:
     case Qt::ToolTipRole: return imageInfo.fileInfo().fileName();
     case Qt::SizeHintRole: return QSize(WIDTH, WIDTH);

@@ -988,7 +988,7 @@ will also disable the following plugins:
     <message>
         <location filename="../picturetool/mainwindow/imageviewer.cpp" line="75"/>
         <source>Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns *.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)</source>
-        <translation>图片（*.bmp*.gif*.jpg*.jpeg*.png*.svg*.tiff*.webp*.icns*.bitmap*.graymap*.pixmap*.tga*.xbitmap*.xpixma）</translation>
+        <translation>图片 (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns *.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixma)</translation>
     </message>
     <message>
         <location filename="../picturetool/mainwindow/imageviewer.cpp" line="81"/>
@@ -1535,32 +1535,41 @@ Please check the media service plugins are installed.</source>
         <translation>无法打开文件：%1！</translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="43"/>
         <source>Loading Font file: %1</source>
-        <translation>加载字体文件：%1</translation>
+        <translation type="vanished">加载字体文件：%1</translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="86"/>
+        <location filename="../base/utils/utils.cpp" line="48"/>
+        <source>Loading Fonts file: %1 Failed.</source>
+        <translation>加载字体文件失败：%1 。</translation>
+    </message>
+    <message>
+        <location filename="../base/utils/utils.cpp" line="50"/>
+        <source>Loading Fonts file: %1.</source>
+        <translation>加载字体文件：%1。</translation>
+    </message>
+    <message>
+        <location filename="../base/utils/utils.cpp" line="95"/>
         <source>Build with: </source>
         <translation>构建： </translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="221"/>
+        <location filename="../base/utils/utils.cpp" line="230"/>
         <source>Cannot remove file &quot;%1&quot;: %2</source>
         <translation>无法删除文件“%1”：%2</translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="262"/>
+        <location filename="../base/utils/utils.cpp" line="271"/>
         <source>Cannot remove directory &quot;%1&quot;: %2</source>
         <translation>无法删除目录“%1”：%2</translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="293"/>
+        <location filename="../base/utils/utils.cpp" line="302"/>
         <source>Cannot open the file: %1</source>
         <translation>无法打开文件：%1</translation>
     </message>
     <message>
-        <location filename="../base/utils/utils.cpp" line="306"/>
+        <location filename="../base/utils/utils.cpp" line="315"/>
         <source>%1
 Offset: %2</source>
         <translation>%1
@@ -1668,8 +1677,8 @@ Offset: %2</source>
         <translation>清空屏幕</translation>
     </message>
     <message>
-        <location filename="../plugintemplate/app/main.cpp" line="26"/>
         <location filename="../plugintemplate/app/main.cpp" line="27"/>
+        <location filename="../plugintemplate/app/main.cpp" line="28"/>
         <location filename="../picturetool/app/main.cpp" line="19"/>
         <location filename="../picturetool/app/main.cpp" line="20"/>
         <location filename="../mediaplayer/app/main.cpp" line="19"/>
@@ -1706,9 +1715,9 @@ Offset: %2</source>
     </message>
     <message>
         <location filename="../plugintemplate/plugins/coreplugin/coreplugin.cpp" line="25"/>
-        <location filename="../plugintemplate/app/main.cpp" line="23"/>
         <location filename="../plugintemplate/app/main.cpp" line="24"/>
         <location filename="../plugintemplate/app/main.cpp" line="25"/>
+        <location filename="../plugintemplate/app/main.cpp" line="26"/>
         <source>AppPlugin</source>
         <translation>插件式应用程序</translation>
     </message>

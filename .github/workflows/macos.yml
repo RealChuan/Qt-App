@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        qt_ver: [6.2.3]
+        qt_ver: [6.2.4]
         qt_arch: [clang_64]
     steps:
       - name: Install Qt
@@ -36,7 +36,26 @@ jobs:
           install-deps: 'true'
           modules: 'qt5compat addons.qtserialport addons.qtnetworkauth addons.qtmultimedia addons.qtimageformats'
           cached: 'false'
-      - uses: actions/checkout@v2
+      - name: cache vcpkg
+        uses: actions/cache@v3
+        with:
+          path: C:\vcpkg\downloads
+          key: ${{ runner.os }}-vcpkg-download-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-download-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-download-
+      - uses: actions/cache@v3
+        with:
+          path: C:\vcpkg\installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+      - name: Install libraries with vcpkg
+        run: |
+          vcpkg install breakpad
+      - name: fetch code
+        uses: actions/checkout@v2
         with:
           fetch-depth: 1
       - name: build macos

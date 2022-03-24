@@ -1,3 +1,4 @@
+include(3rdparty.pri)
 include(../libs.pri)
 include(qtsingleapplication/qtsingleapplication.pri)
 

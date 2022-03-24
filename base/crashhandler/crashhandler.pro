@@ -1,4 +1,5 @@
 include(../../libs.pri)
+include(../../3rdparty/3rdparty.pri)
 
 QT += widgets
 
@@ -10,10 +11,12 @@ LIBS += \
         -l$$replaceLibName(controls)
 	
 SOURCES += \
+    breakpad.cc \
     crashdialog.cpp \
     crashhandler.cpp
 
 HEADERS += \
+    breakpad.hpp \
     crashHandler_global.h \
     crashdialog.h \
     crashhandler.h
