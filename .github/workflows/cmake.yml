@@ -129,14 +129,18 @@ jobs:
             fi
           done
           ls -l
-      - name: Upload Windows packages
-        if: startsWith(matrix.os, 'windows')
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.build_type }}-windows
-          path: |
-            ./bin-64/${{ matrix.build_type }}
-
+      - name: Deploy macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          macdeployqt ./bin-64/${{ matrix.build_type }}/Qt-App.app -always-overwrite
+          ls -l ./bin-64/${{ matrix.build_type }}/Qt-App.app/Contents/Frameworks
+          rm -rf ./bin-64/${{ matrix.build_type }}/plugins
+          rm -f ./bin-64/${{ matrix.build_type }}/CrashReport
+          rm -f ./bin-64/${{ matrix.build_type }}/*.dylib
+          # make dmg
+          hdiutil create -volname "Qt-App" -srcfolder ./bin-64/${{ matrix.build_type }}/Qt-App.app -ov -format UDZO Qt-App.dmg
+          mv Qt-App.dmg ./bin-64/${{ matrix.build_type }}
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -153,11 +157,16 @@ jobs:
           cp -f ./resource/icon/app.png ./bin-64/${{ matrix.build_type }}/app.png
           ./linuxdeployqt-continuous-x86_64.AppImage ./bin-64/${{ matrix.build_type }}/Qt-App -always-overwrite -no-translations -unsupported-allow-new-glibc -appimage     
           rm linuxdeployqt-continuous-x86_64.AppImage
-      - name: Upload ubuntu packages
-        if: startsWith(matrix.os, 'ubuntu')
+          mv *.AppImage ./bin-64/${{ matrix.build_type }}
+
+      - name: Show Upload files
+        shell: bash
+        run: |
+          ls -l ./bin-64/${{ matrix.build_type }}   
+      - name: Upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.build_type }}-ubuntu
+          name: ${{ matrix.os }}-${{ matrix.build_type }}
           path: |
-            ./*.AppImage
+            ./bin-64/${{ matrix.build_type }}
            
