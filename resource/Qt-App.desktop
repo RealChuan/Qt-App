@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Qt-App
+Exec=AppRun %F
+Icon=app
+Comment=Edit this default file
+Terminal=true
+Categories=Utility;
+X-AppImage-Version=9e82467

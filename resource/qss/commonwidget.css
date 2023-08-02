@@ -1,0 +1,172 @@
+#BlueButton{
+color: white;
+background-color: #2d8cf0;
+border-color: #2d8cf0;
+}
+
+#BlueButton:hover{
+background-color: #57a3f3;
+border-color: #57a3f3;
+}
+
+#BlueButton:pressed{
+background-color: #2b85e4;
+border-color: #2b85e4;
+}
+
+#BlueButton:!enabled {
+color: #495060;
+background-color: rgb(215,215,215);
+border-color: rgb(215,215,215);
+}
+
+#GrayButton{
+color: white;
+background-color:rgb(192,192,192);
+border-color: rgb(192,192,192);
+}
+
+#GrayButton:hover{
+background-color:#878787;
+border-color:#878787;
+}
+
+#GrayButton:pressed{
+background-color:#878787;
+border-color:#878787;
+}
+
+#GrayButton:checked{
+background-color: #2b85e4;
+border-color: #2b85e4;
+}
+
+/******************************************************************************
+*                                   CommonWidget
+*****************************************************************************/
+#CommonCentralWidget {
+background: #f7f7f7;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
+}
+
+/******************************************************************************
+*                                   MesaaBox
+*****************************************************************************/
+#InfoLabel {
+min-width: 48px;
+max-width: 48px;
+min-height: 48px;
+max-height: 48px;
+border-width: 0;
+border-image: url(resource/image/base/controls/info.png);
+}
+
+#WarningLabel {
+min-width: 48px;
+max-width: 48px;
+min-height: 48px;
+max-height: 48px;
+border-width: 0;
+border-image: url(resource/image/base/controls/warn.png);
+}
+
+#MessageLabel {
+font-size: 20px;
+qproperty-alignment: AlignCenter;
+}
+
+#MessBtnWidget {
+background: white;
+height: 35px;
+max-height: 40px;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
+border-width: 1px;
+border-style: solid none none none;
+border-color: rgb(231, 231, 231);
+}
+
+/******************************************************************************
+*                                   EditComboBox
+*****************************************************************************/
+
+#deleteButton{
+width:  20px;
+height: 20px;
+min-width:  20px;
+max-width:  20px;
+min-height: 20px;
+max-height: 20px;
+border-width: 0;
+border-image: url(resource/image/base/controls/delete.png);
+}
+
+.EditComboBox{
+height: 40px;
+font-size: 14px;
+border-style: none none solid none;
+border-radius: 0px;
+}
+
+.EditComboBox QAbstractItemView::item{
+min-height: 40px;
+}
+
+#UsernameLabel{
+font-size:14px;
+}
+
+#UsernameLabel:hover{
+color: white;
+}
+
+/******************************************************************************
+*                                   PasswordLineEdit
+*****************************************************************************/
+#ShowPasswordButton{
+border-width: 0;
+background-color: transparent;
+border-image: url(resource/image/base/controls/hidePassword.png);
+/*qproperty-icon: url(image/hidePassword.png)off, url(image/showPassword.png)on;*/
+}
+
+#ShowPasswordButton:checked{
+border-image: url(resource/image/base/controls/showPassword.png);
+}
+
+.PasswordLineEdit{
+height: 40px;
+font-size: 14px;
+border-style: none none solid none;
+border-radius: 0px;
+}
+
+/******************************************************************************
+*                                   CommonWidget
+*****************************************************************************/
+
+#TitleLabel {
+font-size:16px;
+text-align:center;
+}
+
+#TitleWidget{
+background: white;
+border-top-left-radius: 5px;
+border-top-right-radius: 5px;
+max-height: 40px;
+border-width: 1px;
+border-style: none none solid none;
+border-color: rgb(231, 231, 231);
+}
+
+#TitleWidget QToolButton{
+width:  16px;
+height: 16px;
+min-width:  16px;
+max-width:  16px;
+min-height: 16px;
+max-height: 16px;
+border: none;
+}

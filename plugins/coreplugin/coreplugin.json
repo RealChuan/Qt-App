@@ -1,0 +1,11 @@
+{
+    "Name"           :  "CorePlugin",
+    "Version"        :  "0.0.1" ,
+    "CompatVersion"  :  "0.0.1",
+    "Required"       :  true,
+    "Vendor"         :  "Youth" ,
+    "Copyright"      :  "(C) 2023 The Youth Ltd" ,
+    "License"        :  "GNU General Public License v3.0",
+    "Category"       :  "Core" ,
+    "Description"    :  "MainWindow"
+}

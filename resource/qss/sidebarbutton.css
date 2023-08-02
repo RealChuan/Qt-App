@@ -1,0 +1,44 @@
+#MenuWidget{
+min-width: 200px;
+max-width: 200px;
+padding: 0px;
+background: rgb(54, 62, 78);
+border-bottom-left-radius: 5px;
+}
+
+.GroupButton, .GroupItemButton {
+border: 0;
+color: #EEE;
+border-radius: 0;
+background: rgb(54, 62, 78);
+}
+
+.GroupButton:hover, .GroupItemButton:hover {
+border-color: #389cff;
+background: #389cff;
+color: white;
+}
+
+.GroupButton {
+height: 40px;
+font-size: 16px;
+text-align: left;
+padding-left: 6px;
+}
+
+.GroupItemButton {
+height: 38px;
+font-size: 14px;
+text-align: left;
+
+padding-left: 35px;
+border-width: 3px;
+border-style: none none none solid;
+border-color: rgb(54, 62, 78);
+}
+
+.GroupItemButton:checked {
+color: #39a3ff;
+background: rgb(85,79,73);
+border-color: #39a3ff;
+}

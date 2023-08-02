@@ -1,0 +1,163 @@
+name: CMake Build
+
+on: 
+  # push代码时触发workflow
+  push:
+    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
+        - 'doc'
+        - '.clang-format'
+        - '.gitignore'
+        - 'LICENSE'
+        - 'README*'
+  pull_request:
+    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
+        - 'doc'
+        - '.clang-format'
+        - '.gitignore'
+        - 'LICENSE'
+        - 'README*'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+        qt_ver: 
+          - 6.5.2
+        build_type:
+          - "Release"
+        generators:
+          - "Ninja"
+
+    steps:
+      - name: cache vcpkg
+        uses: actions/cache@v3
+        with:
+          path: |
+            C:\vcpkg\installed
+            /usr/local/share/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+      - name: Install dependencies on windows
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install ninja
+          ninja --version
+          cmake --version
+          vcpkg install breakpad --triplet x64-windows
+      - name: Install dependencies on macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          brew install ninja pkg-config
+          ninja --version
+          cmake --version
+          clang --version
+          vcpkg install breakpad --triplet x64-osx
+      - name: Install dependencies on ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build build-essential libgl1-mesa-dev
+          ninja --version
+          cmake --version
+          gcc --version
+          vcpkg install breakpad --triplet x64-linux
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ matrix.qt_ver }}
+          install-deps: 'true'
+          modules: 'qt5compat addons.qtserialport addons.qtnetworkauth addons.qtmultimedia addons.qtimageformats'
+          cache: 'true'
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Enable Developer Command Prompt
+        if: startsWith(matrix.os, 'windows')
+        uses: ilammy/msvc-dev-cmd@v1.12.1
+        with:
+          arch: amd64
+      - name: Configure windows
+        if: startsWith(matrix.os, 'windows')
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -DCMAKE_C_COMPILER=cl \
+            -DCMAKE_CXX_COMPILER=cl \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -G "${{ matrix.generators }}" \
+            -DCMAKE_INSTALL_PREFIX:PATH=instdir
+      - name: Configure macos or ubuntu
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -G "${{ matrix.generators }}" \
+            -DCMAKE_INSTALL_PREFIX:PATH=instdir
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build ./build --config ${{ matrix.build_type }}
+
+      - name: Deploy Windows
+        if: startsWith(matrix.os, 'windows')
+        shell: bash
+        run: |
+          cd ./bin-64/${{ matrix.build_type }}
+          files=$(find . -maxdepth 1 -type f -printf '%P\n')
+          for file in $files;
+          do
+            if [[ $file == *.exe || $file == *.dll ]]; then
+              windeployqt --force --no-translations --compiler-runtime $file
+            fi
+          done
+          ls -l
+      - name: Upload Windows packages
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.build_type }}-windows
+          path: |
+            ./bin-64/${{ matrix.build_type }}
+
+      - name: Install dependencies on ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo add-apt-repository universe
+          sudo apt update
+          sudo apt install libfuse2 libxcb-cursor0
+          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+      - name: Deploy ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        shell: bash
+        run: |
+          cp -f ./resource/Qt-App.desktop ./bin-64/${{ matrix.build_type }}/Qt-App.desktop
+          cp -f ./resource/icon/app.png ./bin-64/${{ matrix.build_type }}/app.png
+          ./linuxdeployqt-continuous-x86_64.AppImage ./bin-64/${{ matrix.build_type }}/Qt-App -always-overwrite -no-translations -unsupported-allow-new-glibc -appimage     
+          rm linuxdeployqt-continuous-x86_64.AppImage
+      - name: Upload ubuntu packages
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.build_type }}-ubuntu
+          path: |
+            ./*.AppImage
+           
