@@ -139,24 +139,22 @@ jobs:
           rm -f ./bin-64/${{ matrix.build_type }}/CrashReport
           rm -f ./bin-64/${{ matrix.build_type }}/*.dylib
           # make dmg
-          hdiutil create -volname "Qt-App" -srcfolder ./bin-64/${{ matrix.build_type }}/Qt-App.app -ov -format UDZO Qt-App.dmg
-          mv Qt-App.dmg ./bin-64/${{ matrix.build_type }}
-      - name: Install dependencies on ubuntu
+          pip3 install dmgbuild
+          dmgbuild -s ./packaging/macos/Qt-App.dmgbuild.py "Qt-App" ./bin-64/${{ matrix.build_type }}/Qt-App.dmg
+      - name: Deploy ubuntu
         if: startsWith(matrix.os, 'ubuntu')
+        shell: bash
         run: |
           sudo add-apt-repository universe
           sudo apt update
           sudo apt install libfuse2 libxcb-cursor0
           wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-      - name: Deploy ubuntu
-        if: startsWith(matrix.os, 'ubuntu')
-        shell: bash
-        run: |
-          cp -f ./resource/Qt-App.desktop ./bin-64/${{ matrix.build_type }}/Qt-App.desktop
+          cp -f ./packaging/ubuntu/Qt-App.desktop ./bin-64/${{ matrix.build_type }}/Qt-App.desktop
           cp -f ./resource/icon/app.png ./bin-64/${{ matrix.build_type }}/app.png
           ./linuxdeployqt-continuous-x86_64.AppImage ./bin-64/${{ matrix.build_type }}/Qt-App -always-overwrite -no-translations -unsupported-allow-new-glibc -appimage     
           rm linuxdeployqt-continuous-x86_64.AppImage
+          rm -f ./bin-64/${{ matrix.build_type }}/*.so
           mv *.AppImage ./bin-64/${{ matrix.build_type }}
 
       - name: Show Upload files
