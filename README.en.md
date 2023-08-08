@@ -4,7 +4,7 @@
 -   [English](README.en.md)
 
 Picture resources and so on come from the Internet.
-This code warehouse is only for learning, if it is used by others for commercial purposes, it has nothing to do with me! Please obey the license!
+This code warehouse is for learning only, if it is used by others for commercial purposes, it has nothing to do with me! Please obey the license!
 
 ## Qt-App
 
@@ -32,10 +32,19 @@ Crash Reporter;
     1.  [utils](cmake/utils.cmake): utility function;
 5.  [core](core): All plugins inherit from this;
 6.  [extensionsystem](extensionsystem): Plug-in system, the code comes from Qt-Creator, with some modifications;
-7.  [gui](gui): encapsulated interface component;
+7.  [gui](gui): encapsulated interface components;
 8.  [plugins](plugins): plugin;
     1.  [coreplugin](plugins/coreplugin): Core plugin, main interface, menu, toolbar, status bar, settings, plugin manager, etc.;
-    2.  [serialplugin](plugins/serialplugin): serial port plug-in;
+    2.  [serialplugin](plugins/serialplugin): serial plug-in;
     3.  [tcpplugin](plugins/tcpplugin): TCP plugin;
 9.  [resource](resource): pictures and QSS files;
 10. [utils](utils): utility function package;
+
+## Remark
+
+1.  Under the Unix system, it is necessary to use the static library as much as possible to avoid the dependency problem of the dynamic library;
+    1.  Several modules in this project are dynamic libraries, because they are plugins, they need to be loaded dynamically;
+    2.  Then you need to package these dynamic libraries, and then load them at runtime, and you also need to rpath`"-Wl,-rpath,\'\$$ORIGIN\':\'\$$ORIGIN/lib\':'\$$ORIGIN/../lib'")`, make settings, otherwise the dynamic library will not be found;
+    3.  Or use install_name_tool (macos), patchelf/chrpath (linux) to modify the dependency path of the dynamic library, which is very troublesome;
+    4.  Also consider that these libraries can be shared, so don't pack them repeatedly;
+    5.  You can see the details[workflows](.github/workflows/cmake.yml)；
