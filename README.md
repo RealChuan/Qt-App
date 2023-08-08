@@ -40,3 +40,11 @@
    3. [tcpplugin](plugins/tcpplugin)：TCP插件；
 9. [resource](resource)：图片和QSS文件；
 10. [utils](utils)：工具函数封装；
+
+## 备注
+1. Unix 系统下，需要尽量使用静态库，避免动态库的依赖问题；
+   1. 本项目有几个模块是动态库，因为是plugin，需要动态加载；
+   2. 然后需要对这几个动态库进行打包，然后在运行时加载，还需要对rpath`"-Wl,-rpath,\'\$$ORIGIN\':\'\$$ORIGIN/lib\':'\$$ORIGIN/../lib'")`，进行设置，否则会找不到动态库；
+   3. 或者使用install_name_tool(macos)、patchelf/chrpath(linux)修改动态库的依赖路径，非常麻烦；
+   4. 还要考虑到这些库都是可以共享的，所以不要重复打包；
+   5. 具体可以看[workflows](.github/workflows/cmake.yml)；
