@@ -121,6 +121,8 @@ jobs:
         shell: bash
         run: |
           cd ./bin-64/${{ matrix.build_type }}
+          # deploy contains plugins         
+          cp -rf ./plugins/* .
           files=$(find . -maxdepth 1 -type f -printf '%P\n')
           for file in $files;
           do
@@ -128,6 +130,7 @@ jobs:
               windeployqt --force --no-translations --compiler-runtime $file
             fi
           done
+          rm -rf *plugin.dll
           ls -l
       - name: Deploy macos
         if: startsWith(matrix.os, 'macos')
@@ -152,7 +155,25 @@ jobs:
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
           cp -f ./packaging/ubuntu/Qt-App.desktop ./bin-64/${{ matrix.build_type }}/Qt-App.desktop
           cp -f ./resource/icon/app.png ./bin-64/${{ matrix.build_type }}/app.png
-          ./linuxdeployqt-continuous-x86_64.AppImage ./bin-64/${{ matrix.build_type }}/Qt-App -always-overwrite -no-translations -unsupported-allow-new-glibc -appimage     
+          cp -f ./bin-64/${{ matrix.build_type }}/plugins/* ./bin-64/${{ matrix.build_type }}
+
+          so_files=$(find ./bin-64/${{ matrix.build_type }} -maxdepth 1 -name "*.so" -printf '%P\n')
+          for so_file in $so_files;
+          do
+            ./linuxdeployqt-continuous-x86_64.AppImage \
+              ./bin-64/${{ matrix.build_type }}/$so_file \
+              -qmake=${{ env.Qt6_DIR }}/bin/qmake \
+              -always-overwrite -no-translations \
+              -unsupported-allow-new-glibc 
+          done
+          rm -f ./bin-64/${{ matrix.build_type }}/AppRun
+          ./linuxdeployqt-continuous-x86_64.AppImage \
+            ./bin-64/${{ matrix.build_type }}/Qt-App \
+            -executable=./bin-64/${{ matrix.build_type }}/CrashReport \
+            -qmake=${{ env.Qt6_DIR }}/bin/qmake \
+            -always-overwrite -no-translations \
+            -unsupported-allow-new-glibc \
+            -appimage
           rm linuxdeployqt-continuous-x86_64.AppImage
           rm -f ./bin-64/${{ matrix.build_type }}/*.so
           mv *.AppImage ./bin-64/${{ matrix.build_type }}

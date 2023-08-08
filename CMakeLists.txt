@@ -81,7 +81,9 @@ find_package(
              Concurrent
              Multimedia
              OpenGLWidgets
-             SerialPort)
+             SerialPort
+  # LinguistTools
+)
 
 find_package(unofficial-breakpad CONFIG REQUIRED)
 if(unofficial-breakpad_FOUND)
