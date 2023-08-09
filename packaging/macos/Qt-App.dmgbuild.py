@@ -1,5 +1,5 @@
 # Path: packaging/macos/Qt-App.dmgbuild.py
-# Use: dmgbuild -s ./packaging/macos/Qt-App.dmgbuild.py "Qt-App" "bin-64/Release/Qt-App.app"
+# Use: dmgbuild -s ./packaging/macos/Qt-App.dmgbuild.py "Qt-App" bin-64/RelWithDebInfo/Qt-App.dmg
 
 import os.path
 import plistlib
@@ -17,7 +17,7 @@ def icon_from_app(app_path):
     return os.path.join(app_path, "Contents", "Resources", icon_name)
 
 
-application = defines.get("app", "bin-64/Release/Qt-App.app")
+application = defines.get("app", "bin-64/RelWithDebInfo/Qt-App.app")
 icon = icon_from_app(application)
 
 # Volume format (see hdiutil create -help)
