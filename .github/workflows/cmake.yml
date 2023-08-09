@@ -31,7 +31,7 @@ jobs:
         qt_ver: 
           - 6.5.2
         build_type:
-          - "Release"
+          - "RelWithDebInfo"
         generators:
           - "Ninja"
 
@@ -48,6 +48,7 @@ jobs:
             ${{ runner.os }}-vcpkg-installed-
       - name: Install dependencies on windows
         if: startsWith(matrix.os, 'windows')
+        shell: bash
         run: |
           choco install ninja
           ninja --version
@@ -64,6 +65,7 @@ jobs:
           vcpkg install breakpad --triplet x64-osx
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
+        shell: bash
         run: |
           sudo apt-get update
           sudo apt-get install ninja-build build-essential libgl1-mesa-dev
@@ -188,4 +190,31 @@ jobs:
           name: ${{ matrix.os }}-${{ matrix.build_type }}
           path: |
             ./bin-64/${{ matrix.build_type }}
-           
+
+  release:
+    name: Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v3
+      - name: Zip packages
+        shell: bash
+        run: |
+          ls -l
+          zip -9 -r Qt-App-Windows.zip windows-latest-RelWithDebInfo
+          zip -9 -r Qt-App-MacOS.zip macos-latest-RelWithDebInfo
+          zip -9 -r Qt-App-Ubuntu.zip ubuntu-latest-RelWithDebInfo 
+          ls -l
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            *.zip
