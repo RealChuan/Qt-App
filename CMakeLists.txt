@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21.1)
 
 if(CMAKE_HOST_WIN32)
   set(CMAKE_TOOLCHAIN_FILE
@@ -27,7 +27,7 @@ endif()
 
 project(
   Qt-App
-  VERSION 0.1
+  VERSION 0.0.1
   LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
