@@ -4,7 +4,7 @@ if(CMAKE_HOST_WIN32)
   qt_add_executable(Qt-App MANUAL_FINALIZATION ${PROJECT_SOURCES} app.rc)
 elseif(CMAKE_HOST_APPLE)
   qt_add_executable(Qt-App MACOSX_BUNDLE MANUAL_FINALIZATION ${PROJECT_SOURCES}
-                    app.icns)
+                    app.icns PkgInfo)
   set_target_properties(
     Qt-App
     PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Qt-App"
@@ -17,6 +17,8 @@ elseif(CMAKE_HOST_APPLE)
                MACOSX_BUNDLE_INFO_STRING "APPL???")
   set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/app.icns
                               PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/PkgInfo
+                              PROPERTIES MACOSX_PACKAGE_LOCATION .)
   add_dependencies(Qt-App coreplugin serialplugin tcpplugin CrashReport)
   add_rpath(Qt-App)
 else()
@@ -54,17 +56,14 @@ target_link_libraries(
 qt_finalize_executable(Qt-App)
 
 if(CMAKE_HOST_APPLE)
-  # copy plugins  to bundle
   add_custom_command(
     TARGET Qt-App
     POST_BUILD
+    # copy plugins  to bundle
     COMMAND
       ${CMAKE_COMMAND} -E copy_directory ${EXECUTABLE_OUTPUT_PATH}/plugins
-      ${EXECUTABLE_OUTPUT_PATH}/Qt-App.app/Contents/MacOS/plugins)
-  # copy crashrepoter to bundle
-  add_custom_command(
-    TARGET Qt-App
-    POST_BUILD
+      ${EXECUTABLE_OUTPUT_PATH}/Qt-App.app/Contents/MacOS/plugins
+      # copy crashrepoter to bundle
     COMMAND ${CMAKE_COMMAND} -E copy ${EXECUTABLE_OUTPUT_PATH}/CrashReport
             ${EXECUTABLE_OUTPUT_PATH}/Qt-App.app/Contents/MacOS/CrashReport)
 endif()
