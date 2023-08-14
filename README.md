@@ -45,6 +45,7 @@
 1. MacOS，cmake生成的bundle，在.app/Contents/文件夹下没有生成`PkgInfo`文件；
    1. [app/CMakeLists](/apps/app/CMakeLists.txt)，使用这个CMakeLists.txt可以在MacOS上生成bundle，也可以正常显示图标，但是没有PkgInfo文件；
    2. cmake该怎么生成PkgInfo文件？
+      1. WireShark使用`set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/PkgInfo PROPERTIES MACOSX_PACKAGE_LOCATION .)`类似这种方式，拷贝到bundle中；
    3. qmake默认会生成PkgInfo文件，只需要指定`TARGET=app`或者`CONFIG+=bundle`即可； 
 2. Unix 系统下，需要尽量使用静态库，避免动态库的依赖问题；
    1. 本项目有几个模块是动态库，因为是plugin，需要动态加载；
