@@ -36,8 +36,9 @@
 7. [gui](gui)：封装的界面组件；
 8. [plugins](plugins)：插件；
    1. [coreplugin](plugins/coreplugin)：核心插件，主界面、菜单、工具栏、状态栏、设置、插件管理器等；
-   2. [serialplugin](plugins/serialplugin)：串口插件；
-   3. [tcpplugin](plugins/tcpplugin)：TCP插件；
+   2. [hashplugin](plugins/hashplugin)：哈希插件，QT提供的哈希算法；
+   3. [serialplugin](plugins/serialplugin)：串口插件；
+   4. [tcpplugin](plugins/tcpplugin)：TCP插件；
 9. [resource](resource)：图片和QSS文件；
 10. [utils](utils)：工具函数封装；
 

@@ -4,4 +4,5 @@ CONFIG += ordered
 SUBDIRS += \
     coreplugin \
     serialplugin \
-    tcpplugin
+    tcpplugin \
+    hashplugin

@@ -11,3 +11,7 @@ SUBDIRS += \
     core \
     plugins \
     apps
+
+DISTFILES += \
+    LICENSE \
+    README*
