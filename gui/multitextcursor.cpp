@@ -170,7 +170,7 @@ void MultiTextCursor::insertText(const QString &text, bool selectNewText)
     m_cursors.last().endEditBlock();
 }
 
-bool equalCursors(const QTextCursor &lhs, const QTextCursor &rhs)
+auto equalCursors(const QTextCursor &lhs, const QTextCursor &rhs) -> bool
 {
     return lhs == rhs && lhs.anchor() == rhs.anchor();
 }
@@ -198,7 +198,7 @@ bool MultiTextCursor::operator!=(const MultiTextCursor &other) const
     return !operator==(other);
 }
 
-static bool cursorsOverlap(const QTextCursor &c1, const QTextCursor &c2)
+static auto cursorsOverlap(const QTextCursor &c1, const QTextCursor &c2) -> bool
 {
     if (c1.hasSelection()) {
         if (c2.hasSelection()) {
@@ -263,14 +263,14 @@ void MultiTextCursor::mergeCursors()
 }
 
 // could go into QTextCursor...
-static QTextLine currentTextLine(const QTextCursor &cursor)
+static auto currentTextLine(const QTextCursor &cursor) -> QTextLine
 {
     const QTextBlock block = cursor.block();
     if (!block.isValid())
         return {};
 
     const QTextLayout *layout = block.layout();
-    if (!layout)
+    if (layout == nullptr)
         return {};
 
     const int relativePos = cursor.position() - block.position();

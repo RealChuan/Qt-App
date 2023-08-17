@@ -17,11 +17,10 @@ public:
     Queue()
         : m_T()
         , m_mutex()
-        , m_maxSize(100)
     {}
-    ~Queue() {}
+    ~Queue() = default;
 
-    bool enqueue(const T &t)
+    auto enqueue(const T &t) -> bool
     {
         QMutexLocker locker(&m_mutex);
         if (m_T.size() >= m_maxSize) {
@@ -31,7 +30,7 @@ public:
         return true;
     }
 
-    bool enqueue(T &&t)
+    auto enqueue(T &&t) -> bool
     {
         QMutexLocker locker(&m_mutex);
         if (m_T.size() >= m_maxSize) {
@@ -41,7 +40,7 @@ public:
         return true;
     }
 
-    T dequeue()
+    auto dequeue() -> T
     {
         QMutexLocker locker(&m_mutex);
         if (!m_T.isEmpty()) {
@@ -50,13 +49,10 @@ public:
         return nullptr;
     }
 
-    bool isEmpty()
+    auto isEmpty() -> bool
     {
         QMutexLocker locker(&m_mutex);
-        if (m_T.isEmpty()) {
-            return true;
-        }
-        return false;
+        return static_cast<bool>(m_T.isEmpty());
     }
 
     void clearPoints()
@@ -71,7 +67,7 @@ public:
 
     void clear() { m_T.clear(); }
 
-    int size() const
+    [[nodiscard]] auto size() const -> int
     {
         QMutexLocker locker(&m_mutex);
         return m_T.size();
@@ -88,7 +84,7 @@ private:
 
     QQueue<T> m_T;
     mutable QMutex m_mutex;
-    int m_maxSize;
+    int m_maxSize{100};
 };
 
 } // namespace Utils

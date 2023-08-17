@@ -26,7 +26,7 @@ class GUI_EXPORT IconButton : public QAbstractButton
 public:
     explicit IconButton(QWidget *parent = nullptr);
     void paintEvent(QPaintEvent *event) override;
-    float iconOpacity() { return m_iconOpacity; }
+    auto iconOpacity() -> float { return m_iconOpacity; }
     void setIconOpacity(float value)
     {
         m_iconOpacity = value;
@@ -35,9 +35,9 @@ public:
     void animateShow(bool visible);
 
     void setAutoHide(bool hide) { m_autoHide = hide; }
-    bool hasAutoHide() const { return m_autoHide; }
+    [[nodiscard]] auto hasAutoHide() const -> bool { return m_autoHide; }
 
-    QSize sizeHint() const override;
+    [[nodiscard]] auto sizeHint() const -> QSize override;
 
 protected:
     void keyPressEvent(QKeyEvent *ke) override;
@@ -61,26 +61,26 @@ public:
 
     void setTextKeepingActiveCursor(const QString &text);
 
-    QIcon buttonIcon(Side side) const;
+    [[nodiscard]] auto buttonIcon(Side side) const -> QIcon;
     void setButtonIcon(Side side, const QIcon &icon);
 
-    QMenu *buttonMenu(Side side) const;
+    [[nodiscard]] auto buttonMenu(Side side) const -> QMenu *;
     void setButtonMenu(Side side, QMenu *menu);
 
     void setButtonVisible(Side side, bool visible);
-    bool isButtonVisible(Side side) const;
-    QAbstractButton *button(Side side) const;
+    [[nodiscard]] auto isButtonVisible(Side side) const -> bool;
+    [[nodiscard]] auto button(Side side) const -> QAbstractButton *;
 
     void setButtonToolTip(Side side, const QString &);
     void setButtonFocusPolicy(Side side, Qt::FocusPolicy policy);
 
     // Set whether tabbing in will trigger the menu.
     void setMenuTabFocusTrigger(Side side, bool v);
-    bool hasMenuTabFocusTrigger(Side side) const;
+    [[nodiscard]] auto hasMenuTabFocusTrigger(Side side) const -> bool;
 
     // Set if icon should be hidden when text is empty
     void setAutoHideButton(Side side, bool h);
-    bool hasAutoHideButton(Side side) const;
+    [[nodiscard]] auto hasAutoHideButton(Side side) const -> bool;
 
     // Completion
 
@@ -100,9 +100,9 @@ public:
     using ValidationFunction = std::function<bool(FancyLineEdit *, QString *)>;
     enum State { Invalid, DisplayingPlaceholderText, Valid };
 
-    State state() const;
-    bool isValid() const;
-    QString errorMessage() const;
+    [[nodiscard]] auto state() const -> State;
+    [[nodiscard]] auto isValid() const -> bool;
+    [[nodiscard]] auto errorMessage() const -> QString;
 
     void setValidationFunction(const ValidationFunction &fn);
     static ValidationFunction defaultValidationFunction();
@@ -130,20 +130,20 @@ signals:
 protected:
     void resizeEvent(QResizeEvent *e) override;
 
-    virtual QString fixInputString(const QString &string);
+    virtual auto fixInputString(const QString &string) -> QString;
 
 private:
     void iconClicked(FancyLineEdit::Side);
 
-    static bool validateWithValidator(FancyLineEdit *edit, QString *errorMessage);
+    static auto validateWithValidator(FancyLineEdit *edit, QString *errorMessage) -> bool;
     // Unimplemented, to force the user to make a decision on
     // whether to use setHistoryCompleter() or setSpecialCompleter().
     void setCompleter(QCompleter *);
 
     void updateMargins();
     void updateButtonPositions();
-    bool camelCaseBackward(bool mark);
-    bool camelCaseForward(bool mark);
+    auto camelCaseBackward(bool mark) -> bool;
+    auto camelCaseForward(bool mark) -> bool;
     friend class FancyLineEditPrivate;
 
     FancyLineEditPrivate *d;

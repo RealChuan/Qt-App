@@ -33,7 +33,7 @@ public:
     explicit PluginView(QWidget *parent = nullptr);
     ~PluginView() override;
 
-    PluginSpec *currentPlugin() const;
+    [[nodiscard]] auto currentPlugin() const -> PluginSpec *;
     void setFilter(const QString &filter);
     void cancelChanges();
 
@@ -43,9 +43,9 @@ signals:
     void pluginSettingsChanged(ExtensionSystem::PluginSpec *spec);
 
 private:
-    PluginSpec *pluginForIndex(const QModelIndex &index) const;
+    [[nodiscard]] auto pluginForIndex(const QModelIndex &index) const -> PluginSpec *;
     void updatePlugins();
-    bool setPluginsEnabled(const QSet<PluginSpec *> &plugins, bool enable);
+    auto setPluginsEnabled(const QSet<PluginSpec *> &plugins, bool enable) -> bool;
 
     GUI::TreeView *m_categoryView;
     GUI::TreeModel<GUI::TreeItem, Internal::CollectionItem, Internal::PluginItem> *m_model;

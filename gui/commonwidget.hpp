@@ -26,7 +26,7 @@ public:
     void setTitleBar(QWidget *);
 
     void setShadowPadding(int shadowPadding = 10);
-    int shadowPadding();
+    auto shadowPadding() -> int;
 
     void setSizeGripVisible(bool visible);
 

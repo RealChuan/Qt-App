@@ -12,7 +12,7 @@ public:
     enum MessageType { Send, Recv, SuccessInfo, ErrorInfo };
 
     explicit SerialWidget(QWidget *parent = nullptr);
-    ~SerialWidget();
+    ~SerialWidget() override;
 
 private slots:
     void onSendData();

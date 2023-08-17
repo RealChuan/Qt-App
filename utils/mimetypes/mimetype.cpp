@@ -4,42 +4,42 @@
 
 #include "mimetype.h"
 
-#include "mimetype_p.h"
 #include "mimedatabase_p.h"
 #include "mimeprovider_p.h"
+#include "mimetype_p.h"
 
 #include "mimeglobpattern_p.h"
 
 #include <QtCore/QDebug>
-#include <QtCore/QLocale>
 #include <QtCore/QHashFunctions>
+#include <QtCore/QLocale>
 
 #include <memory>
 
 namespace Utils {
 
-static QString suffixFromPattern(const QString &pattern)
+static auto suffixFromPattern(const QString &pattern) -> QString
 {
     // Not a simple suffix if it looks like: README or *. or *.* or *.JP*G or *.JP?
-    if (pattern.startsWith(QLatin1String("*.")) &&
-        pattern.length() > 2 &&
-        pattern.indexOf(QLatin1Char('*'), 2) < 0 && pattern.indexOf(QLatin1Char('?'), 2) < 0) {
+    if (pattern.startsWith(QLatin1String("*.")) && pattern.length() > 2
+        && pattern.indexOf(QLatin1Char('*'), 2) < 0 && pattern.indexOf(QLatin1Char('?'), 2) < 0) {
         return pattern.mid(2);
     }
     return {};
 }
 
 MimeTypePrivate::MimeTypePrivate()
-    : loaded(false), fromCache(false)
+    : loaded(false)
+    , fromCache(false)
 {}
 
 MimeTypePrivate::MimeTypePrivate(const MimeType &other)
-      : loaded(other.d->loaded),
-        name(other.d->name),
-        localeComments(other.d->localeComments),
-        genericIconName(other.d->genericIconName),
-        iconName(other.d->iconName),
-        globPatterns(other.d->globPatterns)
+    : loaded(other.d->loaded)
+    , name(other.d->name)
+    , localeComments(other.d->localeComments)
+    , genericIconName(other.d->genericIconName)
+    , iconName(other.d->iconName)
+    , globPatterns(other.d->globPatterns)
 {}
 
 void MimeTypePrivate::clear()
@@ -94,25 +94,23 @@ void MimeTypePrivate::addGlobPattern(const QString &pattern)
     \fn MimeType::MimeType();
     Constructs this MimeType object initialized with default property values that indicate an invalid MIME type.
  */
-MimeType::MimeType() :
-        d(new MimeTypePrivate())
-{
-}
+MimeType::MimeType()
+    : d(new MimeTypePrivate())
+{}
 
 /*!
     \fn MimeType::MimeType(const MimeType &other);
     Constructs this MimeType object as a copy of \a other.
  */
-MimeType::MimeType(const MimeType &other) :
-        d(other.d)
-{
-}
+MimeType::MimeType(const MimeType &other)
+    : d(other.d)
+{}
 
 /*!
     \fn MimeType &MimeType::operator=(const MimeType &other);
     Assigns the data of \a other to this MimeType object, and returns a reference to this object.
  */
-MimeType &MimeType::operator=(const MimeType &other)
+auto MimeType::operator=(const MimeType &other) -> MimeType &
 {
     if (d != other.d)
         d = other.d;
@@ -124,10 +122,9 @@ MimeType &MimeType::operator=(const MimeType &other)
     Assigns the data of the MimeTypePrivate \a dd to this MimeType object, and returns a reference to this object.
     \internal
  */
-MimeType::MimeType(const MimeTypePrivate &dd) :
-        d(new MimeTypePrivate(dd))
-{
-}
+MimeType::MimeType(const MimeTypePrivate &dd)
+    : d(new MimeTypePrivate(dd))
+{}
 
 /*!
     \fn void MimeType::swap(MimeType &other);
@@ -145,9 +142,7 @@ MimeType::MimeType(const MimeTypePrivate &dd) :
     \fn MimeType::~MimeType();
     Destroys the MimeType object, and releases the d pointer.
  */
-MimeType::~MimeType()
-{
-}
+MimeType::~MimeType() {}
 
 /*!
     \fn bool MimeType::operator==(const MimeType &other) const;
@@ -155,7 +150,7 @@ MimeType::~MimeType()
     The name is the unique identifier for a mimetype, so two mimetypes with
     the same name, are equal.
  */
-bool MimeType::operator==(const MimeType &other) const
+auto MimeType::operator==(const MimeType &other) const -> bool
 {
     return d == other.d || d->name == other.d->name;
 }
@@ -187,7 +182,7 @@ size_t qHash(const MimeType &key, size_t seed) noexcept
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-bool MimeType::isValid() const
+auto MimeType::isValid() const -> bool
 {
     return !d->name.isEmpty();
 }
@@ -200,7 +195,7 @@ bool MimeType::isValid() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-bool MimeType::isDefault() const
+auto MimeType::isDefault() const -> bool
 {
     return d->name == MimeDatabasePrivate::instance()->defaultMimeType();
 }
@@ -212,7 +207,7 @@ bool MimeType::isDefault() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QString MimeType::name() const
+auto MimeType::name() const -> QString
 {
     return d->name;
 }
@@ -226,9 +221,9 @@ QString MimeType::name() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QString MimeType::comment() const
+auto MimeType::comment() const -> QString
 {
-    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate &>(*d));
 
     QStringList languageList;
     languageList << QLocale().name();
@@ -267,9 +262,9 @@ QString MimeType::comment() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QString MimeType::genericIconName() const
+auto MimeType::genericIconName() const -> QString
 {
-    MimeDatabasePrivate::instance()->loadGenericIcon(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadGenericIcon(const_cast<MimeTypePrivate &>(*d));
     if (d->genericIconName.isEmpty()) {
         // From the spec:
         // If the generic icon name is empty (not specified by the mimetype definition)
@@ -289,7 +284,7 @@ QString MimeType::genericIconName() const
     return d->genericIconName;
 }
 
-static QString make_default_icon_name_from_mimetype_name(QString iconName)
+static auto make_default_icon_name_from_mimetype_name(QString iconName) -> QString
 {
     const int slashindex = iconName.indexOf(QLatin1Char('/'));
     if (slashindex != -1)
@@ -306,9 +301,9 @@ static QString make_default_icon_name_from_mimetype_name(QString iconName)
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QString MimeType::iconName() const
+auto MimeType::iconName() const -> QString
 {
-    MimeDatabasePrivate::instance()->loadIcon(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadIcon(const_cast<MimeTypePrivate &>(*d));
     if (d->iconName.isEmpty()) {
         return make_default_icon_name_from_mimetype_name(name());
     }
@@ -322,9 +317,9 @@ QString MimeType::iconName() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QStringList MimeType::globPatterns() const
+auto MimeType::globPatterns() const -> QStringList
 {
-    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate &>(*d));
     return d->globPatterns;
 }
 
@@ -346,7 +341,7 @@ QStringList MimeType::globPatterns() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
 */
-QStringList MimeType::parentMimeTypes() const
+auto MimeType::parentMimeTypes() const -> QStringList
 {
     return MimeDatabasePrivate::instance()->mimeParents(d->name);
 }
@@ -381,7 +376,7 @@ static void collectParentMimeTypes(const QString &mime, QStringList &allParents)
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
 */
-QStringList MimeType::allAncestors() const
+auto MimeType::allAncestors() const -> QStringList
 {
     QStringList allParents;
     collectParentMimeTypes(d->name, allParents);
@@ -403,7 +398,7 @@ QStringList MimeType::allAncestors() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
 */
-QStringList MimeType::aliases() const
+auto MimeType::aliases() const -> QStringList
 {
     return MimeDatabasePrivate::instance()->listAliases(d->name);
 }
@@ -417,9 +412,9 @@ QStringList MimeType::aliases() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QStringList MimeType::suffixes() const
+auto MimeType::suffixes() const -> QStringList
 {
-    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate &>(*d));
 
     QStringList result;
     for (const QString &pattern : std::as_const(d->globPatterns)) {
@@ -441,7 +436,7 @@ QStringList MimeType::suffixes() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
  */
-QString MimeType::preferredSuffix() const
+auto MimeType::preferredSuffix() const -> QString
 {
     if (isDefault()) // workaround for unwanted *.bin suffix for octet-stream, https://bugs.freedesktop.org/show_bug.cgi?id=101667, fixed upstream in 1.10
         return QString();
@@ -456,9 +451,9 @@ QString MimeType::preferredSuffix() const
     While this property was introduced in 5.10, the
     corresponding accessor method has always been there.
 */
-QString MimeType::filterString() const
+auto MimeType::filterString() const -> QString
 {
-    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate &>(*d));
     QString filter;
 
     if (!d->globPatterns.empty()) {
@@ -468,7 +463,7 @@ QString MimeType::filterString() const
                 filter += QLatin1Char(' ');
             filter += d->globPatterns.at(i);
         }
-        filter +=  QLatin1Char(')');
+        filter += QLatin1Char(')');
     }
 
     return filter;
@@ -493,11 +488,11 @@ bool MimeType::inherits(const QString &mimeTypeName) const
     Returns \c true if the name or alias of the MIME type matches
     \a nameOrAlias.
 */
-bool MimeType::matchesName(const QString &nameOrAlias) const
+auto MimeType::matchesName(const QString &nameOrAlias) const -> bool
 {
     if (d->name == nameOrAlias)
         return true;
-    auto dbp = MimeDatabasePrivate::instance();
+    auto *dbp = MimeDatabasePrivate::instance();
     QMutexLocker locker(&dbp->mutex);
     return MimeDatabasePrivate::instance()->resolveAlias(nameOrAlias) == d->name;
 }
@@ -507,7 +502,7 @@ bool MimeType::matchesName(const QString &nameOrAlias) const
 */
 void MimeType::setPreferredSuffix(const QString &suffix)
 {
-    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate&>(*d));
+    MimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<MimeTypePrivate &>(*d));
 
     auto it = std::find_if(d->globPatterns.begin(),
                            d->globPatterns.end(),
@@ -522,7 +517,7 @@ void MimeType::setPreferredSuffix(const QString &suffix)
 } // namespace Utils
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const Utils::MimeType &mime)
+auto operator<<(QDebug debug, const Utils::MimeType &mime) -> QDebug
 {
     QDebugStateSaver saver(debug);
     if (!mime.isValid()) {

@@ -11,7 +11,7 @@ class ExecuteOnDestruction
 {
 public:
     ExecuteOnDestruction() noexcept : destructionCode([] {}) {}
-    ExecuteOnDestruction(std::function<void()> code) : destructionCode(std::move(code)) {}
+    explicit ExecuteOnDestruction(std::function<void()> code) : destructionCode(std::move(code)) {}
     ~ExecuteOnDestruction() { if (destructionCode) destructionCode(); }
 
     void reset(std::function<void()> code) { destructionCode = std::move(code); }

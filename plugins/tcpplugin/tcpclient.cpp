@@ -5,7 +5,7 @@ namespace Plugin {
 class TcpClient::TcpClientPrivate
 {
 public:
-    TcpClientPrivate(TcpClient *q)
+    explicit TcpClientPrivate(TcpClient *q)
         : q_ptr(q)
     {}
 
@@ -57,7 +57,7 @@ void TcpClient::closeSocket()
     }
 }
 
-bool TcpClient::isConnected()
+auto TcpClient::isConnected() -> bool
 {
     return state() == QAbstractSocket::ConnectedState;
 }

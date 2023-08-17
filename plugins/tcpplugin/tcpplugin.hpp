@@ -20,7 +20,7 @@ class TcpPlugin : public ExtensionSystem::IPlugin
 public:
     TcpPlugin() = default;
 
-    bool initialize(const QStringList &arguments, QString *errorString) override;
+    auto initialize(const QStringList &arguments, QString *errorString) -> bool override;
     void extensionsInitialized() override {}
 };
 

@@ -24,7 +24,7 @@ namespace Utils {
 class UTILS_EXPORT HostOsInfo
 {
 public:
-    static constexpr OsType hostOs()
+    static constexpr auto hostOs() -> OsType
     {
 #if defined(Q_OS_WIN)
         return OsTypeWindows;
@@ -47,12 +47,12 @@ public:
         HostArchitectureArm64,
         HostArchitectureUnknown
     };
-    static HostArchitecture hostArchitecture();
+    static auto hostArchitecture() -> HostArchitecture;
 
-    static constexpr bool isWindowsHost() { return hostOs() == OsTypeWindows; }
-    static constexpr bool isLinuxHost() { return hostOs() == OsTypeLinux; }
-    static constexpr bool isMacHost() { return hostOs() == OsTypeMac; }
-    static constexpr bool isAnyUnixHost()
+    static constexpr auto isWindowsHost() -> bool { return hostOs() == OsTypeWindows; }
+    static constexpr auto isLinuxHost() -> bool { return hostOs() == OsTypeLinux; }
+    static constexpr auto isMacHost() -> bool { return hostOs() == OsTypeMac; }
+    static constexpr auto isAnyUnixHost() -> bool
     {
 #ifdef Q_OS_UNIX
         return true;
@@ -61,9 +61,9 @@ public:
 #endif
     }
 
-    static bool isRunningUnderRosetta();
+    static auto isRunningUnderRosetta() -> bool;
 
-    static QString withExecutableSuffix(const QString &executable)
+    static auto withExecutableSuffix(const QString &executable) -> QString
     {
         return OsSpecificAspects::withExecutableSuffix(hostOs(), executable);
     }
@@ -88,7 +88,7 @@ public:
         return OsSpecificAspects::controlModifier(hostOs());
     }
 
-    static bool canCreateOpenGLContext(QString *errorMessage);
+    static auto canCreateOpenGLContext(QString *errorMessage) -> bool;
 
     static std::optional<quint64> totalMemoryInstalledInBytes();
 

@@ -18,7 +18,7 @@ public:
     InvokerBase();
     ~InvokerBase();
 
-    bool wasSuccessful() const;
+    auto wasSuccessful() const -> bool;
     void setConnectionType(Qt::ConnectionType connectionType);
 
     template <class T> void addArgument(const T &t)
@@ -36,7 +36,7 @@ public:
 
 private:
     InvokerBase(const InvokerBase &); // Unimplemented.
-    template <class T> const char *typeName()
+    template <class T> auto typeName() -> const char *
     {
         return QMetaType::typeName(qMetaTypeId<T>());
     }
@@ -88,7 +88,7 @@ public:
         InvokerBase::invoke(target, slot);
     }
 
-    operator Result() const { return result; }
+    explicit operator Result() const { return result; }
 
 private:
     Result result;
@@ -130,7 +130,7 @@ public:
 
 #ifndef Q_QDOC
 template <class Result>
-Result invokeHelper(InvokerBase &in, QObject *target, const char *slot)
+auto invokeHelper(InvokerBase &in, QObject *target, const char *slot) -> Result
 {
     Result result;
     in.setReturnValue(result);
@@ -146,14 +146,14 @@ inline void invokeHelper<void>(InvokerBase &in, QObject *target, const char *slo
 #endif
 
 template<class Result>
-Result invoke(QObject *target, const char *slot)
+auto invoke(QObject *target, const char *slot) -> Result
 {
     InvokerBase in;
     return invokeHelper<Result>(in, target, slot);
 }
 
 template<class Result, class T0>
-Result invoke(QObject *target, const char *slot, const T0 &t0)
+auto invoke(QObject *target, const char *slot, const T0 &t0) -> Result
 {
     InvokerBase in;
     in.addArgument(t0);
@@ -161,7 +161,7 @@ Result invoke(QObject *target, const char *slot, const T0 &t0)
 }
 
 template<class Result, class T0, class T1>
-Result invoke(QObject *target, const char *slot, const T0 &t0, const T1 &t1)
+auto invoke(QObject *target, const char *slot, const T0 &t0, const T1 &t1) -> Result
 {
     InvokerBase in;
     in.addArgument(t0);
@@ -170,8 +170,8 @@ Result invoke(QObject *target, const char *slot, const T0 &t0, const T1 &t1)
 }
 
 template<class Result, class T0, class T1, class T2>
-Result invoke(QObject *target, const char *slot,
-    const T0 &t0, const T1 &t1, const T2 &t2)
+auto invoke(QObject *target, const char *slot,
+    const T0 &t0, const T1 &t1, const T2 &t2) -> Result
 {
     InvokerBase in;
     in.addArgument(t0);

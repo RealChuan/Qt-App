@@ -10,9 +10,9 @@ class SerialPort : public QSerialPort
     Q_OBJECT
 public:
     explicit SerialPort(QObject *parent = nullptr);
-    ~SerialPort();
+    ~SerialPort() override;
 
-    bool openSerialPort(const SerialSettings &param);
+    auto openSerialPort(const SerialSettings &param) -> bool;
     void closeSerialPort();
 
 signals:

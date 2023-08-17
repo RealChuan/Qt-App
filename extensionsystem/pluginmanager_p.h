@@ -41,7 +41,7 @@ class EXTENSIONSYSTEM_EXPORT PluginManagerPrivate : public QObject
 {
     Q_OBJECT
 public:
-    PluginManagerPrivate(PluginManager *pluginManager);
+    explicit PluginManagerPrivate(PluginManager *pluginManager);
     ~PluginManagerPrivate() override;
 
     // Object pool operations
@@ -67,7 +67,7 @@ public:
 
     class TestSpec {
     public:
-        TestSpec(PluginSpec *pluginSpec, const QStringList &testFunctionsOrObjects = QStringList())
+        explicit TestSpec(PluginSpec *pluginSpec, const QStringList &testFunctionsOrObjects = QStringList())
             : pluginSpec(pluginSpec)
             , testFunctionsOrObjects(testFunctionsOrObjects)
         {}
@@ -75,7 +75,7 @@ public:
         QStringList testFunctionsOrObjects;
     };
 
-    bool containsTestSpec(PluginSpec *pluginSpec) const
+    auto containsTestSpec(PluginSpec *pluginSpec) const -> bool
     {
         return Utils::contains(testSpecs, [pluginSpec](const TestSpec &s) { return s.pluginSpec == pluginSpec; });
     }
@@ -113,11 +113,11 @@ public:
 
     // Look in argument descriptions of the specs for the option.
     PluginSpec *pluginForOption(const QString &option, bool *requiresArgument) const;
-    PluginSpec *pluginByName(const QString &name) const;
+    [[nodiscard]] PluginSpec *pluginByName(const QString &name) const;
 
     // used by tests
     static PluginSpec *createSpec();
-    static PluginSpecPrivate *privateSpec(PluginSpec *spec);
+    static auto privateSpec(PluginSpec *spec) -> PluginSpecPrivate *;
 
     mutable QReadWriteLock m_lock;
 
@@ -140,9 +140,9 @@ private:
     void nextDelayedInitialize();
 
     void readPluginPaths();
-    bool loadQueue(PluginSpec *spec,
+    auto loadQueue(PluginSpec *spec,
                    QVector<ExtensionSystem::PluginSpec *> &queue,
-                   QVector<ExtensionSystem::PluginSpec *> &circularityCheckQueue);
+                   QVector<ExtensionSystem::PluginSpec *> &circularityCheckQueue) -> bool;
     void stopAll();
     void deleteAll();
 

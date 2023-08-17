@@ -16,10 +16,10 @@ public:
     enum Type { Tool, About };
 
     explicit CoreWidget(QObject *parent = nullptr);
-    ~CoreWidget();
+    ~CoreWidget() override;
 
-    QPushButton *button() const;
-    QWidget *widget() const;
+    [[nodiscard]] auto button() const -> QPushButton *;
+    [[nodiscard]] auto widget() const -> QWidget *;
 
 protected:
     void setWidget(QWidget *widget);

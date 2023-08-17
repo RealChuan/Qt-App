@@ -5,7 +5,7 @@
 
 namespace Plugin {
 
-bool TcpPlugin::initialize(const QStringList &arguments, QString *errorString)
+auto TcpPlugin::initialize(const QStringList &arguments, QString *errorString) -> bool
 {
     addObject(new TcpPluginWidget(this));
     return true;

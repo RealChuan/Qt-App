@@ -147,7 +147,7 @@ bool PluginDependency::operator==(const PluginDependency &other) const
     return name == other.name && version == other.version && type == other.type;
 }
 
-static QString typeString(PluginDependency::Type type)
+static auto typeString(PluginDependency::Type type) -> QString
 {
     switch (type) {
     case PluginDependency::Optional:
@@ -688,36 +688,36 @@ bool PluginSpecPrivate::reportError(const QString &err)
     return true;
 }
 
-static inline QString msgValueMissing(const char *key)
+static inline auto msgValueMissing(const char *key) -> QString
 {
     return Tr::tr("\"%1\" is missing").arg(QLatin1String(key));
 }
 
-static inline QString msgValueIsNotAString(const char *key)
+static inline auto msgValueIsNotAString(const char *key) -> QString
 {
     return Tr::tr("Value for key \"%1\" is not a string")
             .arg(QLatin1String(key));
 }
 
-static inline QString msgValueIsNotABool(const char *key)
+static inline auto msgValueIsNotABool(const char *key) -> QString
 {
     return Tr::tr("Value for key \"%1\" is not a bool")
             .arg(QLatin1String(key));
 }
 
-static inline QString msgValueIsNotAObjectArray(const char *key)
+static inline auto msgValueIsNotAObjectArray(const char *key) -> QString
 {
     return Tr::tr("Value for key \"%1\" is not an array of objects")
             .arg(QLatin1String(key));
 }
 
-static inline QString msgValueIsNotAMultilineString(const char *key)
+static inline auto msgValueIsNotAMultilineString(const char *key) -> QString
 {
     return Tr::tr("Value for key \"%1\" is not a string and not an array of strings")
             .arg(QLatin1String(key));
 }
 
-static inline QString msgInvalidFormat(const char *key, const QString &content)
+static inline auto msgInvalidFormat(const char *key, const QString &content) -> QString
 {
     return Tr::tr("Value \"%2\" for key \"%1\" has invalid format")
             .arg(QLatin1String(key), content);

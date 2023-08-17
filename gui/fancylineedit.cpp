@@ -66,7 +66,7 @@ public:
             emit keyChanged(key);
         }
     }
-    QKeySequence key() const { return m_key; }
+    [[nodiscard]] QKeySequence key() const { return m_key; }
 
 signals:
     void keyChanged(const QKeySequence &key);
@@ -82,7 +82,7 @@ class FancyLineEditPrivate : public QObject
 public:
     explicit FancyLineEditPrivate(FancyLineEdit *parent);
 
-    bool eventFilter(QObject *obj, QEvent *event) override;
+    auto eventFilter(QObject *obj, QEvent *event) -> bool override;
 
     FancyLineEdit *m_lineEdit;
     IconButton *m_iconbutton[2];
@@ -130,7 +130,7 @@ FancyLineEditPrivate::FancyLineEditPrivate(FancyLineEdit *parent)
     }
 }
 
-bool FancyLineEditPrivate::eventFilter(QObject *obj, QEvent *event)
+auto FancyLineEditPrivate::eventFilter(QObject *obj, QEvent *event) -> bool
 {
     int buttonIndex = -1;
     for (int i = 0; i < 2; ++i) {
@@ -143,7 +143,7 @@ bool FancyLineEditPrivate::eventFilter(QObject *obj, QEvent *event)
         return QObject::eventFilter(obj, event);
     switch (event->type()) {
     case QEvent::FocusIn:
-        if (m_menuTabFocusTrigger[buttonIndex] && m_menu[buttonIndex]) {
+        if (m_menuTabFocusTrigger[buttonIndex] && (m_menu[buttonIndex] != nullptr)) {
             m_lineEdit->setFocus();
             Utils::execMenuAtWidget(m_menu[buttonIndex], m_iconbutton[buttonIndex]);
             return true;

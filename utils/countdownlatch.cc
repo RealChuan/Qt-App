@@ -19,7 +19,7 @@ CountDownLatch::CountDownLatch(int count)
     d_ptr->count = count;
 }
 
-CountDownLatch::~CountDownLatch() {}
+CountDownLatch::~CountDownLatch() = default;
 
 void CountDownLatch::wait()
 {
@@ -38,7 +38,7 @@ void CountDownLatch::countDown()
     }
 }
 
-int CountDownLatch::getCount() const
+auto CountDownLatch::getCount() const -> int
 {
     QMutexLocker locker(&d_ptr->mutex);
     return d_ptr->count;

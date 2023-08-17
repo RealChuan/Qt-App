@@ -7,7 +7,6 @@
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
-class QLabel;
 QT_END_NAMESPACE
 
 namespace ExtensionSystem {

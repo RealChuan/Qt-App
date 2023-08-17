@@ -11,7 +11,7 @@ SerialPluginWidget::SerialPluginWidget(QObject *parent)
     setButton(new QPushButton(tr("Serial Tool")), Core::CoreWidget::Tool);
 }
 
-bool SerialPlugin::initialize(const QStringList &arguments, QString *errorString)
+auto SerialPlugin::initialize(const QStringList &arguments, QString *errorString) -> bool
 {
     addObject(new SerialPluginWidget(this));
     return true;

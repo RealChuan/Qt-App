@@ -12,13 +12,13 @@ namespace GUI {
 class GUI_EXPORT CategorySortFilterModel : public QSortFilterProxyModel
 {
 public:
-    CategorySortFilterModel(QObject *parent = nullptr);
+    explicit CategorySortFilterModel(QObject *parent = nullptr);
 
     // "New" items will always be accepted, regardless of the filter.
     void setNewItemRole(int role);
 
 protected:
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
+    [[nodiscard]] auto filterAcceptsRow(int source_row, const QModelIndex &source_parent) const -> bool override;
 
 private:
     int m_newItemRole = -1;

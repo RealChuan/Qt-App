@@ -34,7 +34,7 @@ namespace SharedTools {
 #define MUTEX_PREFIX "QtLockedFile mutex "
 #define SEMAPHORE_MAX 100
 
-static QString errorCodeToString(DWORD errorCode)
+static auto errorCodeToString(DWORD errorCode) -> QString
 {
     QString result;
     char *data = 0;
@@ -51,7 +51,7 @@ static QString errorCodeToString(DWORD errorCode)
     return result;
 }
 
-bool QtLockedFile::lock(LockMode mode, bool block)
+auto QtLockedFile::lock(LockMode mode, bool block) -> bool
 {
     if (!isOpen()) {
         qWarning("QtLockedFile::lock(): file is not opened");
@@ -112,7 +112,7 @@ bool QtLockedFile::lock(LockMode mode, bool block)
     for (int i = 0; i < decrement; ++i) {
         DWORD res = WaitForSingleObject(m_semaphore_hnd, block ? INFINITE : 0);
         if (res == WAIT_TIMEOUT) {
-            if (i) {
+            if (i != 0) {
                 // A failed nonblocking rw locking. Undo changes to semaphore.
                 if (ReleaseSemaphore(m_semaphore_hnd, i, NULL) == 0) {
                     qWarning("QtLockedFile::unlock(): ReleaseSemaphore: %s",
@@ -139,7 +139,7 @@ bool QtLockedFile::lock(LockMode mode, bool block)
     return true;
 }
 
-bool QtLockedFile::unlock()
+auto QtLockedFile::unlock() -> bool
 {
     if (!isOpen()) {
         qWarning("QtLockedFile::unlock(): file is not opened");

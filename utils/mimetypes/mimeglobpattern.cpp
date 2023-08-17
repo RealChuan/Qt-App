@@ -55,10 +55,10 @@ void MimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const QS
     }
 }
 
-MimeGlobPattern::PatternType MimeGlobPattern::detectPatternType(const QString &pattern) const
+auto MimeGlobPattern::detectPatternType(const QString &pattern) const -> MimeGlobPattern::PatternType
 {
     const int patternLength = pattern.length();
-    if (!patternLength)
+    if (patternLength == 0)
         return OtherPattern;
 
     const int starCount = pattern.count(QLatin1Char('*'));
@@ -98,7 +98,7 @@ MimeGlobPattern::PatternType MimeGlobPattern::detectPatternType(const QString &p
     \sa MimeType, MimeDatabase, MimeMagicRuleMatcher, MimeMagicRule
 */
 
-bool MimeGlobPattern::matchFileName(const QString &inputFileName) const
+auto MimeGlobPattern::matchFileName(const QString &inputFileName) const -> bool
 {
     // "Applications MUST match globs case-insensitively, except when the case-sensitive
     // attribute is set to true."
@@ -107,7 +107,7 @@ bool MimeGlobPattern::matchFileName(const QString &inputFileName) const
             ? inputFileName.toLower() : inputFileName;
 
     const int patternLength = m_pattern.length();
-    if (!patternLength)
+    if (patternLength == 0)
         return false;
     const int fileNameLength = fileName.length();
 
@@ -161,7 +161,7 @@ bool MimeGlobPattern::matchFileName(const QString &inputFileName) const
     return false;
 }
 
-static bool isSimplePattern(const QString &pattern)
+static auto isSimplePattern(const QString &pattern) -> bool
 {
    // starts with "*.", has no other '*'
    return pattern.lastIndexOf(QLatin1Char('*')) == 0
@@ -173,7 +173,7 @@ static bool isSimplePattern(const QString &pattern)
       ;
 }
 
-static bool isFastPattern(const QString &pattern)
+static auto isFastPattern(const QString &pattern) -> bool
 {
    // starts with "*.", has no other '*' and no other '.'
    return pattern.lastIndexOf(QLatin1Char('*')) == 0

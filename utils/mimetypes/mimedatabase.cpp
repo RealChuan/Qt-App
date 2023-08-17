@@ -290,7 +290,7 @@ void MimeDatabasePrivate::loadIcon(MimeTypePrivate &mimePrivate)
     }
 }
 
-static QString fallbackParent(const QString &mimeTypeName)
+static auto fallbackParent(const QString &mimeTypeName) -> QString
 {
     const QStringView myGroup = QStringView{mimeTypeName}.left(mimeTypeName.indexOf(QLatin1Char('/')));
     // All text/* types are subclasses of text/plain.
@@ -349,7 +349,7 @@ bool MimeDatabasePrivate::mimeInherits(const QString &mime, const QString &paren
     return inherits(mime, parent);
 }
 
-static inline bool isTextFile(const QByteArray &data)
+static inline auto isTextFile(const QByteArray &data) -> bool
 {
     // UTF16 byte order marks
     static const char bigEndianBOM[] = "\xFE\xFF";

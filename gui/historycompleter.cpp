@@ -16,9 +16,9 @@ const bool isLastItemEmptyDefault = false;
 class HistoryCompleterPrivate : public QAbstractListModel
 {
 public:
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+    [[nodiscard]] auto rowCount(const QModelIndex &parent = QModelIndex()) const -> int override;
+    [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    auto removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) -> bool override;
 
     void clearHistory();
     void addEntry(const QString &str);
@@ -33,7 +33,7 @@ public:
 class HistoryLineDelegate : public QItemDelegate
 {
 public:
-    HistoryLineDelegate(QAbstractItemView *parent)
+    explicit HistoryLineDelegate(QAbstractItemView *parent)
         : QItemDelegate(parent)
         , view(parent)
         , icon(qApp->style()->standardIcon(QStyle::SP_LineEditClearButton))
@@ -69,7 +69,7 @@ public:
 class HistoryLineView : public QListView
 {
 public:
-    HistoryLineView(HistoryCompleterPrivate *model_)
+    explicit HistoryLineView(HistoryCompleterPrivate *model_)
         : model(model_)
     {
         setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -107,12 +107,12 @@ private:
     HistoryLineDelegate *delegate;
 };
 
-int HistoryCompleterPrivate::rowCount(const QModelIndex &parent) const
+auto HistoryCompleterPrivate::rowCount(const QModelIndex &parent) const -> int
 {
     return parent.isValid() ? 0 : list.count();
 }
 
-QVariant HistoryCompleterPrivate::data(const QModelIndex &index, int role) const
+auto HistoryCompleterPrivate::data(const QModelIndex &index, int role) const -> QVariant
 {
     if (index.row() >= list.count() || index.column() != 0)
         return QVariant();
@@ -121,7 +121,7 @@ QVariant HistoryCompleterPrivate::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool HistoryCompleterPrivate::removeRows(int row, int count, const QModelIndex &parent)
+auto HistoryCompleterPrivate::removeRows(int row, int count, const QModelIndex &parent) -> bool
 {
     QTC_ASSERT(theSettings, return false);
     if (row + count > list.count())

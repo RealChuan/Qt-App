@@ -11,17 +11,17 @@
 namespace GUI {
 
 template<typename C, typename E>
-bool moveCursor(C *cursor, E *edit, QTextCursor::MoveOperation direction, QTextCursor::MoveMode mode);
+auto moveCursor(C *cursor, E *edit, QTextCursor::MoveOperation direction, QTextCursor::MoveMode mode) -> bool;
 
 template<>
-bool moveCursor(QTextCursor *cursor, QPlainTextEdit *, QTextCursor::MoveOperation direction,
-                QTextCursor::MoveMode mode)
+auto moveCursor(QTextCursor *cursor, QPlainTextEdit *, QTextCursor::MoveOperation direction,
+                QTextCursor::MoveMode mode) -> bool
 {
     return cursor->movePosition(direction, mode);
 }
 
 template<typename C>
-bool moveCursor(C *, QLineEdit *edit, QTextCursor::MoveOperation direction, QTextCursor::MoveMode mode)
+auto moveCursor(C *, QLineEdit *edit, QTextCursor::MoveOperation direction, QTextCursor::MoveMode mode) -> bool
 {
     bool mark = (mode == QTextCursor::KeepAnchor);
     switch (direction) {
@@ -44,16 +44,16 @@ bool moveCursor(C *, QLineEdit *edit, QTextCursor::MoveOperation direction, QTex
 }
 
 template<typename C, typename E>
-QChar charUnderCursor(C *cursor, E *edit);
+auto charUnderCursor(C *cursor, E *edit) -> QChar;
 
 template<>
-QChar charUnderCursor(QTextCursor *cursor, QPlainTextEdit *edit)
+auto charUnderCursor(QTextCursor *cursor, QPlainTextEdit *edit) -> QChar
 {
     return edit->document()->characterAt(cursor->position());
 }
 
 template<typename C>
-QChar charUnderCursor(C *, QLineEdit *edit)
+auto charUnderCursor(C *, QLineEdit *edit) -> QChar
 {
     const int pos = edit->cursorPosition();
     if (pos < 0 || pos >= edit->text().length())
@@ -63,16 +63,16 @@ QChar charUnderCursor(C *, QLineEdit *edit)
 };
 
 template<typename C, typename E>
-int position(C *cursor, E *edit);
+auto position(C *cursor, E *edit) -> int;
 
 template<>
-int position(QTextCursor *cursor, QPlainTextEdit *)
+auto position(QTextCursor *cursor, QPlainTextEdit *) -> int
 {
     return cursor->position();
 }
 
 template<typename C>
-int position(C *, QLineEdit *edit)
+auto position(C *, QLineEdit *edit) -> int
 {
     return edit->cursorPosition();
 }
@@ -86,7 +86,7 @@ enum class Input {
 };
 
 template<typename C, typename E>
-bool camelCaseLeft(C *cursor, E *edit, QTextCursor::MoveMode mode)
+auto camelCaseLeft(C *cursor, E *edit, QTextCursor::MoveMode mode) -> bool
 {
     int state = 0;
 
@@ -189,7 +189,7 @@ bool camelCaseLeft(C *cursor, E *edit, QTextCursor::MoveMode mode)
 }
 
 template<typename C, typename E>
-bool camelCaseRight(C *cursor, E *edit, QTextCursor::MoveMode mark)
+auto camelCaseRight(C *cursor, E *edit, QTextCursor::MoveMode mark) -> bool
 {
     int state = 0;
 
@@ -299,12 +299,12 @@ bool camelCaseRight(C *cursor, E *edit, QTextCursor::MoveMode mark)
     }
 }
 
-bool CamelCaseCursor::left(QTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode)
+auto CamelCaseCursor::left(QTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode) -> bool
 {
     return camelCaseLeft(cursor, edit, mode);
 }
 
-bool CamelCaseCursor::left(MultiTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode)
+auto CamelCaseCursor::left(MultiTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode) -> bool
 {
     bool result = false;
     for (QTextCursor &c : *cursor)
@@ -313,18 +313,18 @@ bool CamelCaseCursor::left(MultiTextCursor *cursor, QPlainTextEdit *edit, QTextC
     return result;
 }
 
-bool CamelCaseCursor::left(QLineEdit *edit, QTextCursor::MoveMode mode)
+auto CamelCaseCursor::left(QLineEdit *edit, QTextCursor::MoveMode mode) -> bool
 {
     QTextCursor temp;
     return camelCaseLeft(&temp, edit, mode);
 }
 
-bool CamelCaseCursor::right(QTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode)
+auto CamelCaseCursor::right(QTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode) -> bool
 {
     return camelCaseRight(cursor, edit, mode);
 }
 
-bool CamelCaseCursor::right(MultiTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode)
+auto CamelCaseCursor::right(MultiTextCursor *cursor, QPlainTextEdit *edit, QTextCursor::MoveMode mode) -> bool
 {
     bool result = false;
     for (QTextCursor &c : *cursor)
@@ -333,7 +333,7 @@ bool CamelCaseCursor::right(MultiTextCursor *cursor, QPlainTextEdit *edit, QText
     return result;
 }
 
-bool CamelCaseCursor::right(QLineEdit *edit, QTextCursor::MoveMode mode)
+auto CamelCaseCursor::right(QLineEdit *edit, QTextCursor::MoveMode mode) -> bool
 {
     QTextCursor temp;
     return camelCaseRight(&temp, edit, mode);

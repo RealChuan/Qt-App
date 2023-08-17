@@ -5,11 +5,11 @@
 
 namespace Plugin {
 
-CorePlugin::CorePlugin() {}
+CorePlugin::CorePlugin() = default;
 
-CorePlugin::~CorePlugin() {}
+CorePlugin::~CorePlugin() = default;
 
-bool CorePlugin::initialize(const QStringList &, QString *)
+auto CorePlugin::initialize(const QStringList &, QString *) -> bool
 {
     m_mainWindowPtr.reset(new MainWindow);
     return true;
@@ -20,7 +20,8 @@ void CorePlugin::extensionsInitialized()
     m_mainWindowPtr->extensionsInitialized();
 }
 
-QObject *CorePlugin::remoteCommand(const QStringList &, const QString &, const QStringList &)
+auto CorePlugin::remoteCommand(const QStringList &, const QString &, const QStringList &)
+    -> QObject *
 {
     m_mainWindowPtr->setWindowState(m_mainWindowPtr->windowState() & ~Qt::WindowMinimized);
     m_mainWindowPtr->show();

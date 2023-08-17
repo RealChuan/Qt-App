@@ -16,7 +16,7 @@ template<typename Reference>
 struct ArrowProxy
 {
     Reference r;
-    Reference *operator->() { return &r; }
+    auto operator->() -> Reference * { return &r; }
 };
 
 /// Random-access const iterator over elements of a container providing an overloaded operator[]
@@ -42,114 +42,114 @@ public:
         , m_index(index)
     {}
 
-    reference operator*() const
+    auto operator*() const -> reference
     {
         Q_ASSERT(m_container);
         return (*m_container)[m_index];
     }
 
-    pointer operator->() const
+    auto operator->() const -> pointer
     {
         Q_ASSERT(m_container);
         return pointer{(*m_container)[m_index]};
     }
 
-    reference operator[](difference_type j) const
+    auto operator[](difference_type j) const -> reference
     {
         Q_ASSERT(m_container);
         return (*m_container)[m_index + j];
     }
 
-    bool operator==(const IndexedContainerProxyConstIterator &other) const
+    auto operator==(const IndexedContainerProxyConstIterator &other) const -> bool
     {
         Q_ASSERT(m_container == other.m_container);
         return m_index == other.m_index;
     }
 
-    bool operator!=(const IndexedContainerProxyConstIterator &other) const
+    auto operator!=(const IndexedContainerProxyConstIterator &other) const -> bool
     {
         Q_ASSERT(m_container == other.m_container);
         return m_index != other.m_index;
     }
 
-    bool operator<(const IndexedContainerProxyConstIterator &other) const
+    auto operator<(const IndexedContainerProxyConstIterator &other) const -> bool
     {
         Q_ASSERT(m_container == other.m_container);
         return m_index < other.m_index;
     }
 
-    bool operator<=(const IndexedContainerProxyConstIterator &other) const
+    auto operator<=(const IndexedContainerProxyConstIterator &other) const -> bool
     {
         Q_ASSERT(m_container == other.m_container);
         return m_index <= other.m_index;
     }
 
-    bool operator>(const IndexedContainerProxyConstIterator &other) const
+    auto operator>(const IndexedContainerProxyConstIterator &other) const -> bool
     {
         Q_ASSERT(m_container == other.m_container);
         return m_index > other.m_index;
     }
 
-    bool operator>=(const IndexedContainerProxyConstIterator &other) const
+    auto operator>=(const IndexedContainerProxyConstIterator &other) const -> bool
     {
         Q_ASSERT(m_container == other.m_container);
         return m_index >= other.m_index;
     }
 
-    IndexedContainerProxyConstIterator &operator++()
+    auto operator++() -> IndexedContainerProxyConstIterator &
     {
         ++m_index;
         return *this;
     }
 
-    IndexedContainerProxyConstIterator operator++(int)
+    auto operator++(int) -> IndexedContainerProxyConstIterator
     {
         IndexedContainerProxyConstIterator copy(*this);
         ++m_index;
         return copy;
     }
 
-    IndexedContainerProxyConstIterator &operator--()
+    auto operator--() -> IndexedContainerProxyConstIterator &
     {
         --m_index;
         return *this;
     }
 
-    IndexedContainerProxyConstIterator operator--(int)
+    auto operator--(int) -> IndexedContainerProxyConstIterator
     {
         IndexedContainerProxyConstIterator copy(*this);
         --m_index;
         return copy;
     }
 
-    IndexedContainerProxyConstIterator &operator+=(difference_type j)
+    auto operator+=(difference_type j) -> IndexedContainerProxyConstIterator &
     {
         m_index += j;
         return *this;
     }
 
-    IndexedContainerProxyConstIterator &operator-=(difference_type j)
+    auto operator-=(difference_type j) -> IndexedContainerProxyConstIterator &
     {
         m_index -= j;
         return *this;
     }
 
-    IndexedContainerProxyConstIterator operator+(difference_type j) const
+    auto operator+(difference_type j) const -> IndexedContainerProxyConstIterator
     {
         IndexedContainerProxyConstIterator result(*this);
         result += j;
         return result;
     }
 
-    IndexedContainerProxyConstIterator operator-(difference_type j) const
+    auto operator-(difference_type j) const -> IndexedContainerProxyConstIterator
     {
         IndexedContainerProxyConstIterator result(*this);
         result -= j;
         return result;
     }
 
-    friend IndexedContainerProxyConstIterator operator+(
-        difference_type j, const IndexedContainerProxyConstIterator &other)
+    friend auto operator+(
+        difference_type j, const IndexedContainerProxyConstIterator &other) -> IndexedContainerProxyConstIterator
     {
         return other + j;
     }

@@ -1,12 +1,11 @@
 {
-    "Name"           :  "TcpPlugin",
-    "Version"        :  "0.0.1" ,
-    "CompatVersion"  :  "0.0.1",
-    "Required"       :  false,
-    "Vendor"         :  "Youth" ,
-    "Copyright"      :  "(C) 2023 The Youth Ltd" ,
-    "License"        :  "GNU General Public License v3.0",
-    "Category"       :  "Tool" ,
-    "Description"    :  "TcpTool"
+    "Name": "TcpPlugin",
+    "Version": "0.0.1",
+    "CompatVersion": "0.0.1",
+    "Required": false,
+    "Vendor": "Youth",
+    "Copyright": "(C) 2023 The Youth Ltd",
+    "License": "GNU General Public License v3.0",
+    "Category": "Tool",
+    "Description": "TcpTool"
 }
-

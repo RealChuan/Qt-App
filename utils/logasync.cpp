@@ -11,9 +11,9 @@
 
 namespace Utils {
 
-#define ROLLSIZE 1000 * 1000 * 1000
+#define ROLLSIZE (1000 * 1000 * 1000)
 
-const static int kRollPerSeconds_ = 60 * 60 * 24;
+const static int g_kRollPerSeconds = 60 * 60 * 24;
 
 struct FileUtilPrivate
 {
@@ -47,7 +47,7 @@ void FileUtil::onWrite(const QString &msg)
         rollFile(++d_ptr->count);
     } else {
         qint64 now = QDateTime::currentSecsSinceEpoch();
-        qint64 thisPeriod = now / kRollPerSeconds_ * kRollPerSeconds_;
+        qint64 thisPeriod = now / g_kRollPerSeconds * g_kRollPerSeconds;
         if (thisPeriod != d_ptr->startTime) {
             d_ptr->count = 0;
             rollFile(0);
@@ -84,7 +84,7 @@ bool FileUtil::rollFile(int count)
     } else {
         autoDelFile();
     }
-    qint64 start = now / kRollPerSeconds_ * kRollPerSeconds_;
+    qint64 start = now / g_kRollPerSeconds * g_kRollPerSeconds;
     if (now > d_ptr->lastRoll) {
         d_ptr->startTime = start;
         d_ptr->lastRoll = now;

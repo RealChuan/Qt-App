@@ -18,17 +18,17 @@ public:
     void setActiveIcon(const QIcon &icon);
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
+    auto eventFilter(QObject *watched, QEvent *event) -> bool override;
 
 private:
     class ToolButtonPrivate;
     QScopedPointer<ToolButtonPrivate> d_ptr;
 };
 
-ToolButton *createToolButton(const QStringList &normalIconPaths,
+auto createToolButton(const QStringList &normalIconPaths,
                              const QStringList &hoverIconPaths,
                              const QStringList &activeIconPaths,
-                             QWidget *parent = nullptr);
+                             QWidget *parent = nullptr) -> ToolButton *;
 
 } // namespace GUI
 

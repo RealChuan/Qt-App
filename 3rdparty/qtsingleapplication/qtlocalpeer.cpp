@@ -45,7 +45,7 @@ namespace SharedTools {
 
 static const char ack[] = "ack";
 
-QString QtLocalPeer::appSessionId(const QString &appId)
+auto QtLocalPeer::appSessionId(const QString &appId) -> QString
 {
     QByteArray idc = appId.toUtf8();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -59,11 +59,11 @@ QString QtLocalPeer::appSessionId(const QString &appId)
     QString res = QLatin1String("qtsingleapplication-")
                  + QString::number(idNum, 16);
 #if defined(Q_OS_WIN)
-    if (!pProcessIdToSessionId) {
+    if (pProcessIdToSessionId == nullptr) {
         QLibrary lib(QLatin1String("kernel32"));
         pProcessIdToSessionId = (PProcessIdToSessionId)lib.resolve("ProcessIdToSessionId");
     }
-    if (pProcessIdToSessionId) {
+    if (pProcessIdToSessionId != nullptr) {
         DWORD sessionId = 0;
         pProcessIdToSessionId(GetCurrentProcessId(), &sessionId);
         res += QLatin1Char('-') + QString::number(sessionId, 16);
@@ -89,7 +89,7 @@ QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
     lockFile.open(QIODevice::ReadWrite);
 }
 
-bool QtLocalPeer::isClient()
+auto QtLocalPeer::isClient() -> bool
 {
     if (lockFile.isLocked())
         return false;
@@ -106,7 +106,7 @@ bool QtLocalPeer::isClient()
     return false;
 }
 
-bool QtLocalPeer::sendMessage(const QString &message, int timeout, bool block)
+auto QtLocalPeer::sendMessage(const QString &message, int timeout, bool block) -> bool
 {
     if (!isClient())
         return false;
@@ -117,7 +117,7 @@ bool QtLocalPeer::sendMessage(const QString &message, int timeout, bool block)
         // Try twice, in case the other instance is just starting up
         socket.connectToServer(socketName);
         connOk = socket.waitForConnected(timeout/2);
-        if (connOk || i)
+        if (connOk || (i != 0))
             break;
         int ms = 250;
 #if defined(Q_OS_WIN)
@@ -144,7 +144,7 @@ bool QtLocalPeer::sendMessage(const QString &message, int timeout, bool block)
 void QtLocalPeer::receiveConnection()
 {
     QLocalSocket* socket = server->nextPendingConnection();
-    if (!socket)
+    if (socket == nullptr)
         return;
 
     // Why doesn't Qt have a blocking stream that takes care of this shait???
@@ -166,7 +166,7 @@ void QtLocalPeer::receiveConnection()
         remaining -= got;
         uMsgBuf += got;
         //qDebug() << "RCV: got" << got << "remaining" << remaining;
-    } while (remaining && got >= 0 && socket->waitForReadyRead(2000));
+    } while ((remaining != 0u) && got >= 0 && socket->waitForReadyRead(2000));
     //### error check: got<0
     if (got < 0) {
         qWarning() << "QtLocalPeer: Message reception failed" << socket->errorString();

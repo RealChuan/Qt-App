@@ -58,24 +58,24 @@ public:
         qSwap(m_matchFunction, other.m_matchFunction);
     }
 
-    bool operator==(const MimeMagicRule &other) const;
+    auto operator==(const MimeMagicRule &other) const -> bool;
 
-    Type type() const { return m_type; }
-    QByteArray value() const { return m_value; }
-    int startPos() const { return m_startPos; }
-    int endPos() const { return m_endPos; }
-    QByteArray mask() const;
+    [[nodiscard]] auto type() const -> Type { return m_type; }
+    [[nodiscard]] auto value() const -> QByteArray { return m_value; }
+    [[nodiscard]] auto startPos() const -> int { return m_startPos; }
+    [[nodiscard]] auto endPos() const -> int { return m_endPos; }
+    [[nodiscard]] auto mask() const -> QByteArray;
 
-    bool isValid() const { return m_matchFunction != nullptr; }
+    [[nodiscard]] auto isValid() const -> bool { return m_matchFunction != nullptr; }
 
-    bool matches(const QByteArray &data) const;
+    [[nodiscard]] auto matches(const QByteArray &data) const -> bool;
 
     QList<MimeMagicRule> m_subMatches;
 
-    static Type type(const QByteArray &type);
-    static QByteArray typeName(Type type);
+    static auto type(const QByteArray &type) -> Type;
+    static auto typeName(Type type) -> QByteArray;
 
-    static bool matchSubstring(const char *dataPtr, int dataSize, int rangeStart, int rangeLength, int valueLength, const char *valueData, const char *mask);
+    static auto matchSubstring(const char *dataPtr, int dataSize, int rangeStart, int rangeLength, int valueLength, const char *valueData, const char *mask) -> bool;
 
 private:
     // added for Qt Creator
@@ -97,10 +97,10 @@ private:
 
 private:
     // match functions
-    bool matchString(const QByteArray &data) const;
+    [[nodiscard]] auto matchString(const QByteArray &data) const -> bool;
     template <typename T>
-    bool matchNumber(const QByteArray &data) const;
-    bool matchRegExp(const QByteArray &data) const;
+    [[nodiscard]] auto matchNumber(const QByteArray &data) const -> bool;
+    [[nodiscard]] auto matchRegExp(const QByteArray &data) const -> bool;
 };
 
 } // namespace Utils

@@ -31,7 +31,7 @@ public:
     MimeDatabase();
     ~MimeDatabase();
 
-    MimeType mimeTypeForName(const QString &nameOrAlias) const;
+    [[nodiscard]] auto mimeTypeForName(const QString &nameOrAlias) const -> MimeType;
 
     enum MatchMode {
         MatchDefault = 0x0,
@@ -39,20 +39,20 @@ public:
         MatchContent = 0x2
     };
 
-    MimeType mimeTypeForFile(const QString &fileName, MatchMode mode = MatchDefault) const;
-    MimeType mimeTypeForFile(const QFileInfo &fileInfo, MatchMode mode = MatchDefault) const;
-    QList<MimeType> mimeTypesForFileName(const QString &fileName) const;
+    [[nodiscard]] auto mimeTypeForFile(const QString &fileName, MatchMode mode = MatchDefault) const -> MimeType;
+    [[nodiscard]] auto mimeTypeForFile(const QFileInfo &fileInfo, MatchMode mode = MatchDefault) const -> MimeType;
+    [[nodiscard]] auto mimeTypesForFileName(const QString &fileName) const -> QList<MimeType>;
 
-    MimeType mimeTypeForData(const QByteArray &data) const;
-    MimeType mimeTypeForData(QIODevice *device) const;
+    [[nodiscard]] auto mimeTypeForData(const QByteArray &data) const -> MimeType;
+    auto mimeTypeForData(QIODevice *device) const -> MimeType;
 
-    MimeType mimeTypeForUrl(const QUrl &url) const;
-    MimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device) const;
-    MimeType mimeTypeForFileNameAndData(const QString &fileName, const QByteArray &data) const;
+    [[nodiscard]] auto mimeTypeForUrl(const QUrl &url) const -> MimeType;
+    auto mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device) const -> MimeType;
+    [[nodiscard]] auto mimeTypeForFileNameAndData(const QString &fileName, const QByteArray &data) const -> MimeType;
 
-    QString suffixForFileName(const QString &fileName) const;
+    [[nodiscard]] auto suffixForFileName(const QString &fileName) const -> QString;
 
-    QList<MimeType> allMimeTypes() const;
+    [[nodiscard]] auto allMimeTypes() const -> QList<MimeType>;
 
 private:
     MimeDatabasePrivate *d;

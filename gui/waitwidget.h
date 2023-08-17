@@ -12,7 +12,7 @@ class GUI_EXPORT WaitWidget : public QSplashScreen
     Q_OBJECT
 public:
     explicit WaitWidget();
-    ~WaitWidget();
+    ~WaitWidget() override;
 
     void fullProgressBar();
 

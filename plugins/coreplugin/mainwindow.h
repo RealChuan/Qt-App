@@ -3,9 +3,6 @@
 
 #include <gui/commonwidget.hpp>
 
-class QStackedWidget;
-class QAbstractButton;
-
 namespace Plugin {
 
 class MainWindow : public GUI::CommonWidget
@@ -13,7 +10,7 @@ class MainWindow : public GUI::CommonWidget
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
     void extensionsInitialized();
 

@@ -17,8 +17,8 @@ void CategorySortFilterModel::setNewItemRole(int role)
     invalidate();
 }
 
-bool CategorySortFilterModel::filterAcceptsRow(int source_row,
-                                               const QModelIndex &source_parent) const
+auto CategorySortFilterModel::filterAcceptsRow(int source_row,
+                                               const QModelIndex &source_parent) const -> bool
 {
     if (!source_parent.isValid()) {
         // category items should be visible if any of its children match

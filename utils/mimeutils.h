@@ -13,7 +13,7 @@
 namespace Utils {
 
 // Wrapped QMimeDataBase functions
-UTILS_EXPORT MimeType mimeTypeForName(const QString &nameOrAlias);
+UTILS_EXPORT auto mimeTypeForName(const QString &nameOrAlias) -> MimeType;
 
 enum class MimeMatchMode {
     MatchDefault = 0x0,
@@ -22,11 +22,11 @@ enum class MimeMatchMode {
     MatchDefaultAndRemote = 0x3
 };
 
-UTILS_EXPORT MimeType mimeTypeForFile(const QString &fileName,
-                                      MimeMatchMode mode = MimeMatchMode::MatchDefault);
-UTILS_EXPORT QList<MimeType> mimeTypesForFileName(const QString &fileName);
-UTILS_EXPORT MimeType mimeTypeForData(const QByteArray &data);
-UTILS_EXPORT QList<MimeType> allMimeTypes();
+UTILS_EXPORT auto mimeTypeForFile(const QString &fileName,
+                                      MimeMatchMode mode = MimeMatchMode::MatchDefault) -> MimeType;
+UTILS_EXPORT auto mimeTypesForFileName(const QString &fileName) -> QList<MimeType>;
+UTILS_EXPORT auto mimeTypeForData(const QByteArray &data) -> MimeType;
+UTILS_EXPORT auto allMimeTypes() -> QList<MimeType>;
 
 // Qt Creator additions
 // For debugging purposes.
@@ -40,8 +40,8 @@ enum class MimeStartupPhase {
 
 UTILS_EXPORT void setMimeStartupPhase(MimeStartupPhase);
 UTILS_EXPORT void addMimeTypes(const QString &id, const QByteArray &data);
-UTILS_EXPORT QMap<int, QList<MimeMagicRule>> magicRulesForMimeType(
-    const MimeType &mimeType); // priority -> rules
+UTILS_EXPORT auto magicRulesForMimeType(
+    const MimeType &mimeType) -> QMap<int, QList<MimeMagicRule>>; // priority -> rules
 UTILS_EXPORT void setGlobPatternsForMimeType(const MimeType &mimeType, const QStringList &patterns);
 UTILS_EXPORT void setMagicRulesForMimeType(
     const MimeType &mimeType, const QMap<int, QList<MimeMagicRule>> &rules); // priority -> rules

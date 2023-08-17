@@ -12,10 +12,10 @@ public:
     enum MessButton { YESButton, NOButton, CloseButton, YesAndNoButton };
 
     explicit MessBox(QWidget *parent = nullptr);
-    ~MessBox();
+    ~MessBox() override;
 
-    static int Info(QWidget *parent, const QString &msg, const MessButton button = CloseButton);
-    static int Warning(QWidget *parent, const QString &msg, const MessButton);
+    static auto Info(QWidget *parent, const QString &msg, MessButton button = CloseButton) -> int;
+    static auto Warning(QWidget *parent, const QString &msg, MessButton button) -> int;
 
     void setMessage(const QString &);
     void setIconLabelObjectName(const QString &);

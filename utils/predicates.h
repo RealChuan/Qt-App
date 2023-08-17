@@ -14,7 +14,7 @@ namespace Utils
 // find helpers
 //////////////////
 template<typename R, typename S, typename T>
-decltype(auto) equal(R (S::*function)() const, T value)
+auto equal(R (S::*function)() const, T value) -> decltype(auto)
 {
     // This should use std::equal_to<> instead of std::equal_to<T>,
     // but that's not supported everywhere yet, since it is C++14
@@ -22,7 +22,7 @@ decltype(auto) equal(R (S::*function)() const, T value)
 }
 
 template<typename R, typename S, typename T>
-decltype(auto) equal(R S::*member, T value)
+auto equal(R S::*member, T value) -> decltype(auto)
 {
     return std::bind<bool>(std::equal_to<T>(), value, std::bind(member, std::placeholders::_1));
 }

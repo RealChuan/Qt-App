@@ -32,13 +32,13 @@ public:
     MimeTypeParserBase() {}
     virtual ~MimeTypeParserBase() {}
 
-    bool parse(QIODevice *dev, const QString &fileName, QString *errorMessage);
+    auto parse(QIODevice *dev, const QString &fileName, QString *errorMessage) -> bool;
 
-    static bool parseNumber(QStringView n, int *target, QString *errorMessage);
+    static auto parseNumber(QStringView n, int *target, QString *errorMessage) -> bool;
 
 protected:
-    virtual bool process(const MimeType &t, QString *errorMessage) = 0;
-    virtual bool process(const MimeGlobPattern &t, QString *errorMessage) = 0;
+    virtual auto process(const MimeType &t, QString *errorMessage) -> bool = 0;
+    virtual auto process(const MimeGlobPattern &t, QString *errorMessage) -> bool = 0;
     virtual void processParent(const QString &child, const QString &parent) = 0;
     virtual void processAlias(const QString &alias, const QString &name) = 0;
     virtual void processMagicMatcher(const MimeMagicRuleMatcher &matcher) = 0;
@@ -61,7 +61,7 @@ private:
         ParseError
     };
 
-    static ParseState nextState(ParseState currentState, QStringView startElement);
+    static auto nextState(ParseState currentState, QStringView startElement) -> ParseState;
 };
 
 
@@ -71,10 +71,10 @@ public:
     explicit MimeTypeParser(MimeXMLProvider &provider) : m_provider(provider) {}
 
 protected:
-    inline bool process(const MimeType &t, QString *) override
+    inline auto process(const MimeType &t, QString *) -> bool override
     { m_provider.addMimeType(t); return true; }
 
-    inline bool process(const MimeGlobPattern &glob, QString *) override
+    inline auto process(const MimeGlobPattern &glob, QString *) -> bool override
     { m_provider.addGlobPattern(glob); return true; }
 
     inline void processParent(const QString &child, const QString &parent) override

@@ -17,7 +17,7 @@ public:
     explicit CompletingLineEdit(QWidget *parent = nullptr);
 
 protected:
-    bool event(QEvent *e) override;
+    auto event(QEvent *e) -> bool override;
     void keyPressEvent(QKeyEvent *e) override;
 };
 

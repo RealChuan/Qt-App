@@ -25,7 +25,7 @@
 
 namespace Utils {
 
-UTILS_EXPORT QString settingsKey(const QString &category)
+UTILS_EXPORT auto settingsKey(const QString &category) -> QString
 {
     QString rc(category);
     const QChar underscore = '_';
@@ -43,7 +43,7 @@ UTILS_EXPORT QString settingsKey(const QString &category)
 }
 
 // Figure out length of common start of string ("C:\a", "c:\b"  -> "c:\"
-static inline int commonPartSize(const QString &s1, const QString &s2)
+static inline auto commonPartSize(const QString &s1, const QString &s2) -> int
 {
     const int size = qMin(s1.size(), s2.size());
     for (int i = 0; i < size; i++)
@@ -52,7 +52,7 @@ static inline int commonPartSize(const QString &s1, const QString &s2)
     return size;
 }
 
-UTILS_EXPORT QString commonPrefix(const QStringList &strings)
+UTILS_EXPORT auto commonPrefix(const QStringList &strings) -> QString
 {
     switch (strings.size()) {
     case 0: return QString();
@@ -64,12 +64,12 @@ UTILS_EXPORT QString commonPrefix(const QStringList &strings)
     const int last = strings.size() - 1;
     for (int i = 0; i < last; i++)
         commonLength = qMin(commonLength, commonPartSize(strings.at(i), strings.at(i + 1)));
-    if (!commonLength)
+    if (commonLength == 0)
         return QString();
     return strings.at(0).left(commonLength);
 }
 
-static bool validateVarName(const QString &varName)
+static auto validateVarName(const QString &varName) -> bool
 {
     return !varName.startsWith("JS:");
 }
@@ -182,14 +182,14 @@ UTILS_EXPORT void expandMacros(QString *str, AbstractMacroExpander *mx)
     }
 }
 
-UTILS_EXPORT QString expandMacros(const QString &str, AbstractMacroExpander *mx)
+UTILS_EXPORT auto expandMacros(const QString &str, AbstractMacroExpander *mx) -> QString
 {
     QString ret = str;
     expandMacros(&ret, mx);
     return ret;
 }
 
-UTILS_EXPORT QString stripAccelerator(const QString &text)
+UTILS_EXPORT auto stripAccelerator(const QString &text) -> QString
 {
     QString res = text;
     for (int index = res.indexOf('&'); index != -1; index = res.indexOf('&', index + 1))
@@ -197,7 +197,7 @@ UTILS_EXPORT QString stripAccelerator(const QString &text)
     return res;
 }
 
-UTILS_EXPORT bool readMultiLineString(const QJsonValue &value, QString *out)
+UTILS_EXPORT auto readMultiLineString(const QJsonValue &value, QString *out) -> bool
 {
     QTC_ASSERT(out, return false);
     if (value.isString()) {
@@ -217,7 +217,7 @@ UTILS_EXPORT bool readMultiLineString(const QJsonValue &value, QString *out)
     return true;
 }
 
-UTILS_EXPORT int parseUsedPortFromNetstatOutput(const QByteArray &line)
+UTILS_EXPORT auto parseUsedPortFromNetstatOutput(const QByteArray &line) -> int
 {
     const QByteArray trimmed = line.trimmed();
     int base = 0;
@@ -317,7 +317,7 @@ UTILS_EXPORT int parseUsedPortFromNetstatOutput(const QByteArray &line)
     return port;
 }
 
-int caseFriendlyCompare(const QString &a, const QString &b)
+auto caseFriendlyCompare(const QString &a, const QString &b) -> int
 {
     int result = a.compare(b, Qt::CaseInsensitive);
     if (result != 0)
@@ -325,13 +325,13 @@ int caseFriendlyCompare(const QString &a, const QString &b)
     return a.compare(b, Qt::CaseSensitive);
 }
 
-QString quoteAmpersands(const QString &text)
+auto quoteAmpersands(const QString &text) -> QString
 {
     QString result = text;
     return result.replace("&", "&&");
 }
 
-QString formatElapsedTime(qint64 elapsed)
+auto formatElapsedTime(qint64 elapsed) -> QString
 {
     elapsed += 500; // round up
     const QString format = QString::fromLatin1(elapsed >= 3600000 ? "h:mm:ss" : "mm:ss");
@@ -343,7 +343,7 @@ QString formatElapsedTime(qint64 elapsed)
  * Basically QRegularExpression::wildcardToRegularExpression(), but let wildcards match
  * path separators as well
  */
-QString wildcardToRegularExpression(const QString &original)
+auto wildcardToRegularExpression(const QString &original) -> QString
 {
     const qsizetype wclen = original.size();
     QString rx;
@@ -398,7 +398,7 @@ QString wildcardToRegularExpression(const QString &original)
     return QRegularExpression::anchoredPattern(rx);
 }
 
-UTILS_EXPORT QString languageNameFromLanguageCode(const QString &languageCode)
+UTILS_EXPORT auto languageNameFromLanguageCode(const QString &languageCode) -> QString
 {
     QLocale locale(languageCode);
     QString languageName = QLocale::languageToString(locale.language());
@@ -419,7 +419,7 @@ UTILS_EXPORT void setClipboardAndSelection(const QString &text)
 }
 #endif
 
-UTILS_EXPORT QString chopIfEndsWith(QString str, QChar c)
+UTILS_EXPORT auto chopIfEndsWith(QString str, QChar c) -> QString
 {
     if (str.endsWith(c))
         str.chop(1);
@@ -427,7 +427,7 @@ UTILS_EXPORT QString chopIfEndsWith(QString str, QChar c)
     return str;
 }
 
-UTILS_EXPORT QStringView chopIfEndsWith(QStringView str, QChar c)
+UTILS_EXPORT auto chopIfEndsWith(QStringView str, QChar c) -> QStringView
 {
     if (str.endsWith(c))
         str.chop(1);
@@ -435,7 +435,7 @@ UTILS_EXPORT QStringView chopIfEndsWith(QStringView str, QChar c)
     return str;
 }
 
-UTILS_EXPORT QString normalizeNewlines(const QString &text)
+UTILS_EXPORT auto normalizeNewlines(const QString &text) -> QString
 {
     QString res = text;
     const auto newEnd = std::unique(res.begin(), res.end(), [](const QChar c1, const QChar c2) {
@@ -450,7 +450,7 @@ UTILS_EXPORT QString normalizeNewlines(const QString &text)
     Joins all the not empty string list's \a strings into a single string with each element
     separated by the given separator (which can be an empty string).
 */
-UTILS_EXPORT QString joinStrings(const QStringList &strings, QChar separator)
+UTILS_EXPORT auto joinStrings(const QStringList &strings, QChar separator) -> QString
 {
     QString result;
     for (const QString &string : strings) {
@@ -466,7 +466,7 @@ UTILS_EXPORT QString joinStrings(const QStringList &strings, QChar separator)
 /*!
     Returns a copy of \a string that has \a ch characters removed from the start.
 */
-UTILS_EXPORT QString trimFront(const QString &string, QChar ch)
+UTILS_EXPORT auto trimFront(const QString &string, QChar ch) -> QString
 {
     const int size = string.size();
     int i = 0;
@@ -485,7 +485,7 @@ UTILS_EXPORT QString trimFront(const QString &string, QChar ch)
 /*!
     Returns a copy of \a string that has \a ch characters removed from the end.
 */
-UTILS_EXPORT QString trimBack(const QString &string, QChar ch)
+UTILS_EXPORT auto trimBack(const QString &string, QChar ch) -> QString
 {
     const int size = string.size();
     int i = 0;
@@ -504,12 +504,12 @@ UTILS_EXPORT QString trimBack(const QString &string, QChar ch)
 /*!
     Returns a copy of \a string that has \a ch characters removed from the start and the end.
 */
-UTILS_EXPORT QString trim(const QString &string, QChar ch)
+UTILS_EXPORT auto trim(const QString &string, QChar ch) -> QString
 {
     return trimFront(trimBack(string, ch), ch);
 }
 
-UTILS_EXPORT QString appendHelper(const QString &base, int n)
+UTILS_EXPORT auto appendHelper(const QString &base, int n) -> QString
 {
     return base + QString::number(n);
 }

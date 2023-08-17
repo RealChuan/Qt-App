@@ -12,7 +12,7 @@ public:
     enum MessageType { Send, Recv, SuccessInfo, ErrorInfo };
 
     explicit TcpWidget(QWidget *parent = nullptr);
-    ~TcpWidget();
+    ~TcpWidget() override;
 
 private slots:
     void onModelChange(const QString &);

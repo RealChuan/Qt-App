@@ -31,7 +31,7 @@ namespace ExtensionSystem::Internal {
 class PluginDetailsViewPrivate
 {
 public:
-    PluginDetailsViewPrivate(PluginDetailsView *detailsView)
+    explicit PluginDetailsViewPrivate(PluginDetailsView *detailsView)
         : q(detailsView)
         , name(createContentsLabel())
         , version(createContentsLabel())
@@ -78,14 +78,14 @@ public:
     QListWidget *dependencies = nullptr;
 
 private:
-    QLabel *createContentsLabel()
+    auto createContentsLabel() -> QLabel *
     {
         QLabel *label = new QLabel(q);
         label->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse);
         label->setOpenExternalLinks(true);
         return label;
     }
-    QTextEdit *createTextEdit()
+    auto createTextEdit() -> QTextEdit *
     {
         QTextEdit *textEdit = new QTextEdit(q);
         textEdit->setTabChangesFocus(true);
