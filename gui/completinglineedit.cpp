@@ -14,13 +14,13 @@ CompletingLineEdit::CompletingLineEdit(QWidget *parent)
     : QLineEdit(parent)
 {}
 
-bool CompletingLineEdit::event(QEvent *e)
+auto CompletingLineEdit::event(QEvent *e) -> bool
 {
     // workaround for QTCREATORBUG-9453
     if (e->type() == QEvent::ShortcutOverride) {
         if (QCompleter *comp = completer()) {
             if (comp->popup() && comp->popup()->isVisible()) {
-                auto ke = static_cast<QKeyEvent *>(e);
+                auto *ke = static_cast<QKeyEvent *>(e);
                 if (ke->key() == Qt::Key_Escape && !ke->modifiers()) {
                     ke->accept();
                     return true;

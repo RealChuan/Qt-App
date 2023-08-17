@@ -42,8 +42,8 @@ struct EXTENSIONSYSTEM_EXPORT PluginDependency
     QString name;
     QString version;
     Type type;
-    bool operator==(const PluginDependency &other) const;
-    QString toString() const;
+    auto operator==(const PluginDependency &other) const -> bool;
+    [[nodiscard]] auto toString() const -> QString;
 };
 
 struct EXTENSIONSYSTEM_EXPORT PluginArgumentDescription
@@ -61,59 +61,59 @@ public:
     ~PluginSpec();
 
     // information from the xml file, valid after 'Read' state is reached
-    QString name() const;
-    QString version() const;
-    QString compatVersion() const;
-    QString vendor() const;
-    QString copyright() const;
-    QString license() const;
-    QString description() const;
-    QString longDescription() const;
-    QString url() const;
-    QString category() const;
-    QString revision() const;
-    QRegularExpression platformSpecification() const;
-    bool isAvailableForHostPlatform() const;
-    bool isRequired() const;
-    bool isExperimental() const;
-    bool isEnabledByDefault() const;
-    bool isEnabledBySettings() const;
-    bool isEffectivelyEnabled() const;
-    bool isEnabledIndirectly() const;
-    bool isForceEnabled() const;
-    bool isForceDisabled() const;
-    QVector<PluginDependency> dependencies() const;
-    QJsonObject metaData() const;
+    [[nodiscard]] auto name() const -> QString;
+    [[nodiscard]] auto version() const -> QString;
+    [[nodiscard]] auto compatVersion() const -> QString;
+    [[nodiscard]] auto vendor() const -> QString;
+    [[nodiscard]] auto copyright() const -> QString;
+    [[nodiscard]] auto license() const -> QString;
+    [[nodiscard]] auto description() const -> QString;
+    [[nodiscard]] auto longDescription() const -> QString;
+    [[nodiscard]] auto url() const -> QString;
+    [[nodiscard]] auto category() const -> QString;
+    [[nodiscard]] auto revision() const -> QString;
+    [[nodiscard]] auto platformSpecification() const -> QRegularExpression;
+    [[nodiscard]] auto isAvailableForHostPlatform() const -> bool;
+    [[nodiscard]] auto isRequired() const -> bool;
+    [[nodiscard]] auto isExperimental() const -> bool;
+    [[nodiscard]] auto isEnabledByDefault() const -> bool;
+    [[nodiscard]] auto isEnabledBySettings() const -> bool;
+    [[nodiscard]] auto isEffectivelyEnabled() const -> bool;
+    [[nodiscard]] auto isEnabledIndirectly() const -> bool;
+    [[nodiscard]] auto isForceEnabled() const -> bool;
+    [[nodiscard]] auto isForceDisabled() const -> bool;
+    [[nodiscard]] QVector<PluginDependency> dependencies() const;
+    [[nodiscard]] auto metaData() const -> QJsonObject;
 
     using PluginArgumentDescriptions = QVector<PluginArgumentDescription>;
-    PluginArgumentDescriptions argumentDescriptions() const;
+    [[nodiscard]] PluginArgumentDescriptions argumentDescriptions() const;
 
     // other information, valid after 'Read' state is reached
-    QString location() const;
-    QString filePath() const;
+    [[nodiscard]] auto location() const -> QString;
+    [[nodiscard]] auto filePath() const -> QString;
 
-    QStringList arguments() const;
+    [[nodiscard]] auto arguments() const -> QStringList;
     void setArguments(const QStringList &arguments);
     void addArgument(const QString &argument);
 
-    bool provides(const QString &pluginName, const QString &version) const;
+    [[nodiscard]] auto provides(const QString &pluginName, const QString &version) const -> bool;
 
     // dependency specs, valid after 'Resolved' state is reached
-    QHash<PluginDependency, PluginSpec *> dependencySpecs() const;
-    bool requiresAny(const QSet<PluginSpec *> &plugins) const;
+    [[nodiscard]] auto dependencySpecs() const -> QHash<PluginDependency, PluginSpec *>;
+    [[nodiscard]] auto requiresAny(const QSet<PluginSpec *> &plugins) const -> bool;
 
     // linked plugin instance, valid after 'Loaded' state is reached
-    IPlugin *plugin() const;
+    [[nodiscard]] auto plugin() const -> IPlugin *;
 
     // state
-    State state() const;
-    bool hasError() const;
-    QString errorString() const;
+    [[nodiscard]] auto state() const -> State;
+    [[nodiscard]] auto hasError() const -> bool;
+    [[nodiscard]] auto errorString() const -> QString;
 
     void setEnabledBySettings(bool value);
 
-    static PluginSpec *read(const QString &filePath);
-    static PluginSpec *read(const QStaticPlugin &plugin);
+    static auto read(const QString &filePath) -> PluginSpec *;
+    static auto read(const QStaticPlugin &plugin) -> PluginSpec *;
 
 private:
     PluginSpec();

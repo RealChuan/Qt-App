@@ -34,17 +34,17 @@ public:
         qSwap(m_mimetype, other.m_mimetype);
     }
 
-    bool operator==(const MimeMagicRuleMatcher &other) const;
+    auto operator==(const MimeMagicRuleMatcher &other) const -> bool;
 
     void addRule(const MimeMagicRule &rule);
     void addRules(const QList<MimeMagicRule> &rules);
-    QList<MimeMagicRule> magicRules() const;
+    [[nodiscard]] auto magicRules() const -> QList<MimeMagicRule>;
 
-    bool matches(const QByteArray &data) const;
+    [[nodiscard]] auto matches(const QByteArray &data) const -> bool;
 
-    unsigned priority() const;
+    [[nodiscard]] auto priority() const -> unsigned;
 
-    QString mimetype() const { return m_mimetype; }
+    [[nodiscard]] auto mimetype() const -> QString { return m_mimetype; }
 
 private:
     QList<MimeMagicRule> m_list;

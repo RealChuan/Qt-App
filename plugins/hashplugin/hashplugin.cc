@@ -11,7 +11,7 @@ HashPluginWidget::HashPluginWidget(QObject *parent)
     setButton(new QPushButton(tr("Hash Tool")), Core::CoreWidget::Tool);
 }
 
-bool HashPlugin::initialize(const QStringList &arguments, QString *errorString)
+auto HashPlugin::initialize(const QStringList &arguments, QString *errorString) -> bool
 {
     addObject(new HashPluginWidget(this));
     return true;

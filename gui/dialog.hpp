@@ -15,9 +15,9 @@ public:
     enum ExecFlags { Accepted, Rejected, Close };
 
     explicit Dialog(QWidget *parent = nullptr);
-    ~Dialog();
+    ~Dialog() override;
 
-    int exec();
+    auto exec() -> int;
 
 signals:
     void accepted();

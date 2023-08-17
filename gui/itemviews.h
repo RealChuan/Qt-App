@@ -25,7 +25,7 @@ template<class BaseT>
 class View : public BaseT
 {
 public:
-    View(QWidget *parent = nullptr)
+    explicit View(QWidget *parent = nullptr)
         : BaseT(parent)
     {}
     void setActivationMode(ActivationMode mode)
@@ -36,7 +36,7 @@ public:
             BaseT::setProperty(activationModeC, QVariant(bool(mode)));
     }
 
-    ActivationMode activationMode() const
+    [[nodiscard]] auto activationMode() const -> ActivationMode
     {
         QVariant v = BaseT::property(activationModeC);
         if (!v.isValid())
@@ -62,7 +62,7 @@ class GUI_EXPORT TreeView : public View<QTreeView>
 {
     Q_OBJECT
 public:
-    TreeView(QWidget *parent = nullptr)
+    explicit TreeView(QWidget *parent = nullptr)
         : View<QTreeView>(parent)
     {}
 };
@@ -71,7 +71,7 @@ class GUI_EXPORT TreeWidget : public View<QTreeWidget>
 {
     Q_OBJECT
 public:
-    TreeWidget(QWidget *parent = nullptr)
+    explicit TreeWidget(QWidget *parent = nullptr)
         : View<QTreeWidget>(parent)
     {}
 };
@@ -80,7 +80,7 @@ class GUI_EXPORT ListView : public View<QListView>
 {
     Q_OBJECT
 public:
-    ListView(QWidget *parent = nullptr)
+    explicit ListView(QWidget *parent = nullptr)
         : View<QListView>(parent)
     {}
 };
@@ -89,7 +89,7 @@ class GUI_EXPORT ListWidget : public View<QListWidget>
 {
     Q_OBJECT
 public:
-    ListWidget(QWidget *parent = nullptr)
+    explicit ListWidget(QWidget *parent = nullptr)
         : View<QListWidget>(parent)
     {}
 };

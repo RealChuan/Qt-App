@@ -70,8 +70,8 @@ static const char matchMaskAttributeC[] = "mask";
     Overwrite to process the sequence of parsed data
 */
 
-MimeTypeParserBase::ParseState MimeTypeParserBase::nextState(ParseState currentState,
-                                                             QStringView startElement)
+auto MimeTypeParserBase::nextState(ParseState currentState,
+                                                             QStringView startElement) -> MimeTypeParserBase::ParseState
 {
     switch (currentState) {
     case ParseBeginning:
@@ -123,12 +123,12 @@ MimeTypeParserBase::ParseState MimeTypeParserBase::nextState(ParseState currentS
 }
 
 // Parse int number from an (attribute) string
-bool MimeTypeParserBase::parseNumber(QStringView n, int *target, QString *errorMessage)
+auto MimeTypeParserBase::parseNumber(QStringView n, int *target, QString *errorMessage) -> bool
 {
     bool ok;
     *target = n.toInt(&ok);
     if (Q_UNLIKELY(!ok)) {
-        if (errorMessage) {
+        if (errorMessage != nullptr) {
             *errorMessage = QLatin1String("Not a number '");
             *errorMessage += n;
             *errorMessage += QLatin1String("'.");
@@ -153,7 +153,7 @@ struct CreateMagicMatchRuleResult
     {}
 };
 
-static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts)
+static auto createMagicMatchRule(const QXmlStreamAttributes &atts) -> CreateMagicMatchRuleResult
 {
     const auto type = atts.value(QLatin1String(matchTypeAttributeC));
     const auto value = atts.value(QLatin1String(matchValueAttributeC));
@@ -163,7 +163,7 @@ static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttribute
 }
 #endif
 
-bool MimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage)
+auto MimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage) -> bool
 {
 #ifdef QT_NO_XMLSTREAMREADER
     Q_UNUSED(dev);
@@ -299,7 +299,7 @@ bool MimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString 
     }
 
     if (Q_UNLIKELY(reader.hasError())) {
-        if (errorMessage) {
+        if (errorMessage != nullptr) {
             *errorMessage
                 = QString::asprintf("An error has been encountered at line %lld of %ls: %ls:",
                                     reader.lineNumber(),

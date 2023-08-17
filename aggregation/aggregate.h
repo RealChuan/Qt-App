@@ -18,13 +18,13 @@ class AGGREGATION_EXPORT Aggregate : public QObject
     Q_OBJECT
 
 public:
-    Aggregate(QObject *parent = nullptr);
+    explicit Aggregate(QObject *parent = nullptr);
     ~Aggregate() override;
 
     void add(QObject *component);
     void remove(QObject *component);
 
-    template <typename T> T *component() {
+    template <typename T> auto component() -> T * {
         QReadLocker locker(&lock());
         for (QObject *component : std::as_const(m_components)) {
             if (T *result = qobject_cast<T *>(component))
@@ -33,7 +33,7 @@ public:
         return nullptr;
     }
 
-    template <typename T> QList<T *> components() {
+    template <typename T> auto components() -> QList<T *> {
         QReadLocker locker(&lock());
         QList<T *> results;
         for (QObject *component : std::as_const(m_components)) {
@@ -44,8 +44,8 @@ public:
         return results;
     }
 
-    static Aggregate *parentAggregate(QObject *obj);
-    static QReadWriteLock &lock();
+    static auto parentAggregate(QObject *obj) -> Aggregate *;
+    static auto lock() -> QReadWriteLock &;
 
 signals:
     void changed();
@@ -53,20 +53,20 @@ signals:
 private:
     void deleteSelf(QObject *obj);
 
-    static QHash<QObject *, Aggregate *> &aggregateMap();
+    static auto aggregateMap() -> QHash<QObject *, Aggregate *> &;
 
     QList<QObject *> m_components;
 };
 
 // get a component via global template function
-template <typename T> T *query(Aggregate *obj)
+template <typename T> auto query(Aggregate *obj) -> T *
 {
     if (!obj)
         return nullptr;
     return obj->template component<T>();
 }
 
-template <typename T> T *query(QObject *obj)
+template <typename T> auto query(QObject *obj) -> T *
 {
     if (!obj)
         return nullptr;
@@ -80,14 +80,14 @@ template <typename T> T *query(QObject *obj)
 }
 
 // get all components of a specific type via template function
-template <typename T> QList<T *> query_all(Aggregate *obj)
+template <typename T> auto query_all(Aggregate *obj) -> QList<T *>
 {
     if (!obj)
         return QList<T *>();
     return obj->template components<T>();
 }
 
-template <typename T> QList<T *> query_all(QObject *obj)
+template <typename T> auto query_all(QObject *obj) -> QList<T *>
 {
     if (!obj)
         return QList<T *>();

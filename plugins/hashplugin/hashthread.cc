@@ -7,7 +7,7 @@ namespace Plugin {
 class HashThread::HashThreadPrivate
 {
 public:
-    HashThreadPrivate(HashThread *q)
+    explicit HashThreadPrivate(HashThread *q)
         : q_ptr(q)
     {}
 
@@ -27,7 +27,7 @@ HashThread::~HashThread()
     stop();
 }
 
-bool HashThread::startHash(const QString &input, QCryptographicHash::Algorithm algorithm)
+auto HashThread::startHash(const QString &input, QCryptographicHash::Algorithm algorithm) -> bool
 {
     d_ptr->input = input;
     d_ptr->algorithm = algorithm;

@@ -27,7 +27,7 @@ MimeMagicRuleMatcher::MimeMagicRuleMatcher(const QString &mime, unsigned thePrio
 {
 }
 
-bool MimeMagicRuleMatcher::operator==(const MimeMagicRuleMatcher &other) const
+auto MimeMagicRuleMatcher::operator==(const MimeMagicRuleMatcher &other) const -> bool
 {
     return m_list == other.m_list &&
            m_priority == other.m_priority;
@@ -43,13 +43,13 @@ void MimeMagicRuleMatcher::addRules(const QList<MimeMagicRule> &rules)
     m_list.append(rules);
 }
 
-QList<MimeMagicRule> MimeMagicRuleMatcher::magicRules() const
+auto MimeMagicRuleMatcher::magicRules() const -> QList<MimeMagicRule>
 {
     return m_list;
 }
 
 // Check for a match on contents of a file
-bool MimeMagicRuleMatcher::matches(const QByteArray &data) const
+auto MimeMagicRuleMatcher::matches(const QByteArray &data) const -> bool
 {
     for (const MimeMagicRule &magicRule : m_list) {
         if (magicRule.matches(data))
@@ -60,7 +60,7 @@ bool MimeMagicRuleMatcher::matches(const QByteArray &data) const
 }
 
 // Return a priority value from 1..100
-unsigned MimeMagicRuleMatcher::priority() const
+auto MimeMagicRuleMatcher::priority() const -> unsigned
 {
     return m_priority;
 }

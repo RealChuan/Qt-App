@@ -20,7 +20,7 @@ public:
         QString *errorString,
         PluginManagerPrivate *pmPrivate);
 
-    bool parse();
+    auto parse() -> bool;
 
     static const char *NO_LOAD_OPTION;
     static const char *LOAD_OPTION;
@@ -33,20 +33,20 @@ public:
 private:
     // return value indicates if the option was processed
     // it doesn't indicate success (--> m_hasError)
-    bool checkForEndOfOptions();
-    bool checkForLoadOption();
-    bool checkForNoLoadOption();
-    bool checkForTestOptions();
-    bool checkForScenarioOption();
-    bool checkForAppOption();
-    bool checkForPluginOption();
-    bool checkForProfilingOption();
-    bool checkForNoCrashcheckOption();
-    bool checkForUnknownOption();
+    auto checkForEndOfOptions() -> bool;
+    auto checkForLoadOption() -> bool;
+    auto checkForNoLoadOption() -> bool;
+    auto checkForTestOptions() -> bool;
+    auto checkForScenarioOption() -> bool;
+    auto checkForAppOption() -> bool;
+    auto checkForPluginOption() -> bool;
+    auto checkForProfilingOption() -> bool;
+    auto checkForNoCrashcheckOption() -> bool;
+    auto checkForUnknownOption() -> bool;
     void forceDisableAllPluginsExceptTestedAndForceEnabled();
 
     enum TokenType { OptionalToken, RequiredToken };
-    bool nextToken(TokenType type = OptionalToken);
+    auto nextToken(TokenType type = OptionalToken) -> bool;
 
     const QStringList &m_args;
     const QMap<QString, bool> &m_appOptions;

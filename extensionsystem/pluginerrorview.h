@@ -17,7 +17,7 @@ class EXTENSIONSYSTEM_EXPORT PluginErrorView : public QWidget
     Q_OBJECT
 
 public:
-    PluginErrorView(QWidget *parent = nullptr);
+    explicit PluginErrorView(QWidget *parent = nullptr);
     ~PluginErrorView() override;
 
     void update(PluginSpec *spec);

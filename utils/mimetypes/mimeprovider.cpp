@@ -62,24 +62,24 @@ MimeBinaryProvider::MimeBinaryProvider(MimeDatabasePrivate *db, const QString &d
 
 struct MimeBinaryProvider::CacheFile
 {
-    CacheFile(const QString &fileName);
+    explicit CacheFile(const QString &fileName);
     ~CacheFile();
 
-    bool isValid() const { return m_valid; }
-    inline quint16 getUint16(int offset) const
+    [[nodiscard]] auto isValid() const -> bool { return m_valid; }
+    [[nodiscard]] inline auto getUint16(int offset) const -> quint16
     {
         return qFromBigEndian(*reinterpret_cast<quint16 *>(data + offset));
     }
-    inline quint32 getUint32(int offset) const
+    [[nodiscard]] inline auto getUint32(int offset) const -> quint32
     {
         return qFromBigEndian(*reinterpret_cast<quint32 *>(data + offset));
     }
-    inline const char *getCharStar(int offset) const
+    [[nodiscard]] inline auto getCharStar(int offset) const -> const char *
     {
         return reinterpret_cast<const char *>(data + offset);
     }
-    bool load();
-    bool reload();
+    auto load() -> bool;
+    auto reload() -> bool;
 
     QFile file;
     uchar *data;
@@ -96,12 +96,12 @@ MimeBinaryProvider::CacheFile::CacheFile(const QString &fileName)
 
 MimeBinaryProvider::CacheFile::~CacheFile() {}
 
-bool MimeBinaryProvider::CacheFile::load()
+auto MimeBinaryProvider::CacheFile::load() -> bool
 {
     if (!file.open(QIODevice::ReadOnly))
         return false;
     data = file.map(0, file.size());
-    if (data) {
+    if (data != nullptr) {
         const int major = getUint16(0);
         const int minor = getUint16(2);
         m_valid = (major == 1 && minor >= 1 && minor <= 2);
@@ -110,7 +110,7 @@ bool MimeBinaryProvider::CacheFile::load()
     return m_valid;
 }
 
-bool MimeBinaryProvider::CacheFile::reload()
+auto MimeBinaryProvider::CacheFile::reload() -> bool
 {
     m_valid = false;
     if (file.isOpen()) {
@@ -125,12 +125,12 @@ MimeBinaryProvider::~MimeBinaryProvider()
     delete m_cacheFile;
 }
 
-bool MimeBinaryProvider::isValid()
+auto MimeBinaryProvider::isValid() -> bool
 {
     return m_cacheFile != nullptr;
 }
 
-bool MimeBinaryProvider::isInternalDatabase() const
+auto MimeBinaryProvider::isInternalDatabase() const -> bool
 {
     return false;
 }
@@ -148,7 +148,7 @@ enum {
     PosGenericIconsListOffset = 36
 };
 
-bool MimeBinaryProvider::checkCacheChanged()
+auto MimeBinaryProvider::checkCacheChanged() -> bool
 {
     QFileInfo fileInfo(m_cacheFile->file);
     if (fileInfo.lastModified() > m_cacheFile->m_mtime) {
@@ -162,7 +162,7 @@ bool MimeBinaryProvider::checkCacheChanged()
 
 void MimeBinaryProvider::ensureLoaded()
 {
-    if (!m_cacheFile) {
+    if (m_cacheFile == nullptr) {
         const QString cacheFileName = m_directory + QLatin1String("/mime.cache");
         m_cacheFile = new CacheFile(cacheFileName);
         m_mimetypeListLoaded = false;
@@ -181,7 +181,7 @@ void MimeBinaryProvider::ensureLoaded()
     }
 }
 
-static MimeType mimeTypeForNameUnchecked(const QString &name)
+static auto mimeTypeForNameUnchecked(const QString &name) -> MimeType
 {
     MimeTypePrivate data;
     data.name = name;
@@ -193,7 +193,7 @@ static MimeType mimeTypeForNameUnchecked(const QString &name)
     return MimeType(data);
 }
 
-MimeType MimeBinaryProvider::mimeTypeForName(const QString &name)
+auto MimeBinaryProvider::mimeTypeForName(const QString &name) -> MimeType
 {
     if (!m_mimetypeListLoaded)
         loadMimeTypeList();
@@ -249,7 +249,7 @@ void MimeBinaryProvider::matchGlobList(MimeGlobMatchResult &result,
         const int mimeTypeOffset = cacheFile->getUint32(off + 4 + 12 * i + 4);
         const int flagsAndWeight = cacheFile->getUint32(off + 4 + 12 * i + 8);
         const int weight = flagsAndWeight & 0xff;
-        const bool caseSensitive = flagsAndWeight & 0x100;
+        const bool caseSensitive = (flagsAndWeight & 0x100) != 0;
         const Qt::CaseSensitivity qtCaseSensitive = caseSensitive ? Qt::CaseSensitive
                                                                   : Qt::CaseInsensitive;
         const QString pattern = QLatin1String(cacheFile->getCharStar(globOffset));
@@ -265,13 +265,13 @@ void MimeBinaryProvider::matchGlobList(MimeGlobMatchResult &result,
     }
 }
 
-bool MimeBinaryProvider::matchSuffixTree(MimeGlobMatchResult &result,
+auto MimeBinaryProvider::matchSuffixTree(MimeGlobMatchResult &result,
                                          MimeBinaryProvider::CacheFile *cacheFile,
                                          int numEntries,
                                          int firstOffset,
                                          const QString &fileName,
                                          int charPos,
-                                         bool caseSensitiveCheck)
+                                         bool caseSensitiveCheck) -> bool
 {
     QChar fileChar = fileName[charPos];
     int min = 0;
@@ -309,7 +309,7 @@ bool MimeBinaryProvider::matchSuffixTree(MimeGlobMatchResult &result,
                         continue;
                     const int flagsAndWeight = cacheFile->getUint32(childOff + 8);
                     const int weight = flagsAndWeight & 0xff;
-                    const bool caseSensitive = flagsAndWeight & 0x100;
+                    const bool caseSensitive = (flagsAndWeight & 0x100) != 0;
                     if (caseSensitiveCheck || !caseSensitive) {
                         QString pattern;
                         pattern += QLatin1Char('*');
@@ -328,10 +328,10 @@ bool MimeBinaryProvider::matchSuffixTree(MimeGlobMatchResult &result,
     return false;
 }
 
-bool MimeBinaryProvider::matchMagicRule(MimeBinaryProvider::CacheFile *cacheFile,
+auto MimeBinaryProvider::matchMagicRule(MimeBinaryProvider::CacheFile *cacheFile,
                                         int numMatchlets,
                                         int firstOffset,
-                                        const QByteArray &data)
+                                        const QByteArray &data) -> bool
 {
     const char *dataPtr = data.constData();
     const int dataSize = data.size();
@@ -343,7 +343,7 @@ bool MimeBinaryProvider::matchMagicRule(MimeBinaryProvider::CacheFile *cacheFile
         const int valueLength = cacheFile->getUint32(off + 12);
         const int valueOffset = cacheFile->getUint32(off + 16);
         const int maskOffset = cacheFile->getUint32(off + 20);
-        const char *mask = maskOffset ? cacheFile->getCharStar(maskOffset) : nullptr;
+        const char *mask = maskOffset != 0 ? cacheFile->getCharStar(maskOffset) : nullptr;
 
         if (!MimeMagicRule::matchSubstring(dataPtr,
                                            dataSize,
@@ -423,7 +423,7 @@ void MimeBinaryProvider::addParents(const QString &mime, QStringList &result)
     }
 }
 
-QString MimeBinaryProvider::resolveAlias(const QString &name)
+auto MimeBinaryProvider::resolveAlias(const QString &name) -> QString
 {
     const QByteArray input = name.toLatin1();
     const int aliasListOffset = m_cacheFile->getUint32(PosAliasListOffset);
@@ -505,7 +505,7 @@ void MimeBinaryProvider::addAllMimeTypes(QList<MimeType> &result)
     }
 }
 
-bool MimeBinaryProvider::loadMimeTypePrivate(MimeTypePrivate &data)
+auto MimeBinaryProvider::loadMimeTypePrivate(MimeTypePrivate &data) -> bool
 {
 #ifdef QT_NO_XMLSTREAMREADER
     Q_UNUSED(data);
@@ -595,9 +595,9 @@ bool MimeBinaryProvider::loadMimeTypePrivate(MimeTypePrivate &data)
 }
 
 // Binary search in the icons or generic-icons list
-QLatin1String MimeBinaryProvider::iconForMime(CacheFile *cacheFile,
+auto MimeBinaryProvider::iconForMime(CacheFile *cacheFile,
                                               int posListOffset,
-                                              const QByteArray &inputMime)
+                                              const QByteArray &inputMime) -> QLatin1String
 {
     const int iconsListOffset = cacheFile->getUint32(posListOffset);
     const int numIcons = cacheFile->getUint32(iconsListOffset);
@@ -714,14 +714,14 @@ MimeXMLProvider::MimeXMLProvider(MimeDatabasePrivate *db, const QString &directo
 
 MimeXMLProvider::~MimeXMLProvider() {}
 
-bool MimeXMLProvider::isValid()
+auto MimeXMLProvider::isValid() -> bool
 {
     // If you change this method, adjust the logic in MimeDatabasePrivate::loadProviders,
     // which assumes isValid==false is only possible in MimeBinaryProvider.
     return true;
 }
 
-bool MimeXMLProvider::isInternalDatabase() const
+auto MimeXMLProvider::isInternalDatabase() const -> bool
 {
 #if 1 //QT_CONFIG(mimetype_database)
     return m_directory == internalMimeFileName;
@@ -730,7 +730,7 @@ bool MimeXMLProvider::isInternalDatabase() const
 #endif
 }
 
-MimeType MimeXMLProvider::mimeTypeForName(const QString &name)
+auto MimeXMLProvider::mimeTypeForName(const QString &name) -> MimeType
 {
     return m_nameMimeTypeMap.value(name);
 }
@@ -795,17 +795,17 @@ void MimeXMLProvider::load(const QString &fileName)
                  qUtf16Printable(errorMessage));
 }
 
-bool MimeXMLProvider::load(const QString &fileName, QString *errorMessage)
+auto MimeXMLProvider::load(const QString &fileName, QString *errorMessage) -> bool
 {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (errorMessage)
+        if (errorMessage != nullptr)
             *errorMessage = QLatin1String("Cannot open ") + fileName + QLatin1String(": ")
                             + file.errorString();
         return false;
     }
 
-    if (errorMessage)
+    if (errorMessage != nullptr)
         errorMessage->clear();
 
     MimeTypeParser parser(*this);
@@ -860,7 +860,7 @@ void MimeXMLProvider::addAliases(const QString &name, QStringList &result)
     }
 }
 
-QString MimeXMLProvider::resolveAlias(const QString &name)
+auto MimeXMLProvider::resolveAlias(const QString &name) -> QString
 {
     return m_aliases.value(name);
 }
@@ -916,32 +916,32 @@ MimeXMLProvider::MimeXMLProvider(MimeDatabasePrivate *db,
     }
 }
 
-bool MimeBinaryProvider::hasMimeTypeForName(const QString &name)
+auto MimeBinaryProvider::hasMimeTypeForName(const QString &name) -> bool
 {
     loadMimeTypeList();
     return m_mimetypeNames.contains(name);
 }
 
-QStringList MimeBinaryProvider::allMimeTypeNames()
+auto MimeBinaryProvider::allMimeTypeNames() -> QStringList
 {
     // similar to addAllMimeTypes
     loadMimeTypeList();
     return QList(m_mimetypeNames.cbegin(), m_mimetypeNames.cend());
 }
 
-bool MimeXMLProvider::hasMimeTypeForName(const QString &name)
+auto MimeXMLProvider::hasMimeTypeForName(const QString &name) -> bool
 {
     return m_nameMimeTypeMap.contains(name);
 }
 
-QStringList MimeXMLProvider::allMimeTypeNames()
+auto MimeXMLProvider::allMimeTypeNames() -> QStringList
 {
     // similar to addAllMimeTypes
     return m_nameMimeTypeMap.keys();
 }
 
-QMap<int, QList<MimeMagicRule>> MimeBinaryProvider::magicRulesForMimeType(
-    const MimeType &mimeType) const
+auto MimeBinaryProvider::magicRulesForMimeType(
+    const MimeType &mimeType) const -> QMap<int, QList<MimeMagicRule>>
 {
     Q_UNUSED(mimeType)
     qWarning("Mimetypes: magicRulesForMimeType not implemented for binary provider");
@@ -964,7 +964,7 @@ void MimeBinaryProvider::setGlobPatternsForMimeType(const MimeType &mimeType,
     qWarning("Mimetypes: setGlobPatternsForMimeType not implemented for binary provider");
 }
 
-QMap<int, QList<MimeMagicRule>> MimeXMLProvider::magicRulesForMimeType(const MimeType &mimeType) const
+auto MimeXMLProvider::magicRulesForMimeType(const MimeType &mimeType) const -> QMap<int, QList<MimeMagicRule>>
 {
     QMap<int, QList<MimeMagicRule>> result;
     for (const MimeMagicRuleMatcher &matcher : m_magicMatchers) {

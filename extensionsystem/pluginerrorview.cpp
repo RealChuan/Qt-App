@@ -28,7 +28,7 @@ namespace ExtensionSystem::Internal {
 class PluginErrorViewPrivate
 {
 public:
-    PluginErrorViewPrivate(PluginErrorView *view)
+    explicit PluginErrorViewPrivate(PluginErrorView *view)
         : q(view)
         , state(new QLabel(q))
         , errorString(new QTextEdit(q))

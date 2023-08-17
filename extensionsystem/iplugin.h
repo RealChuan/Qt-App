@@ -28,17 +28,17 @@ public:
     IPlugin();
     ~IPlugin() override;
 
-    virtual bool initialize(const QStringList &arguments, QString *errorString);
+    virtual auto initialize(const QStringList &arguments, QString *errorString) -> bool;
     virtual void extensionsInitialized() {}
-    virtual bool delayedInitialize() { return false; }
-    virtual ShutdownFlag aboutToShutdown() { return SynchronousShutdown; }
-    virtual QObject *remoteCommand(const QStringList & /* options */,
+    virtual auto delayedInitialize() -> bool { return false; }
+    virtual auto aboutToShutdown() -> ShutdownFlag { return SynchronousShutdown; }
+    virtual auto remoteCommand(const QStringList & /* options */,
                                    const QString & /* workingDirectory */,
-                                   const QStringList & /* arguments */) { return nullptr; }
+                                   const QStringList & /* arguments */) -> QObject * { return nullptr; }
 
 
     // Deprecated in 10.0, use addTest()
-    virtual QVector<QObject *> createTestObjects() const;
+    [[nodiscard]] virtual QVector<QObject *> createTestObjects() const;
 
 protected:
     virtual void initialize() {}

@@ -37,7 +37,7 @@ void setQss()
         {":/qss/qss/common.css", ":/qss/qss/commonwidget.css", ":/qss/qss/carshdialog.css"});
 }
 
-int main(int argc, char *argv[])
+auto main(int argc, char *argv[]) -> int
 {
 #if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (!qEnvironmentVariableIsSet("QT_OPENGL"))

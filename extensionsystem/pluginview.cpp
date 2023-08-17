@@ -102,7 +102,7 @@ public:
         , m_view(view)
     {}
 
-    QVariant data(int column, int role) const override
+    [[nodiscard]] QVariant data(int column, int role) const override
     {
         switch (column) {
         case NameColumn:
@@ -169,16 +169,16 @@ public:
         return QVariant();
     }
 
-    bool setData(int column, const QVariant &data, int role) override
+    auto setData(int column, const QVariant &data, int role) -> bool override
     {
         if (column == LoadedColumn && role == Qt::CheckStateRole)
             return m_view->setPluginsEnabled({m_spec}, data.toBool());
         return false;
     }
 
-    bool isEnabled() const { return m_spec->isAvailableForHostPlatform() && !m_spec->isRequired(); }
+    [[nodiscard]] auto isEnabled() const -> bool { return m_spec->isAvailableForHostPlatform() && !m_spec->isRequired(); }
 
-    Qt::ItemFlags flags(int column) const override
+    [[nodiscard]] Qt::ItemFlags flags(int column) const override
     {
         Qt::ItemFlags ret = Qt::ItemIsSelectable;
 
@@ -210,7 +210,7 @@ public:
             appendChild(new PluginItem(spec, view));
     }
 
-    QVariant data(int column, int role) const override
+    [[nodiscard]] QVariant data(int column, int role) const override
     {
         if (column == NameColumn) {
             if (role == Qt::DisplayRole || role == SortRole)
@@ -238,7 +238,7 @@ public:
         return QVariant();
     }
 
-    bool setData(int column, const QVariant &data, int role) override
+    auto setData(int column, const QVariant &data, int role) -> bool override
     {
         if (column == LoadedColumn && role == Qt::CheckStateRole) {
             const QVector<PluginSpec *> affectedPlugins
@@ -253,7 +253,7 @@ public:
         return false;
     }
 
-    Qt::ItemFlags flags(int column) const override
+    [[nodiscard]] Qt::ItemFlags flags(int column) const override
     {
         Qt::ItemFlags ret = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
         if (column == LoadedColumn)
@@ -378,7 +378,7 @@ void PluginView::updatePlugins()
     m_categoryView->expandAll();
 }
 
-static QString pluginListString(const QSet<PluginSpec *> &plugins)
+static auto pluginListString(const QSet<PluginSpec *> &plugins) -> QString
 {
     QStringList names = Utils::transform<QList>(plugins, &PluginSpec::name);
     names.sort();

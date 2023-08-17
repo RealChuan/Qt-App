@@ -45,33 +45,33 @@ public:
     MimeDatabasePrivate();
     ~MimeDatabasePrivate();
 
-    static MimeDatabasePrivate *instance();
+    static auto instance() -> MimeDatabasePrivate *;
 
-    inline QString defaultMimeType() const { return m_defaultMimeType; }
+    [[nodiscard]] inline auto defaultMimeType() const -> QString { return m_defaultMimeType; }
 
-    bool inherits(const QString &mime, const QString &parent);
+    auto inherits(const QString &mime, const QString &parent) -> bool;
 
-    QList<MimeType> allMimeTypes();
+    auto allMimeTypes() -> QList<MimeType>;
 
-    QString resolveAlias(const QString &nameOrAlias);
-    QStringList parents(const QString &mimeName);
-    MimeType mimeTypeForName(const QString &nameOrAlias);
-    MimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr);
-    MimeType findByData(const QByteArray &data, int *priorityPtr);
-    QStringList mimeTypeForFileName(const QString &fileName);
-    MimeGlobMatchResult findByFileName(const QString &fileName);
+    auto resolveAlias(const QString &nameOrAlias) -> QString;
+    auto parents(const QString &mimeName) -> QStringList;
+    auto mimeTypeForName(const QString &nameOrAlias) -> MimeType;
+    auto mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr) -> MimeType;
+    auto findByData(const QByteArray &data, int *priorityPtr) -> MimeType;
+    auto mimeTypeForFileName(const QString &fileName) -> QStringList;
+    auto findByFileName(const QString &fileName) -> MimeGlobMatchResult;
 
     // API for MimeType. Takes care of locking the mutex.
     void loadMimeTypePrivate(MimeTypePrivate &mimePrivate);
     void loadGenericIcon(MimeTypePrivate &mimePrivate);
     void loadIcon(MimeTypePrivate &mimePrivate);
-    QStringList mimeParents(const QString &mimeName);
-    QStringList listAliases(const QString &mimeName);
-    bool mimeInherits(const QString &mime, const QString &parent);
+    auto mimeParents(const QString &mimeName) -> QStringList;
+    auto listAliases(const QString &mimeName) -> QStringList;
+    auto mimeInherits(const QString &mime, const QString &parent) -> bool;
 
     // added for Qt Creator
     void addMimeData(const QString &id, const QByteArray &data);
-    QMap<int, QList<MimeMagicRule>> magicRulesForMimeType(const MimeType &mimeType);
+    auto magicRulesForMimeType(const MimeType &mimeType) -> QMap<int, QList<MimeMagicRule>>;
     void setMagicRulesForMimeType(const MimeType &mimeType,
                                   const QMap<int, QList<MimeMagicRule>> &rules);
     void setGlobPatternsForMimeType(const MimeType &mimeType, const QStringList &patterns);
@@ -79,7 +79,7 @@ public:
 private:
     using Providers = std::vector<std::unique_ptr<MimeProviderBase>>;
     const Providers &providers();
-    bool shouldCheck();
+    auto shouldCheck() -> bool;
     void loadProviders();
 
     mutable Providers m_providers;

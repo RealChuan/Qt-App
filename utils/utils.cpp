@@ -72,7 +72,7 @@ void Utils::windowCenter(QWidget *window)
     window->move(x, y);
 }
 
-QString compilerString()
+auto compilerString() -> QString
 {
 #if defined(__apple_build_version__) // Apple clang has other version numbers
     QString isAppleString = QLatin1String(" (Apple)");
@@ -97,16 +97,16 @@ void Utils::printBuildInfo()
 
 void Utils::setHighDpiEnvironmentVariable()
 {
-    if (Utils::HostOsInfo().isMacHost()) {
+    if (Utils::HostOsInfo::isMacHost()) {
         return;
     }
-    if (Utils::HostOsInfo().isWindowsHost() && !qEnvironmentVariableIsSet("QT_OPENGL")) {
+    if (Utils::HostOsInfo::isWindowsHost() && !qEnvironmentVariableIsSet("QT_OPENGL")) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
 #endif
     }
 
-    if (Utils::HostOsInfo().isWindowsHost()
+    if (Utils::HostOsInfo::isWindowsHost()
         && !qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") // legacy in 5.6, but still functional
         && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
         && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
@@ -131,7 +131,7 @@ void Utils::reboot()
     QApplication::exit();
 }
 
-qint64 calculateDir(const QString &localPath)
+auto calculateDir(const QString &localPath) -> qint64
 {
     qint64 size = 0;
     QDir dir(localPath);
@@ -150,17 +150,16 @@ qint64 calculateDir(const QString &localPath)
     return size;
 }
 
-qint64 Utils::fileSize(const QString &localPath)
+auto Utils::fileSize(const QString &localPath) -> qint64
 {
     QFileInfo info(localPath);
     if (info.isDir()) {
         return calculateDir(localPath);
-    } else {
-        return info.size();
     }
+    return info.size();
 }
 
-bool Utils::generateDirectorys(const QString &directory)
+auto Utils::generateDirectorys(const QString &directory) -> bool
 {
     QDir sourceDir(directory);
     if (sourceDir.exists()) {
@@ -202,7 +201,7 @@ void removeFiles(const QString &path)
     }
 }
 
-static QString errnoToQString(int error)
+static auto errnoToQString(int error) -> QString
 {
 #if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
     char msg[128];
@@ -243,7 +242,7 @@ void Utils::removeDirectory(const QString &path)
     }
 }
 
-QString Utils::convertBytesToString(qint64 bytes)
+auto Utils::convertBytesToString(qint64 bytes) -> QString
 {
     const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     const int unit = 1024;
@@ -290,7 +289,7 @@ void Utils::setGlobalThreadPoolMaxSize(int maxSize)
     instance->setMaxThreadCount(qMax(4, 2 * instance->maxThreadCount()));
 }
 
-QString Utils::getConfigPath()
+auto Utils::getConfigPath() -> QString
 {
     static QString path;
     if (path.isEmpty()) {
@@ -307,23 +306,25 @@ QString Utils::getConfigPath()
     return path;
 }
 
-QAction *Utils::execMenuAtWidget(QMenu *menu, QWidget *widget)
+auto Utils::execMenuAtWidget(QMenu *menu, QWidget *widget) -> QAction *
 {
     QPoint p;
     QRect screen = widget->screen()->availableGeometry();
     QSize sh = menu->sizeHint();
     QRect rect = widget->rect();
     if (widget->isRightToLeft()) {
-        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height())
+        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
             p = widget->mapToGlobal(rect.bottomRight());
-        else
+        } else {
             p = widget->mapToGlobal(rect.topRight() - QPoint(0, sh.height()));
+        }
         p.rx() -= sh.width();
     } else {
-        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height())
+        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
             p = widget->mapToGlobal(rect.bottomLeft());
-        else
+        } else {
             p = widget->mapToGlobal(rect.topLeft() - QPoint(0, sh.height()));
+        }
     }
     p.rx() = qMax(screen.left(), qMin(p.x(), screen.right() - sh.width()));
     p.ry() += 1;
@@ -331,10 +332,10 @@ QAction *Utils::execMenuAtWidget(QMenu *menu, QWidget *widget)
     return menu->exec(p);
 }
 
-qint64 Utils::getPidFromProcessName(const QString &processName)
+auto Utils::getPidFromProcessName(const QString &processName) -> qint64
 {
 #if defined(Q_OS_WIN)
-    auto hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    auto *hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hSnapshot == INVALID_HANDLE_VALUE) {
         return -1;
     }
@@ -379,17 +380,17 @@ qint64 Utils::getPidFromProcessName(const QString &processName)
 #endif
 }
 
-bool Utils::killProcess(qint64 pid)
+auto Utils::killProcess(qint64 pid) -> bool
 {
     qWarning() << "kill process: " << pid;
 #if defined(Q_OS_WIN)
-    auto hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+    auto *hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
     if (hProcess == nullptr) {
         return false;
     }
     auto result = TerminateProcess(hProcess, 0);
     CloseHandle(hProcess);
-    return result;
+    return result != 0;
 #else
     return QProcess::execute("kill", QStringList() << QString::number(pid)) == 0;
 #endif

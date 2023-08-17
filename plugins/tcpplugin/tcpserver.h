@@ -10,7 +10,7 @@ class TcpServer : public QTcpServer
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = nullptr);
-    ~TcpServer();
+    ~TcpServer() override;
 
     void sendMessage(const QByteArray &bytes, const QString &clientInfo = "");
 

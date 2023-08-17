@@ -13,7 +13,7 @@
 
 namespace Plugin {
 
-QString formatHex(const QByteArray &msg)
+auto formatHex(const QByteArray &msg) -> QString
 {
     QString temp;
     auto hex = QString::fromLocal8Bit(msg.toHex().toUpper());

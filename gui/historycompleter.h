@@ -20,16 +20,16 @@ class GUI_EXPORT HistoryCompleter : public QCompleter
 
 public:
     static void setSettings(Utils::QtcSettings *settings);
-    HistoryCompleter(const QString &historyKey, QObject *parent = nullptr);
-    bool removeHistoryItem(int index);
-    QString historyItem() const;
-    bool hasHistory() const { return historySize() > 0; }
-    static bool historyExistsFor(const QString &historyKey);
+    explicit HistoryCompleter(const QString &historyKey, QObject *parent = nullptr);
+    auto removeHistoryItem(int index) -> bool;
+    [[nodiscard]] auto historyItem() const -> QString;
+    [[nodiscard]] auto hasHistory() const -> bool { return historySize() > 0; }
+    static auto historyExistsFor(const QString &historyKey) -> bool;
 
 private:
     ~HistoryCompleter() override;
-    int historySize() const;
-    int maximalHistorySize() const;
+    [[nodiscard]] auto historySize() const -> int;
+    [[nodiscard]] auto maximalHistorySize() const -> int;
     void setMaximalHistorySize(int numberOfEntries);
 
 public Q_SLOTS:

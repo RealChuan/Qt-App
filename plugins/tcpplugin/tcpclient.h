@@ -10,7 +10,7 @@ class TcpClient : public QTcpSocket
     Q_OBJECT
 public:
     explicit TcpClient(const QString &ip, quint16 port, QObject *parent = nullptr);
-    ~TcpClient();
+    ~TcpClient() override;
 
     void setIpPort(const QString &ip, quint16 port);
 
@@ -18,7 +18,7 @@ public:
     void connectToServer(const QString &ip, quint16 port);
     void closeSocket();
 
-    bool isConnected();
+    auto isConnected() -> bool;
 
 signals:
     void errorMessage(const QString &);

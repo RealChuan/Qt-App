@@ -390,7 +390,7 @@ void PluginManager::shutdown()
     d->shutdown();
 }
 
-static QString filled(const QString &s, int min)
+static auto filled(const QString &s, int min) -> QString
 {
     return s + QString(qMax(0, min - s.size()), ' ');
 }
@@ -592,7 +592,7 @@ QString PluginManager::serializedArguments()
  * indicated by a keyword starting with a colon indicator:
  * ":a,i1,i2,:b:i3,i4" with ":a" -> "i1,i2"
  */
-static QStringList subList(const QStringList &in, const QString &key)
+static auto subList(const QStringList &in, const QString &key) -> QStringList
 {
     QStringList rc;
     // Find keyword and copy arguments until end or next keyword
@@ -912,7 +912,7 @@ void PluginManagerPrivate::setSettings(QtcSettings *s)
     if (settings)
         delete settings;
     settings = s;
-    if (settings)
+    if (settings != nullptr)
         settings->setParent(this);
 }
 
@@ -924,14 +924,14 @@ void PluginManagerPrivate::setGlobalSettings(QtcSettings *s)
     if (globalSettings)
         delete globalSettings;
     globalSettings = s;
-    if (globalSettings)
+    if (globalSettings != nullptr)
         globalSettings->setParent(this);
 }
 
 /*!
     \internal
 */
-PluginSpecPrivate *PluginManagerPrivate::privateSpec(PluginSpec *spec)
+auto PluginManagerPrivate::privateSpec(PluginSpec *spec) -> PluginSpecPrivate *
 {
     return spec->d;
 }
@@ -992,7 +992,7 @@ PluginManagerPrivate::~PluginManagerPrivate()
 */
 void PluginManagerPrivate::writeSettings()
 {
-    if (!settings)
+    if (settings == nullptr)
         return;
     QStringList tempDisabledPlugins;
     QStringList tempForceEnabledPlugins;
@@ -1012,11 +1012,11 @@ void PluginManagerPrivate::writeSettings()
 */
 void PluginManagerPrivate::readSettings()
 {
-    if (globalSettings) {
+    if (globalSettings != nullptr) {
         defaultDisabledPlugins = globalSettings->value(QLatin1String(C_IGNORED_PLUGINS)).toStringList();
         defaultEnabledPlugins = globalSettings->value(QLatin1String(C_FORCEENABLED_PLUGINS)).toStringList();
     }
-    if (settings) {
+    if (settings != nullptr) {
         disabledPlugins = settings->value(QLatin1String(C_IGNORED_PLUGINS)).toStringList();
         forceEnabledPlugins = settings->value(QLatin1String(C_FORCEENABLED_PLUGINS)).toStringList();
     }
@@ -1027,7 +1027,7 @@ void PluginManagerPrivate::readSettings()
 */
 void PluginManagerPrivate::stopAll()
 {
-    if (delayedInitializeTimer && delayedInitializeTimer->isActive()) {
+    if ((delayedInitializeTimer != nullptr) && delayedInitializeTimer->isActive()) {
         delayedInitializeTimer->stop();
         delete delayedInitializeTimer;
         delayedInitializeTimer = nullptr;
@@ -1294,7 +1294,7 @@ void PluginManagerPrivate::addObject(QObject *obj)
             return;
         }
 
-        if (debugLeaks)
+        if (debugLeaks != 0u)
             qDebug() << "PluginManagerPrivate::addObject" << obj << obj->objectName();
 
         if (m_profilingVerbosity && !m_profileTimer.isNull()) {
@@ -1324,7 +1324,7 @@ void PluginManagerPrivate::removeObject(QObject *obj)
             << obj << obj->objectName();
         return;
     }
-    if (debugLeaks)
+    if (debugLeaks != 0u)
         qDebug() << "PluginManagerPrivate::removeObject" << obj << obj->objectName();
 
     emit q->aboutToRemoveObject(obj);
@@ -1408,9 +1408,9 @@ const QVector<PluginSpec *> PluginManagerPrivate::loadQueue()
 /*!
     \internal
 */
-bool PluginManagerPrivate::loadQueue(PluginSpec *spec,
+auto PluginManagerPrivate::loadQueue(PluginSpec *spec,
                                      QVector<PluginSpec *> &queue,
-                                     QVector<PluginSpec *> &circularityCheckQueue)
+                                     QVector<PluginSpec *> &circularityCheckQueue) -> bool
 {
     if (queue.contains(spec))
         return true;
@@ -1460,7 +1460,7 @@ bool PluginManagerPrivate::loadQueue(PluginSpec *spec,
 class LockFile
 {
 public:
-    static QString filePath(PluginManagerPrivate *pm)
+    static auto filePath(PluginManagerPrivate *pm) -> QString
     {
         return QFileInfo(pm->settings->fileName()).absolutePath() + '/'
                + QCoreApplication::applicationName() + '.'
@@ -1649,7 +1649,7 @@ void PluginManagerPrivate::setPluginPaths(const QStringList &paths)
     readPluginPaths();
 }
 
-static const QStringList pluginFiles(const QStringList &pluginPaths)
+static auto pluginFiles(const QStringList &pluginPaths) -> const QStringList
 {
     QStringList pluginFiles;
     QStringList searchPaths = pluginPaths;
@@ -1776,7 +1776,7 @@ void PluginManagerPrivate::profilingReport(const char *what, const PluginSpec *s
             qDebug("%-22s %-22s %8dms (%8dms)", what, qPrintable(spec->name()), absoluteElapsedMS, elapsedMS);
         else
             qDebug("%-45s %8dms (%8dms)", what, absoluteElapsedMS, elapsedMS);
-        if (what && *what == '<') {
+        if ((what != nullptr) && *what == '<') {
             QString tc;
             if (spec) {
                 m_profileTotal[spec] += elapsedMS;
@@ -1809,7 +1809,7 @@ void PluginManagerPrivate::profilingSummary() const
     }
 }
 
-static inline QString getPlatformName()
+static inline auto getPlatformName() -> QString
 {
     if (HostOsInfo::isMacHost())
         return QLatin1String("OS X");

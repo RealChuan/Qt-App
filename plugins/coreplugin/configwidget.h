@@ -8,7 +8,7 @@ class ConfigWidget : public QWidget
     Q_OBJECT
 public:
     explicit ConfigWidget(QWidget *parent = nullptr);
-    ~ConfigWidget();
+    ~ConfigWidget() override;
 
 private slots:
     void onReloadLanguage(int index);

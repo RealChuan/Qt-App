@@ -27,17 +27,17 @@ class EXTENSIONSYSTEM_EXPORT PluginSpecPrivate : public QObject
     Q_OBJECT
 
 public:
-    PluginSpecPrivate(PluginSpec *spec);
+    explicit PluginSpecPrivate(PluginSpec *spec);
 
     void reset();
-    bool read(const QString &fileName);
-    bool read(const QStaticPlugin &plugin);
-    bool provides(const QString &pluginName, const QString &version) const;
-    bool resolveDependencies(const QVector<PluginSpec *> &specs);
-    bool loadLibrary();
-    bool initializePlugin();
-    bool initializeExtensions();
-    bool delayedInitialize();
+    auto read(const QString &fileName) -> bool;
+    auto read(const QStaticPlugin &plugin) -> bool;
+    [[nodiscard]] auto provides(const QString &pluginName, const QString &version) const -> bool;
+    auto resolveDependencies(const QVector<PluginSpec *> &specs) -> bool;
+    auto loadLibrary() -> bool;
+    auto initializePlugin() -> bool;
+    auto initializeExtensions() -> bool;
+    auto delayedInitialize() -> bool;
     IPlugin::ShutdownFlag stop();
     void kill();
 
@@ -84,17 +84,17 @@ public:
     bool hasError = false;
     QString errorString;
 
-    static bool isValidVersion(const QString &version);
-    static int versionCompare(const QString &version1, const QString &version2);
+    static auto isValidVersion(const QString &version) -> bool;
+    static auto versionCompare(const QString &version1, const QString &version2) -> int;
 
     QVector<PluginSpec *> enableDependenciesIndirectly(bool enableTestDependencies = false);
 
-    bool readMetaData(const QJsonObject &pluginMetaData);
+    auto readMetaData(const QJsonObject &pluginMetaData) -> bool;
 
 private:
     PluginSpec *q;
 
-    bool reportError(const QString &err);
+    auto reportError(const QString &err) -> bool;
     static const QRegularExpression &versionRegExp();
 };
 

@@ -10,7 +10,7 @@ class CrashWidgets : public GUI::CommonWidget
     Q_OBJECT
 public:
     explicit CrashWidgets(QWidget *parent = nullptr);
-    ~CrashWidgets();
+    ~CrashWidgets() override;
 
 private slots:
     void onOpenCrashPath();

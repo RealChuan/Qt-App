@@ -29,7 +29,7 @@ static const int magicRuleTypes_indices[] = {
     0, 8, 15, 22, 29, 36, 42, 48, 57, 66, 71, 0
 };
 
-MimeMagicRule::Type MimeMagicRule::type(const QByteArray &theTypeName)
+auto MimeMagicRule::type(const QByteArray &theTypeName) -> MimeMagicRule::Type
 {
     for (int i = String; i <= Byte; ++i) {
         if (theTypeName == magicRuleTypes_string + magicRuleTypes_indices[i])
@@ -38,12 +38,12 @@ MimeMagicRule::Type MimeMagicRule::type(const QByteArray &theTypeName)
     return Invalid;
 }
 
-QByteArray MimeMagicRule::typeName(MimeMagicRule::Type theType)
+auto MimeMagicRule::typeName(MimeMagicRule::Type theType) -> QByteArray
 {
     return magicRuleTypes_string + magicRuleTypes_indices[theType];
 }
 
-bool MimeMagicRule::operator==(const MimeMagicRule &other) const
+auto MimeMagicRule::operator==(const MimeMagicRule &other) const -> bool
 {
     return m_type == other.m_type &&
            m_value == other.m_value &&
@@ -58,14 +58,14 @@ bool MimeMagicRule::operator==(const MimeMagicRule &other) const
 }
 
 // Used by both providers
-bool MimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int rangeStart, int rangeLength,
-                                    int valueLength, const char *valueData, const char *mask)
+auto MimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int rangeStart, int rangeLength,
+                                    int valueLength, const char *valueData, const char *mask) -> bool
 {
     // Size of searched data.
     // Example: value="ABC", rangeLength=3 -> we need 3+3-1=5 bytes (ABCxx,xABCx,xxABC would match)
     const int dataNeeded = qMin(rangeLength + valueLength - 1, dataSize - rangeStart);
 
-    if (!mask) {
+    if (mask == nullptr) {
         // callgrind says QByteArray::indexOf is much slower, since our strings are typically too
         // short for be worth Boyer-Moore matching (1 to 71 bytes, 11 bytes on average).
         bool found = false;
@@ -107,14 +107,14 @@ bool MimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int rangeS
     return true;
 }
 
-bool MimeMagicRule::matchString(const QByteArray &data) const
+auto MimeMagicRule::matchString(const QByteArray &data) const -> bool
 {
     const int rangeLength = m_endPos - m_startPos + 1;
     return MimeMagicRule::matchSubstring(data.constData(), data.size(), m_startPos, rangeLength, m_pattern.size(), m_pattern.constData(), m_mask.constData());
 }
 
 template <typename T>
-bool MimeMagicRule::matchNumber(const QByteArray &data) const
+auto MimeMagicRule::matchNumber(const QByteArray &data) const -> bool
 {
     const T value(m_number);
     const T mask(m_numberMask);
@@ -132,7 +132,7 @@ bool MimeMagicRule::matchNumber(const QByteArray &data) const
     return false;
 }
 
-static inline QByteArray makePattern(const QByteArray &value)
+static inline auto makePattern(const QByteArray &value) -> QByteArray
 {
     QByteArray pattern(value.size(), Qt::Uninitialized);
     char *data = pattern.data();
@@ -181,7 +181,7 @@ static inline QByteArray makePattern(const QByteArray &value)
     return pattern;
 }
 
-bool MimeMagicRule::matchRegExp(const QByteArray &data) const
+auto MimeMagicRule::matchRegExp(const QByteArray &data) const -> bool
 {
     const QString str = QString::fromUtf8(data);
     int length = m_endPos;
@@ -237,7 +237,7 @@ MimeMagicRule::MimeMagicRule(const QString &type,
 
     if (Q_UNLIKELY(m_value.isEmpty())) {
         m_type = Invalid;
-        if (errorString)
+        if (errorString != nullptr)
             *errorString = QStringLiteral("Invalid empty magic rule value");
         return;
     }
@@ -336,7 +336,7 @@ void MimeMagicRule::init(QString *errorString)
     }
 }
 
-QByteArray MimeMagicRule::mask() const
+auto MimeMagicRule::mask() const -> QByteArray
 {
     QByteArray result = m_mask;
     if (m_type == String) {
@@ -346,9 +346,9 @@ QByteArray MimeMagicRule::mask() const
     return result;
 }
 
-bool MimeMagicRule::matches(const QByteArray &data) const
+auto MimeMagicRule::matches(const QByteArray &data) const -> bool
 {
-    const bool ok = m_matchFunction && (this->*m_matchFunction)(data);
+    const bool ok = (m_matchFunction != nullptr) && (this->*m_matchFunction)(data);
     if (!ok)
         return false;
 

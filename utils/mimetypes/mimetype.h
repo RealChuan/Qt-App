@@ -38,47 +38,41 @@ class UTILS_EXPORT MimeType
 public:
     MimeType();
     MimeType(const MimeType &other);
-    MimeType &operator=(const MimeType &other);
-    MimeType &operator=(MimeType &&other) noexcept
+    auto operator=(const MimeType &other) -> MimeType &;
+    auto operator=(MimeType &&other) noexcept -> MimeType &
     {
         swap(other);
         return *this;
     }
-    void swap(MimeType &other) noexcept
-    {
-        d.swap(other.d);
-    }
+    void swap(MimeType &other) noexcept { d.swap(other.d); }
     explicit MimeType(const MimeTypePrivate &dd);
     ~MimeType();
 
-    bool operator==(const MimeType &other) const;
+    auto operator==(const MimeType &other) const -> bool;
 
-    inline bool operator!=(const MimeType &other) const
-    {
-        return !operator==(other);
-    }
+    inline auto operator!=(const MimeType &other) const -> bool { return !operator==(other); }
 
-    bool isValid() const;
+    [[nodiscard]] auto isValid() const -> bool;
 
-    bool isDefault() const;
+    [[nodiscard]] auto isDefault() const -> bool;
 
-    QString name() const;
-    QString comment() const;
-    QString genericIconName() const;
-    QString iconName() const;
-    QStringList globPatterns() const;
-    QStringList parentMimeTypes() const;
-    QStringList allAncestors() const;
-    QStringList aliases() const;
-    QStringList suffixes() const;
-    QString preferredSuffix() const;
+    [[nodiscard]] auto name() const -> QString;
+    [[nodiscard]] auto comment() const -> QString;
+    [[nodiscard]] auto genericIconName() const -> QString;
+    [[nodiscard]] auto iconName() const -> QString;
+    [[nodiscard]] auto globPatterns() const -> QStringList;
+    [[nodiscard]] auto parentMimeTypes() const -> QStringList;
+    [[nodiscard]] auto allAncestors() const -> QStringList;
+    [[nodiscard]] auto aliases() const -> QStringList;
+    [[nodiscard]] auto suffixes() const -> QStringList;
+    [[nodiscard]] auto preferredSuffix() const -> QString;
 
-    Q_INVOKABLE bool inherits(const QString &mimeTypeName) const;
+    Q_INVOKABLE [[nodiscard]] bool inherits(const QString &mimeTypeName) const;
 
-    QString filterString() const;
+    [[nodiscard]] auto filterString() const -> QString;
 
     // Qt Creator additions
-    bool matchesName(const QString &nameOrAlias) const;
+    [[nodiscard]] auto matchesName(const QString &nameOrAlias) const -> bool;
     void setPreferredSuffix(const QString &suffix);
 
 protected:
@@ -93,13 +87,12 @@ protected:
     QExplicitlySharedDataPointer<MimeTypePrivate> d;
 };
 
-
 } // namespace Utils
 
 QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
-UTILS_EXPORT QDebug operator<<(QDebug debug, const Utils::MimeType &mime);
+UTILS_EXPORT auto operator<<(QDebug debug, const Utils::MimeType &mime) -> QDebug;
 #endif
 
 Q_DECLARE_SHARED(Utils::MimeType)

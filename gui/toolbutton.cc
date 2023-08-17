@@ -7,7 +7,7 @@ namespace GUI {
 class ToolButton::ToolButtonPrivate
 {
 public:
-    ToolButtonPrivate(ToolButton *q)
+    explicit ToolButtonPrivate(ToolButton *q)
         : q_ptr(q)
     {}
 
@@ -25,7 +25,7 @@ ToolButton::ToolButton(QWidget *parent)
     installEventFilter(this);
 }
 
-ToolButton::~ToolButton() {}
+ToolButton::~ToolButton() = default;
 
 void ToolButton::setNormalIcon(const QIcon &icon)
 {
@@ -43,13 +43,13 @@ void ToolButton::setActiveIcon(const QIcon &icon)
     d_ptr->activeIcon = icon;
 }
 
-bool ToolButton::eventFilter(QObject *watched, QEvent *event)
+auto ToolButton::eventFilter(QObject *watched, QEvent *event) -> bool
 {
     if (watched == this) {
         switch (event->type()) {
         case QEvent::Enter: setIcon(d_ptr->hoverIcon); break;
         case QEvent::MouseButtonPress: setIcon(d_ptr->activeIcon); break;
-        case QEvent::QEvent::Leave: setIcon(d_ptr->icon); break;
+        case QEvent::Leave: setIcon(d_ptr->icon); break;
         default: break;
         }
     }
@@ -57,7 +57,7 @@ bool ToolButton::eventFilter(QObject *watched, QEvent *event)
     return QToolButton::eventFilter(watched, event);
 }
 
-QIcon fromPaths(const QStringList &Paths)
+auto fromPaths(const QStringList &Paths) -> QIcon
 {
     QIcon icon;
     for (const auto &path : qAsConst(Paths)) {
@@ -66,12 +66,12 @@ QIcon fromPaths(const QStringList &Paths)
     return icon;
 }
 
-ToolButton *createToolButton(const QStringList &normalIconPaths,
-                             const QStringList &hoverIconPaths,
-                             const QStringList &activeIconPaths,
-                             QWidget *parent)
+auto createToolButton(const QStringList &normalIconPaths,
+                      const QStringList &hoverIconPaths,
+                      const QStringList &activeIconPaths,
+                      QWidget *parent) -> ToolButton *
 {
-    auto btn = new ToolButton(parent);
+    auto *btn = new ToolButton(parent);
     btn->setNormalIcon(fromPaths(normalIconPaths));
     btn->setHoverIcon(fromPaths(hoverIconPaths));
     btn->setActiveIcon(fromPaths(activeIconPaths));

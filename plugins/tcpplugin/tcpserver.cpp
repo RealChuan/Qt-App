@@ -7,7 +7,7 @@ namespace Plugin {
 class TcpServer::TcpServerPrivate
 {
 public:
-    TcpServerPrivate(TcpServer *q)
+    explicit TcpServerPrivate(TcpServer *q)
         : q_ptr(q)
     {}
 

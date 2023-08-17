@@ -10,7 +10,7 @@ class HashWidget : public QWidget
     Q_OBJECT
 public:
     explicit HashWidget(QWidget *parent = nullptr);
-    ~HashWidget();
+    ~HashWidget() override;
 
 private slots:
     void onSelectFile();

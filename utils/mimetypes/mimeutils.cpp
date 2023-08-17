@@ -11,31 +11,31 @@
 
 namespace Utils {
 
-MimeType mimeTypeForName(const QString &nameOrAlias)
+auto mimeTypeForName(const QString &nameOrAlias) -> MimeType
 {
     MimeDatabase mdb;
     return mdb.mimeTypeForName(nameOrAlias);
 }
 
-MimeType mimeTypeForFile(const QString &fileName, MimeMatchMode mode)
+auto mimeTypeForFile(const QString &fileName, MimeMatchMode mode) -> MimeType
 {
     MimeDatabase mdb;
     return mdb.mimeTypeForFile(fileName, MimeDatabase::MatchMode(mode));
 }
 
-QList<MimeType> mimeTypesForFileName(const QString &fileName)
+auto mimeTypesForFileName(const QString &fileName) -> QList<MimeType>
 {
     MimeDatabase mdb;
     return mdb.mimeTypesForFileName(fileName);
 }
 
-MimeType mimeTypeForData(const QByteArray &data)
+auto mimeTypeForData(const QByteArray &data) -> MimeType
 {
     MimeDatabase mdb;
     return mdb.mimeTypeForData(data);
 }
 
-QList<MimeType> allMimeTypes()
+auto allMimeTypes() -> QList<MimeType>
 {
     MimeDatabase mdb;
     return mdb.allMimeTypes();
@@ -43,7 +43,7 @@ QList<MimeType> allMimeTypes()
 
 void setMimeStartupPhase(MimeStartupPhase phase)
 {
-    auto d = MimeDatabasePrivate::instance();
+    auto *d = MimeDatabasePrivate::instance();
     QMutexLocker locker(&d->mutex);
     if (int(phase) != d->m_startupPhase + 1) {
         qWarning("Unexpected jump in MimedDatabase lifetime from %d to %d",
@@ -55,7 +55,7 @@ void setMimeStartupPhase(MimeStartupPhase phase)
 
 void addMimeTypes(const QString &id, const QByteArray &data)
 {
-    auto d = MimeDatabasePrivate::instance();
+    auto *d = MimeDatabasePrivate::instance();
     QMutexLocker locker(&d->mutex);
 
     if (d->m_startupPhase >= int(MimeStartupPhase::PluginsDelayedInitializing)) {
@@ -66,23 +66,23 @@ void addMimeTypes(const QString &id, const QByteArray &data)
     d->addMimeData(id, data);
 }
 
-QMap<int, QList<MimeMagicRule>> magicRulesForMimeType(const MimeType &mimeType)
+auto magicRulesForMimeType(const MimeType &mimeType) -> QMap<int, QList<MimeMagicRule>>
 {
-    auto d = MimeDatabasePrivate::instance();
+    auto *d = MimeDatabasePrivate::instance();
     QMutexLocker locker(&d->mutex);
     return d->magicRulesForMimeType(mimeType);
 }
 
 void setGlobPatternsForMimeType(const MimeType &mimeType, const QStringList &patterns)
 {
-    auto d = MimeDatabasePrivate::instance();
+    auto *d = MimeDatabasePrivate::instance();
     QMutexLocker locker(&d->mutex);
     d->setGlobPatternsForMimeType(mimeType, patterns);
 }
 
 void setMagicRulesForMimeType(const MimeType &mimeType, const QMap<int, QList<MimeMagicRule>> &rules)
 {
-    auto d = MimeDatabasePrivate::instance();
+    auto *d = MimeDatabasePrivate::instance();
     QMutexLocker locker(&d->mutex);
     d->setMagicRulesForMimeType(mimeType, rules);
 }

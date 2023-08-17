@@ -42,7 +42,7 @@ void setQss()
                    ":/qss/qss/corewidget.css"});
 }
 
-int main(int argc, char *argv[])
+auto main(int argc, char *argv[]) -> int
 {
 #if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (!qEnvironmentVariableIsSet("QT_OPENGL"))
@@ -108,8 +108,7 @@ int main(int argc, char *argv[])
     ExtensionSystem::PluginManager pluginManager;
     ExtensionSystem::PluginManager::setSettings(setting);
     ExtensionSystem::PluginManager::setPluginIID(QLatin1String("Youth.Qt.plugin"));
-    const QStringList pluginPaths{app.applicationDirPath() + "/plugins",
-                                  app.applicationDirPath() + "/test"};
+    const QStringList pluginPaths{app.applicationDirPath() + "/plugins"};
     ExtensionSystem::PluginManager::setPluginPaths(pluginPaths);
     ExtensionSystem::PluginManager::loadPlugins();
 

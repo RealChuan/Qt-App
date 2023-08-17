@@ -30,23 +30,23 @@ namespace Utils {
 // anyOf
 /////////////////////////
 template<typename T, typename F>
-bool anyOf(const T &container, F predicate);
+auto anyOf(const T &container, F predicate) -> bool;
 template<typename T, typename R, typename S>
-bool anyOf(const T &container, R (S::*predicate)() const);
+auto anyOf(const T &container, R (S::*predicate)() const) -> bool;
 template<typename T, typename R, typename S>
-bool anyOf(const T &container, R S::*member);
+auto anyOf(const T &container, R S::*member) -> bool;
 
 /////////////////////////
 // count
 /////////////////////////
 template<typename T, typename F>
-int count(const T &container, F predicate);
+auto count(const T &container, F predicate) -> int;
 
 /////////////////////////
 // allOf
 /////////////////////////
 template<typename T, typename F>
-bool allOf(const T &container, F predicate);
+auto allOf(const T &container, F predicate) -> bool;
 
 /////////////////////////
 // erase
@@ -54,33 +54,33 @@ bool allOf(const T &container, F predicate);
 template<typename T, typename F>
 void erase(T &container, F predicate);
 template<typename T, typename F>
-bool eraseOne(T &container, F predicate);
+auto eraseOne(T &container, F predicate) -> bool;
 
 /////////////////////////
 // contains
 /////////////////////////
 template<typename T, typename F>
-bool contains(const T &container, F function);
+auto contains(const T &container, F function) -> bool;
 template<typename T, typename R, typename S>
-bool contains(const T &container, R (S::*function)() const);
+auto contains(const T &container, R (S::*function)() const) -> bool;
 template<typename C, typename R, typename S>
-bool contains(const C &container, R S::*member);
+auto contains(const C &container, R S::*member) -> bool;
 
 /////////////////////////
 // findOr
 /////////////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
+Q_REQUIRED_RESULT auto findOr(const C &container,
                                                 typename C::value_type other,
-                                                F function);
+                                                F function) -> typename C::value_type;
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
+Q_REQUIRED_RESULT auto findOr(const T &container,
                                                 typename T::value_type other,
-                                                R (S::*function)() const);
+                                                R (S::*function)() const) -> typename T::value_type;
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
+Q_REQUIRED_RESULT auto findOr(const T &container,
                                                 typename T::value_type other,
-                                                R S::*member);
+                                                R S::*member) -> typename T::value_type;
 
 /////////////////////////
 // findOrDefault
@@ -102,21 +102,21 @@ findOrDefault(const C &container, R S::*member);
 // indexOf
 /////////////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT int indexOf(const C &container, F function);
+Q_REQUIRED_RESULT auto indexOf(const C &container, F function) -> int;
 
 /////////////////////////
 // maxElementOr
 /////////////////////////
 template<typename T>
-typename T::value_type maxElementOr(const T &container, typename T::value_type other);
+auto maxElementOr(const T &container, typename T::value_type other) -> typename T::value_type;
 
 /////////////////////////
 // filtered
 /////////////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT C filtered(const C &container, F predicate);
+Q_REQUIRED_RESULT auto filtered(const C &container, F predicate) -> C;
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT C filtered(const C &container, R (S::*predicate)() const);
+Q_REQUIRED_RESULT auto filtered(const C &container, R (S::*predicate)() const) -> C;
 
 /////////////////////////
 // partition
@@ -134,19 +134,19 @@ Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, R (S::*predicat
 // filteredUnique
 /////////////////////////
 template<typename C>
-Q_REQUIRED_RESULT C filteredUnique(const C &container);
+Q_REQUIRED_RESULT auto filteredUnique(const C &container) -> C;
 
 /////////////////////////
 // qobject_container_cast
 /////////////////////////
 template<class T, template<typename> class Container, typename Base>
-Container<T> qobject_container_cast(const Container<Base> &container);
+auto qobject_container_cast(const Container<Base> &container) -> Container<T>;
 
 /////////////////////////
 // static_container_cast
 /////////////////////////
 template<class T, template<typename> class Container, typename Base>
-Container<T> static_container_cast(const Container<Base> &container);
+auto static_container_cast(const Container<Base> &container) -> Container<T>;
 
 /////////////////////////
 // sort
@@ -188,9 +188,9 @@ auto toConstReferences(const SourceContainer &sources);
 template<class C, typename P>
 Q_REQUIRED_RESULT std::optional<typename C::value_type> take(C &container, P predicate);
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT decltype(auto) take(C &container, R S::*member);
+Q_REQUIRED_RESULT auto take(C &container, R S::*member) -> decltype(auto);
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT decltype(auto) take(C &container, R (S::*function)() const);
+Q_REQUIRED_RESULT auto take(C &container, R (S::*function)() const) -> decltype(auto);
 
 /////////////////////////
 // setUnionMerge
@@ -199,23 +199,23 @@ Q_REQUIRED_RESULT decltype(auto) take(C &container, R (S::*function)() const);
 // !(a > b) && !(b > a) which normally means that there is an "equal" match.
 // It uses iterators to support move_iterators.
 template<class InputIt1, class InputIt2, class OutputIt, class Merge, class Compare>
-OutputIt setUnionMerge(InputIt1 first1,
+auto setUnionMerge(InputIt1 first1,
                        InputIt1 last1,
                        InputIt2 first2,
                        InputIt2 last2,
                        OutputIt d_first,
                        Merge merge,
-                       Compare comp);
+                       Compare comp) -> OutputIt;
 template<class InputIt1, class InputIt2, class OutputIt, class Merge>
-OutputIt setUnionMerge(
-    InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Merge merge);
+auto setUnionMerge(
+    InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Merge merge) -> OutputIt;
 template<class OutputContainer, class InputContainer1, class InputContainer2, class Merge, class Compare>
-OutputContainer setUnionMerge(InputContainer1 &&input1,
+auto setUnionMerge(InputContainer1 &&input1,
                               InputContainer2 &&input2,
                               Merge merge,
-                              Compare comp);
+                              Compare comp) -> OutputContainer;
 template<class OutputContainer, class InputContainer1, class InputContainer2, class Merge>
-OutputContainer setUnionMerge(InputContainer1 &&input1, InputContainer2 &&input2, Merge merge);
+auto setUnionMerge(InputContainer1 &&input1, InputContainer2 &&input2, Merge merge) -> OutputContainer;
 
 /////////////////////////
 // usize / ssize
@@ -229,18 +229,18 @@ std::make_signed_t<typename Container::size_type> ssize(Container container);
 // setUnion
 /////////////////////////
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-OutputIterator set_union(InputIterator1 first1,
+auto set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
                          OutputIterator result,
-                         Compare comp);
+                         Compare comp) -> OutputIterator;
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
-OutputIterator set_union(InputIterator1 first1,
+auto set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
-                         OutputIterator result);
+                         OutputIterator result) -> OutputIterator;
 
 /////////////////////////
 // transform
@@ -249,7 +249,7 @@ OutputIterator set_union(InputIterator1 first1,
 template<typename ResultContainer, // complete result container type
          typename SC,              // input container type
          typename F>               // function type
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function);
+Q_REQUIRED_RESULT auto transform(SC &&container, F function) -> decltype(auto);
 
 // function with result type deduction:
 template<template<typename> class C, // result container type
@@ -283,35 +283,35 @@ template<template<typename...> class C, // result container type
          typename SC,                   // input container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R (S::*p)() const);
+Q_REQUIRED_RESULT auto transform(SC &&container, R (S::*p)() const) -> decltype(auto);
 
 // member function with result type deduction:
 template<typename ResultContainer, // complete result container type
          typename SC,              // input container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R (S::*p)() const);
+Q_REQUIRED_RESULT auto transform(SC &&container, R (S::*p)() const) -> decltype(auto);
 
 // member without result type deduction:
 template<typename ResultContainer, // complete result container type
          typename SC,              // input container
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p);
+Q_REQUIRED_RESULT auto transform(SC &&container, R S::*p) -> decltype(auto);
 
 // member with result type deduction:
 template<template<typename...> class C, // result container
          typename SC,                   // input container
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p);
+Q_REQUIRED_RESULT auto transform(SC &&container, R S::*p) -> decltype(auto);
 
 // same container types for input and output, const input
 // function:
 template<template<typename...> class C, // container type
          typename F,                    // function type
          typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, F function);
+Q_REQUIRED_RESULT auto transform(const C<CArgs...> &container, F function) -> decltype(auto);
 
 // same container types for input and output, const input
 // member function:
@@ -319,7 +319,7 @@ template<template<typename...> class C, // container type
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R (S::*p)() const);
+Q_REQUIRED_RESULT auto transform(const C<CArgs...> &container, R (S::*p)() const) -> decltype(auto);
 
 // same container types for input and output, const input
 // members:
@@ -327,14 +327,14 @@ template<template<typename...> class C, // container
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R S::*p);
+Q_REQUIRED_RESULT auto transform(const C<CArgs...> &container, R S::*p) -> decltype(auto);
 
 // same container types for input and output, non-const input
 // function:
 template<template<typename...> class C, // container type
          typename F,                    // function type
          typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, F function);
+Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, F function) -> decltype(auto);
 
 // same container types for input and output, non-const input
 // member function:
@@ -342,7 +342,7 @@ template<template<typename...> class C, // container type
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R (S::*p)() const);
+Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, R (S::*p)() const) -> decltype(auto);
 
 // same container types for input and output, non-const input
 // members:
@@ -350,7 +350,7 @@ template<template<typename...> class C, // container
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R S::*p);
+Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, R S::*p) -> decltype(auto);
 
 /////////////////////////////////////////////////////////////////////////////
 ////////    Implementations    //////////////////////////////////////////////
@@ -360,21 +360,21 @@ Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R S::*p);
 // anyOf
 /////////////////
 template<typename T, typename F>
-bool anyOf(const T &container, F predicate)
+auto anyOf(const T &container, F predicate) -> bool
 {
     return std::any_of(std::begin(container), std::end(container), predicate);
 }
 
 // anyOf taking a member function pointer
 template<typename T, typename R, typename S>
-bool anyOf(const T &container, R (S::*predicate)() const)
+auto anyOf(const T &container, R (S::*predicate)() const) -> bool
 {
     return std::any_of(std::begin(container), std::end(container), std::mem_fn(predicate));
 }
 
 // anyOf taking a member pointer
 template<typename T, typename R, typename S>
-bool anyOf(const T &container, R S::*member)
+auto anyOf(const T &container, R S::*member) -> bool
 {
     return std::any_of(std::begin(container), std::end(container), std::mem_fn(member));
 }
@@ -383,7 +383,7 @@ bool anyOf(const T &container, R S::*member)
 // count
 /////////////////
 template<typename T, typename F>
-int count(const T &container, F predicate)
+auto count(const T &container, F predicate) -> int
 {
     return std::count_if(std::begin(container), std::end(container), predicate);
 }
@@ -392,21 +392,21 @@ int count(const T &container, F predicate)
 // allOf
 /////////////////
 template<typename T, typename F>
-bool allOf(const T &container, F predicate)
+auto allOf(const T &container, F predicate) -> bool
 {
     return std::all_of(std::begin(container), std::end(container), predicate);
 }
 
 // allOf taking a member function pointer
 template<typename T, typename R, typename S>
-bool allOf(const T &container, R (S::*predicate)() const)
+auto allOf(const T &container, R (S::*predicate)() const) -> bool
 {
     return std::all_of(std::begin(container), std::end(container), std::mem_fn(predicate));
 }
 
 // allOf taking a member pointer
 template<typename T, typename R, typename S>
-bool allOf(const T &container, R S::*member)
+auto allOf(const T &container, R S::*member) -> bool
 {
     return std::all_of(std::begin(container), std::end(container), std::mem_fn(member));
 }
@@ -421,7 +421,7 @@ void erase(T &container, F predicate)
                     std::end(container));
 }
 template<typename T, typename F>
-bool eraseOne(T &container, F predicate)
+auto eraseOne(T &container, F predicate) -> bool
 {
     const auto it = std::find_if(std::begin(container), std::end(container), predicate);
     if (it == std::end(container))
@@ -434,19 +434,19 @@ bool eraseOne(T &container, F predicate)
 // contains
 /////////////////
 template<typename T, typename F>
-bool contains(const T &container, F function)
+auto contains(const T &container, F function) -> bool
 {
     return anyOf(container, function);
 }
 
 template<typename T, typename R, typename S>
-bool contains(const T &container, R (S::*function)() const)
+auto contains(const T &container, R (S::*function)() const) -> bool
 {
     return anyOf(container, function);
 }
 
 template<typename C, typename R, typename S>
-bool contains(const C &container, R S::*member)
+auto contains(const C &container, R S::*member) -> bool
 {
     return anyOf(container, std::mem_fn(member));
 }
@@ -455,9 +455,9 @@ bool contains(const C &container, R S::*member)
 // findOr
 /////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
+Q_REQUIRED_RESULT auto findOr(const C &container,
                                                 typename C::value_type other,
-                                                F function)
+                                                F function) -> typename C::value_type
 {
     typename C::const_iterator begin = std::begin(container);
     typename C::const_iterator end = std::end(container);
@@ -467,17 +467,17 @@ Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
 }
 
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
+Q_REQUIRED_RESULT auto findOr(const T &container,
                                                 typename T::value_type other,
-                                                R (S::*function)() const)
+                                                R (S::*function)() const) -> typename T::value_type
 {
     return findOr(container, other, std::mem_fn(function));
 }
 
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
+Q_REQUIRED_RESULT auto findOr(const T &container,
                                                 typename T::value_type other,
-                                                R S::*member)
+                                                R S::*member) -> typename T::value_type
 {
     return findOr(container, other, std::mem_fn(member));
 }
@@ -1323,12 +1323,12 @@ struct CompareIter
 };
 
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-OutputIterator set_union_impl(InputIterator1 first1,
+auto set_union_impl(InputIterator1 first1,
                               InputIterator1 last1,
                               InputIterator2 first2,
                               InputIterator2 last2,
                               OutputIterator result,
-                              Compare comp)
+                              Compare comp) -> OutputIterator
 {
     auto compare = CompareIter<Compare>(comp);
 
@@ -1351,22 +1351,22 @@ OutputIterator set_union_impl(InputIterator1 first1,
 }
 
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-OutputIterator set_union(InputIterator1 first1,
+auto set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
                          OutputIterator result,
-                         Compare comp)
+                         Compare comp) -> OutputIterator
 {
     return Utils::set_union_impl(first1, last1, first2, last2, result, comp);
 }
 
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
-OutputIterator set_union(InputIterator1 first1,
+auto set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
-                         OutputIterator result)
+                         OutputIterator result) -> OutputIterator
 {
     return Utils::set_union_impl(first1,
                                  last1,
@@ -1379,13 +1379,13 @@ OutputIterator set_union(InputIterator1 first1,
 // Replacement for deprecated Qt functionality
 
 template<class T>
-QSet<T> toSet(const QList<T> &list)
+auto toSet(const QList<T> &list) -> QSet<T>
 {
     return QSet<T>(list.begin(), list.end());
 }
 
 template<class T>
-QList<T> toList(const QSet<T> &set)
+auto toList(const QSet<T> &set) -> QList<T>
 {
     return QList<T>(set.begin(), set.end());
 }

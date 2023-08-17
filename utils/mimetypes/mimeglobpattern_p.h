@@ -55,12 +55,12 @@ public:
         qSwap(m_patternType,     other.m_patternType);
     }
 
-    bool matchFileName(const QString &inputFileName) const;
+    [[nodiscard]] auto matchFileName(const QString &inputFileName) const -> bool;
 
-    inline const QString &pattern() const { return m_pattern; }
-    inline unsigned weight() const { return m_weight; }
-    inline const QString &mimeType() const { return m_mimeType; }
-    inline bool isCaseSensitive() const { return m_caseSensitivity == Qt::CaseSensitive; }
+    [[nodiscard]] inline auto pattern() const -> const QString & { return m_pattern; }
+    [[nodiscard]] inline auto weight() const -> unsigned { return m_weight; }
+    [[nodiscard]] inline auto mimeType() const -> const QString & { return m_mimeType; }
+    [[nodiscard]] inline auto isCaseSensitive() const -> bool { return m_caseSensitivity == Qt::CaseSensitive; }
 
 private:
     enum PatternType {
@@ -71,7 +71,7 @@ private:
         AnimPattern,       // special handling for "*.anim[1-9j]" pattern
         OtherPattern
     };
-    PatternType detectPatternType(const QString &pattern) const;
+    [[nodiscard]] auto detectPatternType(const QString &pattern) const -> PatternType;
 
     QString m_pattern;
     QString m_mimeType;
@@ -83,7 +83,7 @@ private:
 class MimeGlobPatternList : public QList<MimeGlobPattern>
 {
 public:
-    bool hasPattern(const QString &mimeType, const QString &pattern) const
+    [[nodiscard]] auto hasPattern(const QString &mimeType, const QString &pattern) const -> bool
     {
         const_iterator it = begin();
         const const_iterator myend = end();

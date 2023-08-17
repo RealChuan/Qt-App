@@ -16,14 +16,14 @@ class UTILS_EXPORT LanguageConfig : public QObject
 public:
     enum Language { Chinese, English };
 
-    Language currentLanguage();
+    auto currentLanguage() -> Language;
 
     void loadLanguage(Language language);
     void loadLanguage();
 
 private:
     explicit LanguageConfig(QObject *parent = nullptr);
-    ~LanguageConfig();
+    ~LanguageConfig() override;
 
     void getConfig();
     void saveConfig();

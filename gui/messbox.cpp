@@ -78,7 +78,7 @@ MessBox::MessBox(QWidget *parent)
 
 MessBox::~MessBox() {}
 
-int MessBox::Info(QWidget *parent, const QString &msg, const MessButton button)
+int MessBox::Info(QWidget *parent, const QString &msg, MessButton button)
 {
     MessBox messBox(parent);
     messBox.setIconLabelObjectName("InfoLabel");
@@ -91,7 +91,7 @@ int MessBox::Info(QWidget *parent, const QString &msg, const MessButton button)
     return messBox.exec();
 }
 
-int MessBox::Warning(QWidget *parent, const QString &msg, const MessButton button)
+int MessBox::Warning(QWidget *parent, const QString &msg, MessButton button)
 {
     MessBox messBox(parent);
     messBox.setIconLabelObjectName("WarningLabel");
