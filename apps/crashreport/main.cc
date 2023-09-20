@@ -40,12 +40,11 @@ void setQss()
 auto main(int argc, char *argv[]) -> int
 {
 #if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (!qEnvironmentVariableIsSet("QT_OPENGL"))
+    if (!qEnvironmentVariableIsSet("QT_OPENGL")) {
         QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+    }
 #else
     qputenv("QSG_RHI_BACKEND", "opengl");
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::Round);
 #endif
     Utils::setHighDpiEnvironmentVariable();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);

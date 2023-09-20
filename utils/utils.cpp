@@ -100,11 +100,6 @@ void Utils::setHighDpiEnvironmentVariable()
     if (Utils::HostOsInfo::isMacHost()) {
         return;
     }
-    if (Utils::HostOsInfo::isWindowsHost() && !qEnvironmentVariableIsSet("QT_OPENGL")) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
-#endif
-    }
 
     if (Utils::HostOsInfo::isWindowsHost()
         && !qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") // legacy in 5.6, but still functional
@@ -113,7 +108,6 @@ void Utils::setHighDpiEnvironmentVariable()
         && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
     }
 
