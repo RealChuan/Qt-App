@@ -4,6 +4,11 @@ on:
   # push代码时触发workflow
   push:
     paths-ignore: # 下列文件的变更不触发部署，可以自行添加
+        - '.github/workflows/clean_cache.yml'
+        - '.github/workflows/delete_workflow.yml'
+        - '.github/workflows/qmake.yml'
+        - '.github/workflows/readme.yml'
+        - '.github/workflows/toolchain.yml'    
         - 'doc/**'
         - '.clang-*'
         - '.gitignore'
@@ -11,6 +16,11 @@ on:
         - 'README*'
   pull_request:
     paths-ignore: # 下列文件的变更不触发部署，可以自行添加
+        - '.github/workflows/clean_cache.yml'
+        - '.github/workflows/delete_workflow.yml'
+        - '.github/workflows/qmake.yml'
+        - '.github/workflows/readme.yml'
+        - '.github/workflows/toolchain.yml'    
         - 'doc/**'
         - '.clang-*'
         - '.gitignore'
@@ -29,23 +39,26 @@ jobs:
           - macos-latest
           - ubuntu-latest
         qt_ver: 
-          - 6.5.2
+          - 6.6.1
         build_type:
           - "RelWithDebInfo"
         generators:
           - "Ninja"
 
     steps:
-      - name: cache vcpkg
-        uses: actions/cache@v3
-        with:
-          path: |
-            C:\vcpkg\installed
-            /usr/local/share/vcpkg/installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
-            ${{ runner.os }}-vcpkg-installed-
+      - name: Restore windows vcpkg
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/cache/restore@v3
+        with: 
+          path: C:\vcpkg\installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
+      - name: Restore macos or ubuntu vcpkg
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+        uses: actions/cache/restore@v3
+        with: 
+          path: /usr/local/share/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
+
       - name: Install dependencies on windows
         if: startsWith(matrix.os, 'windows')
         shell: bash
@@ -79,10 +92,10 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           install-deps: 'true'
-          modules: 'qt5compat addons.qtserialport addons.qtnetworkauth addons.qtmultimedia addons.qtimageformats'
+          modules: 'qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats'
           cache: 'true'
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -180,16 +193,16 @@ jobs:
           rm -f ./bin-64/${{ matrix.build_type }}/*.so
           mv *.AppImage ./bin-64/${{ matrix.build_type }}
 
-      - name: Show Upload files
+      - name: 7z package
         shell: bash
         run: |
-          ls -l ./bin-64/${{ matrix.build_type }}   
+          ls -al ./bin-64/${{ matrix.build_type }}
+          7z a -t7z -r -mx=9 -mmt Qt-App-${{ matrix.os }}-${{ matrix.build_type }}.7z ./bin-64/${{ matrix.build_type }}/*
       - name: Upload packages
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-${{ matrix.build_type }}
-          path: |
-            ./bin-64/${{ matrix.build_type }}
+          path: Qt-App-${{ matrix.os }}-${{ matrix.build_type }}.7z
 
   release:
     name: Release
@@ -201,14 +214,15 @@ jobs:
     steps:
       - name: Download packages
         uses: actions/download-artifact@v3
-      - name: Zip packages
+
+      - name: Move packages
         shell: bash
         run: |
-          ls -l
-          zip -9 -r Qt-App-Windows.zip windows-latest-RelWithDebInfo
-          zip -9 -r Qt-App-MacOS.zip macos-latest-RelWithDebInfo
-          zip -9 -r Qt-App-Ubuntu.zip ubuntu-latest-RelWithDebInfo 
-          ls -l
+          ls -al
+          mv ./windows-latest-RelWithDebInfo/Qt-App-*.7z .
+          mv ./macos-latest-RelWithDebInfo/Qt-App-*.7z .
+          mv ./ubuntu-latest-RelWithDebInfo/Qt-App-*.7z .
+          ls -al
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -217,4 +231,4 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            *.zip
+            *.7z
