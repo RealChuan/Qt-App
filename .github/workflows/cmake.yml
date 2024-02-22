@@ -39,11 +39,19 @@ jobs:
           - macos-latest
           - ubuntu-latest
         qt_ver: 
-          - 6.6.1
+          - 6.6.2
         build_type:
           - "RelWithDebInfo"
         generators:
           - "Ninja"
+        arch:
+          - x86_64
+        include:
+          - os: macos-latest
+            qt_ver: 6.6.2
+            build_type: "RelWithDebInfo"
+            generators: "Ninja"
+            arch: arm64
 
     steps:
       - name: Restore windows vcpkg
@@ -67,15 +75,6 @@ jobs:
           ninja --version
           cmake --version
           vcpkg install breakpad --triplet x64-windows
-      - name: Install dependencies on macos
-        if: startsWith(matrix.os, 'macos')
-        shell: bash
-        run: |
-          brew install ninja pkg-config
-          ninja --version
-          cmake --version
-          clang --version
-          vcpkg install breakpad --triplet x64-osx
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
@@ -86,6 +85,24 @@ jobs:
           cmake --version
           gcc --version
           vcpkg install breakpad --triplet x64-linux
+      - name: Install dependencies on macos-x86_64
+        if: startsWith(matrix.os, 'macos') && matrix.arch == 'x86_64'
+        shell: bash
+        run: |
+          brew install ninja pkg-config
+          ninja --version
+          cmake --version
+          clang --version
+          vcpkg install breakpad --triplet x64-osx
+      - name: Install dependencies on macos-arm64
+        if: startsWith(matrix.os, 'macos') && matrix.arch == 'arm64'
+        shell: bash
+        run: |
+          brew install ninja pkg-config
+          ninja --version
+          cmake --version
+          clang --version
+          vcpkg install breakpad --triplet arm64-osx
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -124,8 +141,10 @@ jobs:
             -S . \
             -B ./build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
             -G "${{ matrix.generators }}" \
             -DCMAKE_INSTALL_PREFIX:PATH=instdir
+
       - name: Build
         shell: bash
         run: |
@@ -197,12 +216,12 @@ jobs:
         shell: bash
         run: |
           ls -al ./bin-64/${{ matrix.build_type }}
-          7z a -t7z -r -mx=9 -mmt Qt-App-${{ matrix.os }}-${{ matrix.build_type }}.7z ./bin-64/${{ matrix.build_type }}/*
+          7z a -t7z -r -mx=9 -mmt Qt-App-${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}.7z ./bin-64/${{ matrix.build_type }}/*
       - name: Upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}-${{ matrix.build_type }}
-          path: Qt-App-${{ matrix.os }}-${{ matrix.build_type }}.7z
+          name: ${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}
+          path: Qt-App-${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}.7z
 
   release:
     name: Release
@@ -212,6 +231,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download fonts
+        shell: bash
+        run: |
+          wget -c -nv "https://github.com/RealChuan/Qt-App/releases/download/0.0.1/fonts.7z"
+
       - name: Download packages
         uses: actions/download-artifact@v3
 
@@ -219,9 +243,10 @@ jobs:
         shell: bash
         run: |
           ls -al
-          mv ./windows-latest-RelWithDebInfo/Qt-App-*.7z .
-          mv ./macos-latest-RelWithDebInfo/Qt-App-*.7z .
-          mv ./ubuntu-latest-RelWithDebInfo/Qt-App-*.7z .
+          mv ./windows-latest-x86_64-RelWithDebInfo/Qt-App-*.7z .
+          mv ./ubuntu-latest-x86_64-RelWithDebInfo/Qt-App-*.7z .
+          mv ./macos-latest-x86_64-RelWithDebInfo/Qt-App-*.7z .
+          mv ./macos-latest-arm64-RelWithDebInfo/Qt-App-*.7z .
           ls -al
 
       - name: Create Release

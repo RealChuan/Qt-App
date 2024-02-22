@@ -44,7 +44,7 @@ void TcpServer::sendMessage(const QByteArray &bytes, const QString &clientInfo)
     }
 
     if (clientInfo.isEmpty()) {
-        for (auto client : qAsConst(d_ptr->tcpClients)) {
+        for (auto client : std::as_const(d_ptr->tcpClients)) {
             client->write(bytes);
         }
         return;
@@ -52,7 +52,7 @@ void TcpServer::sendMessage(const QByteArray &bytes, const QString &clientInfo)
 
     auto clientIP = clientInfo.split(":")[0].trimmed();
     auto clientPort = clientInfo.split(":")[1].toInt();
-    for (auto client : qAsConst(d_ptr->tcpClients)) {
+    for (auto client : std::as_const(d_ptr->tcpClients)) {
         if (client->peerAddress().toString().split("::ffff:")[0] == clientIP
             && client->peerPort() == clientPort)
             client->write(bytes);

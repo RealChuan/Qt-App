@@ -7,24 +7,24 @@ namespace GUI {
 class MessBox::MessBoxPrivate
 {
 public:
-    MessBoxPrivate(MessBox *q)
+    explicit MessBoxPrivate(MessBox *q)
         : q_ptr(q)
     {
         iconLabel = new QLabel(q_ptr);
         messageLabel = new QLabel(q_ptr);
         messageLabel->setObjectName("MessageLabel");
         messageLabel->setWordWrap(true);
-        closeButton = new QPushButton(QObject::tr("Close"), q_ptr);
+        closeButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "Close"), q_ptr);
         closeButton->setObjectName("BlueButton");
-        yesButton = new QPushButton(QObject::tr("Yes"), q_ptr);
+        yesButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "Yes"), q_ptr);
         yesButton->setObjectName("BlueButton");
-        noButton = new QPushButton(QObject::tr("No"), q_ptr);
+        noButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "No"), q_ptr);
         noButton->setObjectName("GrayButton");
     }
 
     void setupUI()
     {
-        auto hLayout = new QHBoxLayout;
+        auto *hLayout = new QHBoxLayout;
         hLayout->setSpacing(20);
         hLayout->addSpacerItem(
             new QSpacerItem(20, 10, QSizePolicy::Maximum, QSizePolicy::Expanding));
@@ -33,9 +33,9 @@ public:
         hLayout->addSpacerItem(
             new QSpacerItem(20, 10, QSizePolicy::Maximum, QSizePolicy::Expanding));
 
-        auto btnWidget = new QWidget(q_ptr);
+        auto *btnWidget = new QWidget(q_ptr);
         btnWidget->setObjectName("MessBtnWidget");
-        auto btnLayout = new QHBoxLayout(btnWidget);
+        auto *btnLayout = new QHBoxLayout(btnWidget);
         btnLayout->setContentsMargins(10, 5, 20, 5);
         btnLayout->setSpacing(5);
         btnLayout->addStretch();
@@ -47,8 +47,8 @@ public:
         noButton->hide();
         closeButton->hide();
 
-        auto widget = new QWidget(q_ptr);
-        auto layout = new QVBoxLayout(widget);
+        auto *widget = new QWidget(q_ptr);
+        auto *layout = new QVBoxLayout(widget);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->addLayout(hLayout);
         layout->addWidget(btnWidget);
@@ -76,9 +76,9 @@ MessBox::MessBox(QWidget *parent)
     resize(400, 250);
 }
 
-MessBox::~MessBox() {}
+MessBox::~MessBox() = default;
 
-int MessBox::Info(QWidget *parent, const QString &msg, MessButton button)
+auto MessBox::Info(QWidget *parent, const QString &msg, MessButton button) -> int
 {
     MessBox messBox(parent);
     messBox.setIconLabelObjectName("InfoLabel");
@@ -91,7 +91,7 @@ int MessBox::Info(QWidget *parent, const QString &msg, MessButton button)
     return messBox.exec();
 }
 
-int MessBox::Warning(QWidget *parent, const QString &msg, MessButton button)
+auto MessBox::Warning(QWidget *parent, const QString &msg, MessButton button) -> int
 {
     MessBox messBox(parent);
     messBox.setIconLabelObjectName("WarningLabel");

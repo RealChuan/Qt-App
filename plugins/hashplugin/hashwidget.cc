@@ -23,11 +23,17 @@ public:
             hashComboBox->addItem(metaEnums.key(i), value);
         }
 
-        selectFileButton = new QPushButton(QObject::tr("Select File"), q_ptr);
-        selectFileButton->setToolTip(QObject::tr("Select file to calculate hash."));
+        selectFileButton = new QPushButton(QCoreApplication::translate("HashWidgetPrivate",
+                                                                       "Select File"),
+                                           q_ptr);
+        selectFileButton->setToolTip(
+            QCoreApplication::translate("HashWidgetPrivate", "Select file to calculate hash."));
         selectFileButton->setObjectName("BlueButton");
-        calculateButton = new QPushButton(QObject::tr("Calculate"), q_ptr);
-        calculateButton->setToolTip(QObject::tr("Calculate hash."));
+        calculateButton = new QPushButton(QCoreApplication::translate("HashWidgetPrivate",
+                                                                      "Calculate"),
+                                          q_ptr);
+        calculateButton->setToolTip(
+            QCoreApplication::translate("HashWidgetPrivate", "Calculate hash."));
         calculateButton->setObjectName("BlueButton");
         inputEdit = new QTextEdit(q_ptr);
         outputEdit = new QTextEdit(q_ptr);
@@ -43,9 +49,11 @@ public:
         buttonLayout->addWidget(calculateButton);
 
         auto leftLayout = new QVBoxLayout;
-        leftLayout->addWidget(new QLabel(QObject::tr("Input:"), q_ptr));
+        leftLayout->addWidget(
+            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Input:"), q_ptr));
         leftLayout->addWidget(inputEdit);
-        leftLayout->addWidget(new QLabel(QObject::tr("Output:"), q_ptr));
+        leftLayout->addWidget(
+            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Output:"), q_ptr));
         leftLayout->addWidget(outputEdit);
 
         auto bottomLayout = new QHBoxLayout;
@@ -53,8 +61,10 @@ public:
         bottomLayout->addLayout(buttonLayout);
 
         auto descriptionLabel = new QLabel(
-            QObject::tr("If Input String is file path and file exists, calculate hash of file. "
-                        "Otherwise calculate hash of Input String."),
+            QCoreApplication::translate(
+                "HashWidgetPrivate",
+                "If Input String is file path and file exists, calculate hash of file. "
+                "Otherwise calculate hash of Input String."),
             q_ptr);
         descriptionLabel->setWordWrap(true);
 

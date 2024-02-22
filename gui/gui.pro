@@ -21,7 +21,7 @@ HEADERS += \
     itemviews.h \
     messbox.h \
     multitextcursor.h \
-    toolbutton.hpp \
+    pushbutton.hpp \
     treemodel.h \
     waitwidget.h
 
@@ -36,6 +36,6 @@ SOURCES += \
     itemviews.cpp \
     messbox.cpp \
     multitextcursor.cpp \
-    toolbutton.cc \
+    pushbutton.cc \
     treemodel.cpp \
     waitwidget.cpp

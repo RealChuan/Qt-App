@@ -146,11 +146,6 @@ border-radius: 0px;
 *                                   CommonWidget
 *****************************************************************************/
 
-#TitleLabel {
-font-size:16px;
-text-align:center;
-}
-
 #TitleWidget{
 background: white;
 border-top-left-radius: 5px;
@@ -161,12 +156,9 @@ border-style: none none solid none;
 border-color: rgb(231, 231, 231);
 }
 
-#TitleWidget QToolButton{
-width:  16px;
-height: 16px;
-min-width:  16px;
-max-width:  16px;
-min-height: 16px;
-max-height: 16px;
+#TitleButton{
 border: none;
+font-size:16px;
+min-width: 0px;
+min-height: 0px;
 }

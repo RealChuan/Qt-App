@@ -20,8 +20,8 @@ set(PROJECT_SOURCES
     messbox.h
     multitextcursor.cpp
     multitextcursor.h
-    toolbutton.cc
-    toolbutton.hpp
+    pushbutton.cc
+    pushbutton.hpp
     treemodel.cpp
     treemodel.h
     waitwidget.cpp

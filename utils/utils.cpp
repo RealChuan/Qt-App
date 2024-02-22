@@ -18,11 +18,12 @@ void Utils::setUTF8Code()
 void Utils::setQSS(const QStringList &qssFilePaths)
 {
     QString qss;
-    for (const auto &path : qAsConst(qssFilePaths)) {
-        qDebug() << QObject::tr("Loading QSS file: %1.").arg(path);
+    for (const auto &path : std::as_const(qssFilePaths)) {
+        qDebug() << QCoreApplication::translate("Utils", "Loading QSS file: %1.").arg(path);
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qDebug() << QObject::tr("Cannot open the file: %1!").arg(path) << file.errorString();
+            qDebug() << QCoreApplication::translate("Utils", "Cannot open the file: %1!").arg(path)
+                     << file.errorString();
             continue;
         }
         qss.append(QLatin1String(file.readAll())).append("\n");
@@ -37,13 +38,12 @@ void Utils::setQSS(const QStringList &qssFilePaths)
 void Utils::loadFonts(const QString &fontPath)
 {
     const QDir dir(fontPath);
-
     if (!dir.exists()) {
         return;
     }
     // QFontDatabase::removeAllApplicationFonts();
     const auto fonts = dir.entryInfoList(QStringList("*.ttf"), QDir::Files);
-    for (const auto &fileInfo : qAsConst(fonts)) {
+    for (const auto &fileInfo : std::as_const(fonts)) {
         int fontId = QFontDatabase::addApplicationFont(fileInfo.absoluteFilePath());
         if (fontId == -1) {
             qWarning() << QString("Loading Fonts file: %1 Failed.").arg(fileInfo.fileName());
@@ -92,7 +92,7 @@ void Utils::printBuildInfo()
     //            << QOperatingSystemVersion::current();
     const QString info = QString("Qt %1 (%2, %3 bit)")
                              .arg(qVersion(), compilerString(), QString::number(QSysInfo::WordSize));
-    qInfo() << QObject::tr("Build with: ") << info;
+    qInfo() << QCoreApplication::translate("Utils", "Build with: ") << info;
 }
 
 void Utils::setHighDpiEnvironmentVariable()
@@ -134,7 +134,7 @@ auto calculateDir(const QString &localPath) -> qint64
     }
     QFileInfoList list = dir.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
     for (int i = 0; i < list.count(); i++) {
-        QFileInfo info = list.at(i);
+        const QFileInfo &info = list.at(i);
         if (info.isDir()) {
             size += calculateDir(info.filePath());
         } else {
@@ -182,13 +182,13 @@ void removeFiles(const QString &path)
         return;
     }
     const QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden);
-    for (const QFileInfo &fi : qAsConst(entries)) {
+    for (const QFileInfo &fi : std::as_const(entries)) {
         if (fi.isSymLink() || fi.isFile()) {
             QFile f(fi.filePath());
             if (!f.remove()) {
-                const QString errorMessage = QObject::tr("Cannot remove file \"%1\": %2")
-                                                 .arg(QDir::toNativeSeparators(f.fileName()),
-                                                      f.errorString());
+                const QString errorMessage
+                    = QCoreApplication::translate("Utils", "Cannot remove file \"%1\": %2")
+                          .arg(QDir::toNativeSeparators(f.fileName()), f.errorString());
                 qWarning() << errorMessage;
             }
         }
@@ -199,9 +199,10 @@ static auto errnoToQString(int error) -> QString
 {
 #if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
     char msg[128];
-    if (strerror_s(msg, sizeof msg, error) != 0)
+    if (strerror_s(msg, sizeof msg, error) != 0) {
         return QString::fromLocal8Bit(msg);
-    return QString();
+    }
+    return {};
 #else
     return QString::fromLocal8Bit(strerror(error));
 #endif
@@ -225,12 +226,12 @@ void Utils::removeDirectory(const QString &path)
     QDir d;
     dirs.append(path);
     removeFiles(path);
-    for (const QString &dir : qAsConst(dirs)) {
+    for (const QString &dir : std::as_const(dirs)) {
         errno = 0;
         if (d.exists(path) && !d.rmdir(dir)) {
-            const QString errorMessage = QObject::tr("Cannot remove directory \"%1\": %2")
-                                             .arg(QDir::toNativeSeparators(dir),
-                                                  errnoToQString(errno));
+            const QString errorMessage
+                = QCoreApplication::translate("Utils", "Cannot remove directory \"%1\": %2")
+                      .arg(QDir::toNativeSeparators(dir), errnoToQString(errno));
             qWarning() << errorMessage;
         }
     }
@@ -249,33 +250,33 @@ auto Utils::convertBytesToString(qint64 bytes) -> QString
     return QString("%1 %2").arg(QString::number(size, 'f', 2)).arg(list.at(index));
 }
 
-QJsonObject Utils::jsonFromFile(const QString &filePath)
+auto Utils::jsonFromFile(const QString &filePath) -> QJsonObject
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << QObject::tr("Cannot open the file: %1").arg(filePath);
-        return QJsonObject();
+        qWarning() << QCoreApplication::translate("Utils", "Cannot open the file: %1").arg(filePath);
+        return {};
     }
     const QByteArray buf(file.readAll());
     file.close();
     return jsonFromBytes(buf);
 }
 
-QJsonObject Utils::jsonFromBytes(const QByteArray &bytes)
+auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
 {
     QJsonParseError jsonParseError;
     auto jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
     if (QJsonParseError::NoError != jsonParseError.error) {
-        qWarning() << QObject::tr("%1\nOffset: %2")
+        qWarning() << QCoreApplication::translate("Utils", "%1\nOffset: %2")
                           .arg(jsonParseError.errorString(), jsonParseError.offset);
-        return QJsonObject();
+        return {};
     }
     return jsonDocument.object();
 }
 
 void Utils::setGlobalThreadPoolMaxSize(int maxSize)
 {
-    auto instance = QThreadPool::globalInstance();
+    auto *instance = QThreadPool::globalInstance();
     if (maxSize > 0) {
         instance->setMaxThreadCount(maxSize);
         return;
@@ -290,9 +291,6 @@ auto Utils::getConfigPath() -> QString
         path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
         if (path.isEmpty()) {
             path = QDir::homePath();
-        }
-        if (!path.endsWith(qAppName())) {
-            path = path + "/" + qAppName();
         }
     }
     //qInfo() << path;
@@ -396,7 +394,7 @@ void Utils::setMacComboBoxStyle(QWidget *parent)
     return;
 #endif
     auto comboBoxs = parent->findChildren<QComboBox *>();
-    for (const auto comboBox : comboBoxs) {
+    for (auto *const comboBox : comboBoxs) {
         comboBox->setStyle(QStyleFactory::create("Fusion"));
     }
 }

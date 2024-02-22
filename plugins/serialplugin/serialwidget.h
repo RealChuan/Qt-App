@@ -16,15 +16,15 @@ public:
 
 private slots:
     void onSendData();
-    void onParamChanged(const QString &);
+    void onParamChanged(const QString & /*unused*/);
 
-    void onOpenOrCloseSerial(bool);
+    void onOpenOrCloseSerial(bool /*state*/);
 
-    void onLine(bool);
-    void onAppendError(const QString &);
+    void onLine(bool /*state*/);
+    void onAppendError(const QString & /*error*/);
     void onSerialRecvMessage(const QByteArray &bytes);
 
-    void onAutoSend(bool);
+    void onAutoSend(bool /*state*/);
     void onSave();
 
 private:

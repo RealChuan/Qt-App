@@ -47,7 +47,7 @@ struct WidgetSettings
 class SerialWidget::SerialWidgetPrivate
 {
 public:
-    SerialWidgetPrivate(QWidget *q)
+    explicit SerialWidgetPrivate(SerialWidget *q)
         : q_ptr(q)
     {
         displayTextEdit = new QTextEdit(q_ptr);
@@ -55,11 +55,14 @@ public:
         displayTextEdit->setReadOnly(true);
 
         sendTextEdit = new QTextEdit(q_ptr);
-        sendButton = new QPushButton(QObject::tr("Send"), q_ptr);
+        sendButton = new QPushButton(QCoreApplication::translate("SerialWidgetPrivate", "Send"),
+                                     q_ptr);
         sendButton->setObjectName("BlueButton");
         sendButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
-        searchSerialButton = new QPushButton(QObject::tr("Search Available Serial"), q_ptr);
+        searchSerialButton = new QPushButton(QCoreApplication::translate("SerialWidgetPrivate",
+                                                                         "Search Available Serial"),
+                                             q_ptr);
         searchSerialButton->setObjectName("BlueButton");
         portNameBox = new QComboBox(q_ptr);
         baudRateBox = new QComboBox(q_ptr);
@@ -71,42 +74,51 @@ public:
         openOrCloseButton->setObjectName("GrayButton");
         openOrCloseButton->setCheckable(true);
 
-        hexBox = new QCheckBox(QObject::tr("Hex"), q_ptr);
-        autoSendBox = new QCheckBox(QObject::tr("Auto Delivery"), q_ptr);
+        hexBox = new QCheckBox(QCoreApplication::translate("SerialWidgetPrivate", "Hex"), q_ptr);
+        autoSendBox = new QCheckBox(QCoreApplication::translate("SerialWidgetPrivate",
+                                                                "Auto Delivery"),
+                                    q_ptr);
         autoSendTimeBox = new QSpinBox(q_ptr);
-        autoSendTimeBox->setSuffix(QObject::tr(" ms"));
+        autoSendTimeBox->setSuffix(QCoreApplication::translate("SerialWidgetPrivate", " ms"));
         autoSendTimeBox->setRange(0, 10000);
         autoSendTimeBox->setValue(1000);
         autoSendTimeBox->setSingleStep(50);
 
-        sendConutButton = new QPushButton(QObject::tr("Send: 0 Bytes"), q_ptr);
-        recvConutButton = new QPushButton(QObject::tr("Receive: 0 Bytes"), q_ptr);
-        saveButton = new QPushButton(QObject::tr("Save Data"), q_ptr);
-        clearButton = new QPushButton(QObject::tr("Clear Screen"), q_ptr);
+        sendConutButton = new QPushButton(QCoreApplication::translate("SerialWidgetPrivate",
+                                                                      "Send: 0 Bytes"),
+                                          q_ptr);
+        recvConutButton = new QPushButton(QCoreApplication::translate("SerialWidgetPrivate",
+                                                                      "Receive: 0 Bytes"),
+                                          q_ptr);
+        saveButton = new QPushButton(QCoreApplication::translate("SerialWidgetPrivate", "Save Data"),
+                                     q_ptr);
+        clearButton = new QPushButton(QCoreApplication::translate("SerialWidgetPrivate",
+                                                                  "Clear Screen"),
+                                      q_ptr);
 
         sendTimer = new QTimer(q_ptr);
     }
 
     void setupUI()
     {
-        auto displayBox = createDisplayWidget();
-        auto sendBox = createSendWidget();
+        auto *displayBox = createDisplayWidget();
+        auto *sendBox = createSendWidget();
 
-        auto splitter1 = new QSplitter(Qt::Vertical, q_ptr);
+        auto *splitter1 = new QSplitter(Qt::Vertical, q_ptr);
         splitter1->addWidget(displayBox);
         splitter1->addWidget(sendBox);
         splitter1->setHandleWidth(0);
-        splitter1->setSizes(QList<int>() << 400 << 1);
+        splitter1->setSizes(QList<int>{400, 1});
 
-        auto settingBox = createSettingsBox();
+        auto *settingBox = createSettingsBox();
 
-        auto splitter2 = new QSplitter(Qt::Horizontal, q_ptr);
+        auto *splitter2 = new QSplitter(Qt::Horizontal, q_ptr);
         splitter2->addWidget(splitter1);
         splitter2->addWidget(settingBox);
         splitter2->setHandleWidth(10);
-        splitter2->setSizes(QList<int>() << 400 << 1);
+        splitter2->setSizes(QList<int>{400, 1});
 
-        auto layout = new QHBoxLayout(q_ptr);
+        auto *layout = new QHBoxLayout(q_ptr);
         layout->addWidget(splitter2);
     }
 
@@ -132,11 +144,11 @@ public:
             q_ptr, [this] { searchPort(); }, Qt::QueuedConnection);
     }
 
-    void searchPort()
+    void searchPort() const
     {
         portNameBox->clear();
         auto availablePorts = QSerialPortInfo::availablePorts();
-        for (const auto &info : qAsConst(availablePorts)) {
+        for (const auto &info : std::as_const(availablePorts)) {
             QSerialPort port;
             port.setPort(info);
             if (port.open(QIODevice::ReadWrite)) {
@@ -148,7 +160,7 @@ public:
 
     void setWindowSettings()
     {
-        auto serialSettings = &widgetSettings.serialSettings;
+        auto *serialSettings = &widgetSettings.serialSettings;
         setComboxCurrentText(baudRateBox, serialSettings->baudRate);
         setComboxCurrentText(dataBitsBox, serialSettings->dataBits);
         setComboxCurrentText(stopBitsBox, serialSettings->stopBits);
@@ -162,16 +174,20 @@ public:
 
     void setSerialSettings()
     {
-        auto serialParam = &widgetSettings.serialSettings;
+        auto *serialParam = &widgetSettings.serialSettings;
         serialParam->portName = portNameBox->currentText();
-        serialParam->baudRate = QSerialPort::BaudRate(baudRateBox->currentData().toInt());
-        serialParam->dataBits = QSerialPort::DataBits(dataBitsBox->currentData().toInt());
-        serialParam->stopBits = QSerialPort::StopBits(stopBitsBox->currentData().toInt());
-        serialParam->parity = QSerialPort::Parity(parityBox->currentData().toInt());
-        serialParam->flowControl = QSerialPort::FlowControl(flowControlBox->currentData().toInt());
+        serialParam->baudRate = static_cast<QSerialPort::BaudRate>(
+            baudRateBox->currentData().toInt());
+        serialParam->dataBits = static_cast<QSerialPort::DataBits>(
+            dataBitsBox->currentData().toInt());
+        serialParam->stopBits = static_cast<QSerialPort::StopBits>(
+            stopBitsBox->currentData().toInt());
+        serialParam->parity = static_cast<QSerialPort::Parity>(parityBox->currentData().toInt());
+        serialParam->flowControl = static_cast<QSerialPort::FlowControl>(
+            flowControlBox->currentData().toInt());
     }
 
-    void appendDisplay(SerialWidget::MessageType type, const QString &message)
+    void appendDisplay(SerialWidget::MessageType type, const QString &message) const
     {
         if (message.isEmpty()) {
             return;
@@ -203,18 +219,18 @@ public:
                      message));
     }
 
-    void setSendCount() { sendConutButton->setText(tr("Send: %1 Bytes").arg(sendCount)); }
+    void setSendCount() const { sendConutButton->setText(tr("Send: %1 Bytes").arg(sendCount)); }
 
-    void setRecvCount() { recvConutButton->setText(tr("Recv: %1 Bytes").arg(recvCount)); }
+    void setRecvCount() const { recvConutButton->setText(tr("Recv: %1 Bytes").arg(recvCount)); }
 
     void loadSetting()
     {
-        auto setting = ExtensionSystem::PluginManager::settings();
-        if (!setting) {
+        auto *setting = ExtensionSystem::PluginManager::settings();
+        if (setting == nullptr) {
             return;
         }
         setting->beginGroup("serial_config");
-        auto serialParam = &widgetSettings.serialSettings;
+        auto *serialParam = &widgetSettings.serialSettings;
         serialParam->baudRate = QSerialPort::BaudRate(
             setting->value("BaudRate", serialParam->baudRate).toInt());
         serialParam->dataBits = QSerialPort::DataBits(
@@ -234,11 +250,11 @@ public:
 
     void saveSetting()
     {
-        auto setting = ExtensionSystem::PluginManager::settings();
-        if (!setting) {
+        auto *setting = ExtensionSystem::PluginManager::settings();
+        if (setting == nullptr) {
             return;
         }
-        auto serialParam = &widgetSettings.serialSettings;
+        auto *serialParam = &widgetSettings.serialSettings;
         setting->beginGroup("serial_config");
         setting->setValue("BaudRate", serialParam->baudRate);
         setting->setValue("DataBits", serialParam->dataBits);
@@ -252,7 +268,7 @@ public:
         setting->endGroup();
     }
 
-    QWidget *q_ptr;
+    SerialWidget *q_ptr;
 
     QTextEdit *displayTextEdit;
     QTextEdit *sendTextEdit;
@@ -283,33 +299,41 @@ public:
     int recvCount = 0;
 
 private:
-    QWidget *createDisplayWidget()
+    [[nodiscard]] auto createDisplayWidget() const -> QWidget *
     {
-        auto box = new QGroupBox(QObject::tr("Data Display"), q_ptr);
-        auto layout = new QHBoxLayout(box);
+        auto *box = new QGroupBox(QCoreApplication::translate("SerialWidgetPrivate", "Data Display"),
+                                  q_ptr);
+        auto *layout = new QHBoxLayout(box);
         layout->addWidget(displayTextEdit);
         return box;
     }
 
-    QWidget *createSendWidget()
+    [[nodiscard]] auto createSendWidget() const -> QWidget *
     {
-        auto box = new QGroupBox(QObject::tr("Data Send"), q_ptr);
-        auto layout = new QHBoxLayout(box);
+        auto *box = new QGroupBox(QCoreApplication::translate("SerialWidgetPrivate", "Data Send"),
+                                  q_ptr);
+        auto *layout = new QHBoxLayout(box);
         layout->addWidget(sendTextEdit);
         layout->addWidget(sendButton);
         return box;
     }
 
-    QWidget *createSettingsBox()
+    [[nodiscard]] auto createSettingsBox() const -> QWidget *
     {
-        auto formLayout = new QFormLayout;
+        auto *formLayout = new QFormLayout;
         formLayout->setContentsMargins(0, 0, 0, 0);
-        formLayout->addRow(QObject::tr("Port: "), portNameBox);
-        formLayout->addRow(QObject::tr("Baud Rate: "), baudRateBox);
-        formLayout->addRow(QObject::tr("Data Bits: "), dataBitsBox);
-        formLayout->addRow(QObject::tr("Stop Bits: "), stopBitsBox);
-        formLayout->addRow(QObject::tr("Parity: "), parityBox);
-        formLayout->addRow(QObject::tr("Flow Control: "), flowControlBox);
+        formLayout->addRow(QCoreApplication::translate("SerialWidgetPrivate", "Port: "),
+                           portNameBox);
+        formLayout->addRow(QCoreApplication::translate("SerialWidgetPrivate", "Baud Rate: "),
+                           baudRateBox);
+        formLayout->addRow(QCoreApplication::translate("SerialWidgetPrivate", "Data Bits: "),
+                           dataBitsBox);
+        formLayout->addRow(QCoreApplication::translate("SerialWidgetPrivate", "Stop Bits: "),
+                           stopBitsBox);
+        formLayout->addRow(QCoreApplication::translate("SerialWidgetPrivate", "Parity: "),
+                           parityBox);
+        formLayout->addRow(QCoreApplication::translate("SerialWidgetPrivate", "Flow Control: "),
+                           flowControlBox);
 #ifdef Q_OS_MACOS
         formLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
         formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
@@ -317,8 +341,8 @@ private:
         formLayout->setLabelAlignment(Qt::AlignLeft);
 #endif
 
-        auto box = new QGroupBox(tr("Settings"), q_ptr);
-        auto layout = new QVBoxLayout(box);
+        auto *box = new QGroupBox(tr("Settings"), q_ptr);
+        auto *layout = new QVBoxLayout(box);
         layout->addWidget(searchSerialButton);
         layout->addLayout(formLayout);
         layout->addWidget(openOrCloseButton);
@@ -377,7 +401,7 @@ void SerialWidget::onSendData()
     d_ptr->setSendCount();
 }
 
-void SerialWidget::onParamChanged(const QString &)
+void SerialWidget::onParamChanged(const QString & /*unused*/)
 {
     if (d_ptr->serialPortPtr.isNull()) {
         return;
@@ -516,7 +540,7 @@ void SerialWidget::buildConnect()
             this,
             &SerialWidget::onOpenOrCloseSerial);
 
-    auto sendShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), this);
+    auto *sendShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), this);
     connect(sendShortcut, &QShortcut::activated, this, &SerialWidget::onSendData);
     connect(d_ptr->sendButton, &QPushButton::clicked, this, &SerialWidget::onSendData);
 

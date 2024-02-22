@@ -23,8 +23,8 @@ border: 1px solid #dddee1;
 border-radius: 4px;
 min-width: 70px;
 min-height: 24px;
-padding-left: 5px;
-padding-right: 5px;
+padding-left: 10px;
+padding-right: 10px;
 }
 
 QPushButton:!enabled { 
