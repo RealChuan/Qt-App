@@ -21,7 +21,7 @@ jobs:
           - macos-latest
           - ubuntu-latest
         qt_ver: 
-          - 6.6.1
+          - 6.6.2
 
     steps:
       - name: Install Qt
@@ -49,6 +49,7 @@ jobs:
           cmake --version
           clang --version
           vcpkg install breakpad --triplet x64-osx
+          vcpkg install breakpad --triplet arm64-osx
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash

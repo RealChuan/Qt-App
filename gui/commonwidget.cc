@@ -1,5 +1,5 @@
 #include "commonwidget.hpp"
-#include "toolbutton.hpp"
+#include "pushbutton.hpp"
 
 #include <QtWidgets>
 
@@ -9,13 +9,10 @@ namespace GUI {
 class CommonWidget::CommonWidgetPrivate
 {
 public:
-    CommonWidgetPrivate(QWidget *q)
+    CommonWidgetPrivate(CommonWidget *q)
         : q_ptr(q)
     {
-        iconButton = new QToolButton(q_ptr);
-        iconButton->setIcon(qApp->windowIcon());
-        titleLabel = new QLabel(qAppName(), q_ptr);
-        titleLabel->setObjectName("TitleLabel");
+        titleButton = new QPushButton(qApp->windowIcon(), qAppName(), q_ptr);
 
         centralWidget = new QWidget(q_ptr);
         centralWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
@@ -29,14 +26,14 @@ public:
 
     void setupUI()
     {
-        auto widget = new QWidget(q_ptr);
-        auto effect = new QGraphicsDropShadowEffect(q_ptr);
+        auto *widget = new QWidget(q_ptr);
+        auto *effect = new QGraphicsDropShadowEffect(q_ptr);
         effect->setOffset(0, 0);
         effect->setColor(Qt::gray);
         effect->setBlurRadius(shadowPadding);
         widget->setGraphicsEffect(effect);
 
-        auto layout = new QGridLayout(widget);
+        auto *layout = new QGridLayout(widget);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
         layout->addWidget(titleWidget, 0, 0);
@@ -49,14 +46,13 @@ public:
         this->layout->addWidget(widget);
     }
 
-    QWidget *q_ptr;
+    CommonWidget *q_ptr;
 
-    QToolButton *iconButton;
-    QLabel *titleLabel;
-    ToolButton *minButton;
-    ToolButton *maxButton;
-    ToolButton *restoreButton;
-    ToolButton *closeButton;
+    QPushButton *titleButton;
+    PushButton *minButton;
+    PushButton *maxButton;
+    PushButton *restoreButton;
+    PushButton *closeButton;
     QWidget *titleWidget;
     QWidget *centralWidget;
     QWidget *titleBar;
@@ -73,11 +69,10 @@ private:
     {
         titleWidget = new QWidget(q_ptr);
         titleWidget->setObjectName("TitleWidget");
-        auto layout = new QHBoxLayout(titleWidget);
+        auto *layout = new QHBoxLayout(titleWidget);
         layout->setContentsMargins(5, 5, 5, 5);
         layout->setSpacing(10);
-        layout->addWidget(iconButton);
-        layout->addWidget(titleLabel);
+        layout->addWidget(titleButton);
         layout->addStretch();
         layout->addWidget(titleBar);
         layout->addWidget(minButton);
@@ -88,7 +83,7 @@ private:
 
     void initTitleButton()
     {
-        minButton = createToolButton({":/icon/icon/mactitle/titlebutton-minimize.png",
+        minButton = createPushButton({":/icon/icon/mactitle/titlebutton-minimize.png",
                                       ":/icon/icon/mactitle/titlebutton-minimize@2.png",
                                       ":/icon/icon/mactitle/titlebutton-minimize-alt.png",
                                       ":/icon/icon/mactitle/titlebutton-minimize-alt@2.png"},
@@ -101,7 +96,8 @@ private:
                                       ":/icon/icon/mactitle/titlebutton-minimize-active-alt.png",
                                       ":/icon/icon/mactitle/titlebutton-minimize-active-alt@2.png"},
                                      q_ptr);
-        maxButton = createToolButton({":/icon/icon/mactitle/titlebutton-maximize.png",
+
+        maxButton = createPushButton({":/icon/icon/mactitle/titlebutton-maximize.png",
                                       ":/icon/icon/mactitle/titlebutton-maximize@2.png",
                                       ":/icon/icon/mactitle/titlebutton-maximize-alt.png",
                                       ":/icon/icon/mactitle/titlebutton-maximize-alt@2.png"},
@@ -114,7 +110,7 @@ private:
                                       /*":/icon/icon/mactitle/titlebutton-maximize-active-alt.png",
                                       ":/icon/icon/mactitle/titlebutton-maximize-active-alt@2.png"*/},
                                      q_ptr);
-        restoreButton = createToolButton({":/icon/icon/mactitle/titlebutton-restore.png",
+        restoreButton = createPushButton({":/icon/icon/mactitle/titlebutton-restore.png",
                                           ":/icon/icon/mactitle/titlebutton-restore@2.png",
                                           ":/icon/icon/mactitle/titlebutton-restore-alt.png",
                                           ":/icon/icon/mactitle/titlebutton-restore-alt@2.png"},
@@ -127,7 +123,7 @@ private:
                                           /*":/icon/icon/mactitle/titlebutton-restore-active-alt.png",
                                           ":/icon/icon/mactitle/titlebutton-restore-active-alt@2.png"*/},
                                          q_ptr);
-        closeButton = createToolButton({":/icon/icon/mactitle/titlebutton-close.png",
+        closeButton = createPushButton({":/icon/icon/mactitle/titlebutton-close.png",
                                         ":/icon/icon/mactitle/titlebutton-close@2.png",
                                         ":/icon/icon/mactitle/titlebutton-close-alt.png",
                                         ":/icon/icon/mactitle/titlebutton-close-alt@2.png"},
@@ -140,6 +136,19 @@ private:
                                         /*":/icon/icon/mactitle/titlebutton-close-active-alt.png",
                                         ":/icon/icon/mactitle/titlebutton-close-active-alt@2.png"*/},
                                        q_ptr);
+
+        const QSize size{16, 16};
+        minButton->setFixedSize(size);
+        maxButton->setFixedSize(size);
+        restoreButton->setFixedSize(size);
+        closeButton->setFixedSize(size);
+
+        const auto objectName("TitleButton");
+        titleButton->setObjectName(objectName);
+        minButton->setObjectName(objectName);
+        maxButton->setObjectName(objectName);
+        restoreButton->setObjectName(objectName);
+        closeButton->setObjectName(objectName);
     }
 };
 
@@ -183,33 +192,33 @@ void CommonWidget::setMinButtonVisible(bool visible)
 void CommonWidget::setTitle(const QString &title)
 {
     setWindowTitle(title);
-    d_ptr->titleLabel->setToolTip(title);
+    d_ptr->titleButton->setToolTip(title);
 }
 
 void CommonWidget::setIcon(const QIcon &icon)
 {
     if (icon.isNull()) {
-        d_ptr->iconButton->hide();
+        d_ptr->titleButton->setIcon({});
         return;
     }
 
     setWindowIcon(icon);
 }
 
-void CommonWidget::setCentralWidget(QWidget *widget)
+void CommonWidget::setCentralWidget(QWidget *centralWidget)
 {
-    auto layout = new QHBoxLayout(d_ptr->centralWidget);
+    auto *layout = new QHBoxLayout(d_ptr->centralWidget);
     layout->setContentsMargins(QMargins());
     layout->setSpacing(0);
-    layout->addWidget(widget);
+    layout->addWidget(centralWidget);
 }
 
-void CommonWidget::setTitleBar(QWidget *widget)
+void CommonWidget::setTitleBar(QWidget *titleBar)
 {
-    auto layout = new QHBoxLayout(d_ptr->titleBar);
+    auto *layout = new QHBoxLayout(d_ptr->titleBar);
     layout->setContentsMargins(QMargins());
     layout->setSpacing(0);
-    layout->addWidget(widget);
+    layout->addWidget(titleBar);
 }
 
 void CommonWidget::setShadowPadding(int shadowPadding)
@@ -289,15 +298,12 @@ void CommonWidget::mouseDoubleClickEvent(QMouseEvent *event)
     QWidget::mouseDoubleClickEvent(event);
 }
 
-void CommonWidget::changeEvent(QEvent *e)
+void CommonWidget::changeEvent(QEvent *event)
 {
-    QWidget::changeEvent(e);
-    switch (e->type()) {
-    case QEvent::LanguageChange:
-        setTr();
-        break;
-    default:
-        break;
+    QWidget::changeEvent(event);
+    switch (event->type()) {
+    case QEvent::LanguageChange: setTr(); break;
+    default: break;
     }
 }
 
@@ -308,8 +314,9 @@ void CommonWidget::buildConnnect()
     connect(d_ptr->restoreButton, &QToolButton::clicked, this, &CommonWidget::onShowNormal);
     connect(d_ptr->closeButton, &QToolButton::clicked, this, &CommonWidget::aboutToclose);
     connect(this, &CommonWidget::aboutToclose, this, &CommonWidget::close, Qt::QueuedConnection);
-    connect(this, &CommonWidget::windowTitleChanged, d_ptr->titleLabel, &QLabel::setText);
-    connect(this, &CommonWidget::windowIconChanged, d_ptr->iconButton, &QToolButton::setIcon);
+    connect(this, &CommonWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setText);
+    connect(this, &CommonWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setToolTip);
+    connect(this, &CommonWidget::windowIconChanged, d_ptr->titleButton, &QPushButton::setIcon);
 }
 
 void CommonWidget::setTr()

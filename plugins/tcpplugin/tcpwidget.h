@@ -15,22 +15,22 @@ public:
     ~TcpWidget() override;
 
 private slots:
-    void onModelChange(const QString &);
-    void onListenOrConnect(bool);
+    void onModelChange(const QString & /*text*/);
+    void onListenOrConnect(bool /*state*/);
     void onSendData();
-    void onAppendError(const QString &);
+    void onAppendError(const QString & /*error*/);
 
-    void onServerOnline(bool);
-    void onServerNewClient(const QString &);
-    void onServerDisconnectClient(const QString &);
-    void onServerRecvMessage(const QString &, const QByteArray &);
+    void onServerOnline(bool /*state*/);
+    void onServerNewClient(const QString & /*clientInfo*/);
+    void onServerDisconnectClient(const QString & /*clientInfo*/);
+    void onServerRecvMessage(const QString & /*clientInfo*/, const QByteArray & /*bytes*/);
 
     void onClientStateChanged(const QString &text, bool onLine);
-    void onClientRecvMessage(const QByteArray &);
-    void onAutoReconnectStartOrStop(bool);
+    void onClientRecvMessage(const QByteArray & /*bytes*/);
+    void onAutoReconnectStartOrStop(bool /*state*/);
     void onAutoConnect();
 
-    void onAutoSend(bool);
+    void onAutoSend(bool /*state*/);
     void onSave();
 
 private:

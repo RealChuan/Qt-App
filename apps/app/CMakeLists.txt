@@ -26,8 +26,8 @@ else()
   add_rpath(Qt-App)
 endif()
 
-set_target_properties(Qt-App PROPERTIES WIN32_EXECUTABLE TRUE MACOSX_BUNDLE
-                                                              TRUE)
+set_target_properties(Qt-App PROPERTIES MACOSX_BUNDLE TRUE WIN32_EXECUTABLE
+                                                           TRUE)
 
 target_link_libraries(
   Qt-App

@@ -14,7 +14,7 @@ namespace Plugin {
 class MainWindow::MainWindowPrivate
 {
 public:
-    MainWindowPrivate(MainWindow *q)
+    explicit MainWindowPrivate(MainWindow *q)
         : q_ptr(q)
     {
         switchBtnGroup = new QButtonGroup(q_ptr);
@@ -40,8 +40,8 @@ public:
         createSystemTray();
         setInitWidget(tr("Hello World!"));
 
-        auto widget = new QWidget(q_ptr);
-        auto layout = new QHBoxLayout(widget);
+        auto *widget = new QWidget(q_ptr);
+        auto *layout = new QHBoxLayout(widget);
         layout->setContentsMargins(QMargins());
         layout->setSpacing(0);
         layout->addWidget(createSidebar());
@@ -64,17 +64,17 @@ public:
 private:
     void initToolBar()
     {
-        auto configButton = new QPushButton(q_ptr);
-        configButton->setText(QObject::tr("Settings"));
-        configButton->setToolTip(QObject::tr("Settings"));
-        auto configWidget = new ConfigWidget(q_ptr);
+        auto *configButton = new QPushButton(q_ptr);
+        configButton->setText(QCoreApplication::translate("MainWindowPrivate", "Settings"));
+        configButton->setToolTip(QCoreApplication::translate("MainWindowPrivate", "Settings"));
+        auto *configWidget = new ConfigWidget(q_ptr);
         stackedWidget->addWidget(configWidget);
         QObject::connect(configButton, &QPushButton::clicked, q_ptr, [=] {
             stackedWidget->setCurrentWidget(configWidget);
         });
 
-        auto titleBar = new QWidget(q_ptr);
-        auto layout = new QHBoxLayout(titleBar);
+        auto *titleBar = new QWidget(q_ptr);
+        auto *layout = new QHBoxLayout(titleBar);
         layout->setContentsMargins(QMargins());
         layout->setSpacing(10);
         layout->addWidget(configButton);
@@ -90,11 +90,11 @@ private:
             return;
         }
 
-        auto menu = new QMenu(q_ptr);
+        auto *menu = new QMenu(q_ptr);
         menu->addAction(tr("Quit"), q_ptr, &MainWindow::onQuit);
 
-        auto trayIcon = new QSystemTrayIcon(q_ptr);
-        trayIcon->setToolTip(tr("This is an app."));
+        auto *trayIcon = new QSystemTrayIcon(q_ptr);
+        trayIcon->setToolTip(tr("This is an Qt-App."));
         trayIcon->setIcon(QIcon(":/icon/icon/app.png"));
         trayIcon->setContextMenu(menu);
         trayIcon->show();
@@ -103,11 +103,8 @@ private:
                          q_ptr,
                          [this](QSystemTrayIcon::ActivationReason reason) {
                              switch (reason) {
-                             case QSystemTrayIcon::DoubleClick:
-                                 q_ptr->show();
-                                 break;
-                             default:
-                                 break;
+                             case QSystemTrayIcon::DoubleClick: q_ptr->show(); break;
+                             default: break;
                              }
                          });
 
@@ -125,19 +122,19 @@ private:
 
     void setInitWidget(const QString &text)
     {
-        auto label = new QLabel(text, q_ptr);
+        auto *label = new QLabel(text, q_ptr);
         label->setAlignment(Qt::AlignCenter);
         label->setObjectName("HomeLabel");
         stackedWidget->addWidget(label);
         stackedWidget->setCurrentWidget(label);
     }
 
-    QWidget *createSidebar()
+    auto createSidebar() -> QWidget *
     {
-        auto toolsButton = new QPushButton(tr("Common Tools"), q_ptr);
-        auto aboutButton = new QPushButton(tr("About"), q_ptr);
-        auto pluginButton = new QPushButton(tr("About Plugins"), q_ptr);
-        auto qtButton = new QPushButton(tr("About Qt"), q_ptr);
+        auto *toolsButton = new QPushButton(tr("Common Tools"), q_ptr);
+        auto *aboutButton = new QPushButton(tr("About"), q_ptr);
+        auto *pluginButton = new QPushButton(tr("About Plugins"), q_ptr);
+        auto *qtButton = new QPushButton(tr("About Qt"), q_ptr);
 
         QObject::connect(pluginButton, &QPushButton::clicked, q_ptr, &MainWindow::onAboutPlugins);
         QObject::connect(qtButton, &QPushButton::clicked, q_ptr, [this] {
@@ -161,9 +158,9 @@ private:
         vLayoutGroup2->addWidget(pluginButton);
         vLayoutGroup2->addWidget(qtButton);
 
-        auto widget = new QWidget(q_ptr);
+        auto *widget = new QWidget(q_ptr);
         widget->setObjectName("MenuWidget");
-        auto layout = new QVBoxLayout(widget);
+        auto *layout = new QVBoxLayout(widget);
         layout->setContentsMargins(QMargins());
         layout->setSpacing(0);
         layout->addLayout(vLayoutGroup1);
@@ -183,12 +180,12 @@ MainWindow::MainWindow(QWidget *parent)
     buildConnect();
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() = default;
 
 void MainWindow::extensionsInitialized()
 {
-    for (const auto page : ExtensionSystem::PluginManager::getObjects<Core::CoreWidget>()) {
-        if (!page->widget()) {
+    for (auto *const page : ExtensionSystem::PluginManager::getObjects<Core::CoreWidget>()) {
+        if (page->widget() == nullptr) {
             continue;
         }
         if (page->button()->property("Type") == Core::CoreWidget::Tool) {
@@ -210,9 +207,9 @@ void MainWindow::extensionsInitialized()
 
 void MainWindow::onShowGroupButton(int id)
 {
-    auto button = d_ptr->switchBtnGroup->button(id);
+    auto *button = d_ptr->switchBtnGroup->button(id);
     auto type = button->property("Type");
-    for (auto btn : d_ptr->menuBtnGroup->buttons()) {
+    for (auto *btn : d_ptr->menuBtnGroup->buttons()) {
         if (btn->property("Type") == type) {
             btn->show();
         } else {
@@ -239,11 +236,11 @@ void MainWindow::buildConnect()
 
 void MainWindow::initMenu()
 {
-    for (auto btn : d_ptr->switchBtnGroup->buttons()) {
+    for (auto *btn : d_ptr->switchBtnGroup->buttons()) {
         btn->setLayoutDirection(Qt::LeftToRight);
         btn->setProperty("class", "GroupButton");
     }
-    for (auto btn : d_ptr->menuBtnGroup->buttons()) {
+    for (auto *btn : d_ptr->menuBtnGroup->buttons()) {
         btn->setProperty("class", "GroupItemButton");
         btn->setCheckable(true);
     }

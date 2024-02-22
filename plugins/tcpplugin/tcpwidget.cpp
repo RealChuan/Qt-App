@@ -26,7 +26,7 @@ auto formatHex(const QByteArray &msg) -> QString
 class TcpWidget::TcpWidgetPrivate
 {
 public:
-    TcpWidgetPrivate(QWidget *q)
+    explicit TcpWidgetPrivate(TcpWidget *q)
         : q_ptr(q)
     {
         displayTextEdit = new QTextEdit(q_ptr);
@@ -34,81 +34,91 @@ public:
         displayTextEdit->setReadOnly(true);
 
         sendTextEdit = new QTextEdit(q_ptr);
-        sendButton = new QPushButton(QObject::tr("Send"), q_ptr);
+        sendButton = new QPushButton(QCoreApplication::translate("TcpWidgetPrivate", "Send"), q_ptr);
         sendButton->setObjectName("BlueButton");
         sendButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
         modelBox = new QComboBox(q_ptr);
         modelBox->addItems({"TcpServer", "TcpClient"});
-        ipLabel = new QLabel(QObject::tr("Local IP List: "), q_ptr);
+        ipLabel = new QLabel(QCoreApplication::translate("TcpWidgetPrivate", "Local IP List: "),
+                             q_ptr);
         localIPBox = new QComboBox(q_ptr);
         serverIPEdit = new QLineEdit(q_ptr);
-        serverIPEdit->setPlaceholderText(QObject::tr("Please enter the server IP address."));
+        serverIPEdit->setPlaceholderText(
+            QCoreApplication::translate("TcpWidgetPrivate", "Please enter the server IP address."));
         QRegularExpression regExp(
             "^((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)$");
-        auto validator = new QRegularExpressionValidator(regExp, serverIPEdit);
+        auto *validator = new QRegularExpressionValidator(regExp, serverIPEdit);
         serverIPEdit->setValidator(validator);
-        portLabel = new QLabel(QObject::tr("Local Port: "), q_ptr);
+        portLabel = new QLabel(QCoreApplication::translate("TcpWidgetPrivate", "Local Port: "),
+                               q_ptr);
         portEdit = new QLineEdit(q_ptr);
-        portEdit->setPlaceholderText(QObject::tr("Please enter the port number."));
+        portEdit->setPlaceholderText(
+            QCoreApplication::translate("TcpWidgetPrivate", "Please enter the port number."));
         portEdit->setValidator(new Utils::IntValidator(0, 65536, portEdit));
         listenOrConnectButton = new QPushButton(q_ptr);
         listenOrConnectButton->setCheckable(true);
         listenOrConnectButton->setObjectName("GrayButton");
 
-        hexBox = new QCheckBox(QObject::tr("Hex"), q_ptr);
-        autoSendBox = new QCheckBox(QObject::tr("Auto Delivery"), q_ptr);
+        hexBox = new QCheckBox(QCoreApplication::translate("TcpWidgetPrivate", "Hex"), q_ptr);
+        autoSendBox = new QCheckBox(QCoreApplication::translate("TcpWidgetPrivate", "Auto Delivery"),
+                                    q_ptr);
         autoSendTimeBox = new QSpinBox(q_ptr);
-        autoSendTimeBox->setSuffix(QObject::tr(" ms"));
+        autoSendTimeBox->setSuffix(QCoreApplication::translate("TcpWidgetPrivate", " ms"));
         autoSendTimeBox->setRange(0, 10000);
         autoSendTimeBox->setValue(1000);
         autoSendTimeBox->setSingleStep(50);
 
         allConnectBox = new QComboBox(q_ptr);
-        allConnectBox->addItem(QObject::tr("Connect All"));
-        autoConnectBox = new QCheckBox(QObject::tr("Auto Reconnect"), q_ptr);
+        allConnectBox->addItem(QCoreApplication::translate("TcpWidgetPrivate", "Connect All"));
+        autoConnectBox = new QCheckBox(QCoreApplication::translate("TcpWidgetPrivate",
+                                                                   "Auto Reconnect"),
+                                       q_ptr);
         autoConnectTimeBox = new QSpinBox(q_ptr);
-        autoConnectTimeBox->setSuffix(QObject::tr(" ms"));
+        autoConnectTimeBox->setSuffix(QCoreApplication::translate("TcpWidgetPrivate", " ms"));
         autoConnectTimeBox->setRange(1000, 100000);
         autoConnectTimeBox->setValue(1000);
         autoConnectTimeBox->setSingleStep(50);
 
         sendConutButton = new QPushButton(q_ptr);
         recvConutButton = new QPushButton(q_ptr);
-        saveButton = new QPushButton(QObject::tr("Save Data"), q_ptr);
-        clearButton = new QPushButton(QObject::tr("Clear Screen"), q_ptr);
+        saveButton = new QPushButton(QCoreApplication::translate("TcpWidgetPrivate", "Save Data"),
+                                     q_ptr);
+        clearButton = new QPushButton(QCoreApplication::translate("TcpWidgetPrivate",
+                                                                  "Clear Screen"),
+                                      q_ptr);
 
         setWidget = new QWidget(q_ptr);
     }
 
     void setupUI()
     {
-        auto displayBox = createDisplayWidget();
-        auto sendBox = createSendWidget();
+        auto *displayBox = createDisplayWidget();
+        auto *sendBox = createSendWidget();
 
-        auto splitter1 = new QSplitter(Qt::Vertical, q_ptr);
+        auto *splitter1 = new QSplitter(Qt::Vertical, q_ptr);
         splitter1->addWidget(displayBox);
         splitter1->addWidget(sendBox);
         splitter1->setHandleWidth(0);
-        splitter1->setSizes(QList<int>() << 400 << 1);
+        splitter1->setSizes(QList<int>{400, 1});
 
-        auto settingBox = createSettingsBox();
+        auto *settingBox = createSettingsBox();
 
-        auto splitter2 = new QSplitter(Qt::Horizontal, q_ptr);
+        auto *splitter2 = new QSplitter(Qt::Horizontal, q_ptr);
         splitter2->addWidget(splitter1);
         splitter2->addWidget(settingBox);
         splitter2->setHandleWidth(10);
-        splitter2->setSizes(QList<int>() << 300 << 1);
+        splitter2->setSizes(QList<int>{400, 1});
 
-        auto layout = new QHBoxLayout(q_ptr);
+        auto *layout = new QHBoxLayout(q_ptr);
         layout->addWidget(splitter2);
     }
 
-    void initWindow()
+    void initWindow() const
     {
         localIPBox->clear();
         auto ipList = QNetworkInterface::allAddresses();
-        for (const auto &address : qAsConst(ipList)) {
+        for (const auto &address : std::as_const(ipList)) {
             if (address.protocol() == QAbstractSocket::IPv4Protocol) {
                 localIPBox->addItem(address.toString());
             }
@@ -116,9 +126,17 @@ public:
         localIPBox->setCurrentIndex(localIPBox->count() - 1);
     }
 
-    void setSendCount() { sendConutButton->setText(QObject::tr("Send: %1 Bytes").arg(sendCount)); }
+    void setSendCount() const
+    {
+        sendConutButton->setText(
+            QCoreApplication::translate("TcpWidgetPrivate", "Send: %1 Bytes").arg(sendCount));
+    }
 
-    void setRecvCount() { recvConutButton->setText(QObject::tr("Recv: %1 Bytes").arg(recvCount)); }
+    void setRecvCount() const
+    {
+        recvConutButton->setText(
+            QCoreApplication::translate("TcpWidgetPrivate", "Recv: %1 Bytes").arg(recvCount));
+    }
 
     void clearCount()
     {
@@ -128,7 +146,7 @@ public:
         setRecvCount();
     }
 
-    void appendDisplay(TcpWidget::MessageType type, const QString &message)
+    void appendDisplay(TcpWidget::MessageType type, const QString &message) const
     {
         if (message.isEmpty()) {
             return;
@@ -136,34 +154,34 @@ public:
         QString display;
         switch (type) {
         case Send:
-            display = QObject::tr(" >> Network Send: ");
+            display = QCoreApplication::translate("TcpWidgetPrivate", " >> Network Send: ");
             displayTextEdit->setTextColor(Qt::black);
             break;
         case Recv:
-            display = QObject::tr(" >> Network Recv: ");
+            display = QCoreApplication::translate("TcpWidgetPrivate", " >> Network Recv: ");
             displayTextEdit->setTextColor(QColor("dodgerblue"));
             break;
         case SuccessInfo:
-            display = QObject::tr(" >> Prompt Message: ");
+            display = QCoreApplication::translate("TcpWidgetPrivate", " >> Prompt Message: ");
             displayTextEdit->setTextColor(Qt::green);
             break;
         case ErrorInfo:
-            display = QObject::tr(" >> Prompt Message: ");
+            display = QCoreApplication::translate("TcpWidgetPrivate", " >> Prompt Message: ");
             displayTextEdit->setTextColor(Qt::red);
             break;
         default: return;
         }
         displayTextEdit->append(
-            QObject::tr("Time [%1] %2 %3")
+            QCoreApplication::translate("TcpWidgetPrivate", "Time [%1] %2 %3")
                 .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz"),
                      display,
                      message));
     }
 
-    void loadSetting()
+    void loadSetting() const
     {
-        auto setting = ExtensionSystem::PluginManager::settings();
-        if (!setting) {
+        auto *setting = ExtensionSystem::PluginManager::settings();
+        if (setting == nullptr) {
             return;
         }
         setting->beginGroup("tcp_config");
@@ -178,10 +196,10 @@ public:
         setting->endGroup();
     }
 
-    void saveSetting()
+    void saveSetting() const
     {
-        auto setting = ExtensionSystem::PluginManager::settings();
-        if (!setting) {
+        auto *setting = ExtensionSystem::PluginManager::settings();
+        if (setting == nullptr) {
             return;
         }
         setting->beginGroup("tcp_config");
@@ -196,7 +214,7 @@ public:
         setting->endGroup();
     }
 
-    QWidget *q_ptr;
+    TcpWidget *q_ptr;
 
     QTextEdit *displayTextEdit;
     QTextEdit *sendTextEdit;
@@ -233,28 +251,31 @@ public:
     int recvCount = 0;
 
 private:
-    QWidget *createDisplayWidget()
+    [[nodiscard]] auto createDisplayWidget() const -> QWidget *
     {
-        auto box = new QGroupBox(QObject::tr("Data Display"), q_ptr);
-        auto layout = new QHBoxLayout(box);
+        auto *box = new QGroupBox(QCoreApplication::translate("TcpWidgetPrivate", "Data Display"),
+                                  q_ptr);
+        auto *layout = new QHBoxLayout(box);
         layout->addWidget(displayTextEdit);
         return box;
     }
 
-    QWidget *createSendWidget()
+    [[nodiscard]] auto createSendWidget() const -> QWidget *
     {
-        auto box = new QGroupBox(QObject::tr("Data Send"), q_ptr);
-        auto layout = new QHBoxLayout(box);
+        auto *box = new QGroupBox(QCoreApplication::translate("TcpWidgetPrivate", "Data Send"),
+                                  q_ptr);
+        auto *layout = new QHBoxLayout(box);
         layout->addWidget(sendTextEdit);
         layout->addWidget(sendButton);
         return box;
     }
 
-    QWidget *createSettingsBox()
+    [[nodiscard]] auto createSettingsBox() const -> QWidget *
     {
-        auto setLayout = new QVBoxLayout(setWidget);
+        auto *setLayout = new QVBoxLayout(setWidget);
         setLayout->setContentsMargins(0, 0, 0, 0);
-        setLayout->addWidget(new QLabel(QObject::tr("Mode: "), q_ptr));
+        setLayout->addWidget(
+            new QLabel(QCoreApplication::translate("TcpWidgetPrivate", "Mode: "), q_ptr));
         setLayout->addWidget(modelBox);
         setLayout->addWidget(ipLabel);
         setLayout->addWidget(localIPBox);
@@ -263,8 +284,9 @@ private:
         setLayout->addWidget(portEdit);
         setLayout->addWidget(listenOrConnectButton);
 
-        auto box = new QGroupBox(QObject::tr("Settings"), q_ptr);
-        auto layout = new QVBoxLayout(box);
+        auto *box = new QGroupBox(QCoreApplication::translate("TcpWidgetPrivate", "Settings"),
+                                  q_ptr);
+        auto *layout = new QVBoxLayout(box);
         layout->addWidget(setWidget);
         layout->addWidget(hexBox);
         layout->addWidget(autoSendBox);
@@ -383,10 +405,10 @@ void TcpWidget::onSendData()
     }
     auto clientInfo = d_ptr->allConnectBox->currentText();
     if (clientInfo == tr("Connect All")) {
-        d_ptr->appendDisplay(Send, QString(tr("Send To All Online Clients: %1.").arg(text)));
+        d_ptr->appendDisplay(Send, tr("Send To All Online Clients: %1.").arg(text));
         clientInfo.clear();
     } else {
-        d_ptr->appendDisplay(Send, QString(tr("Send To Clients [%1] : %2.").arg(clientInfo, text)));
+        d_ptr->appendDisplay(Send, tr("Send To Clients [%1] : %2.").arg(clientInfo, text));
     }
     d_ptr->tcpServerPtr->sendMessage(bytes, clientInfo);
     d_ptr->sendCount += text.size();
@@ -563,7 +585,7 @@ void TcpWidget::buildConnect()
             this,
             &TcpWidget::onListenOrConnect);
 
-    auto sendShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), this);
+    auto *sendShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), this);
     connect(sendShortcut, &QShortcut::activated, this, &TcpWidget::onSendData);
     connect(d_ptr->sendButton, &QPushButton::clicked, this, &TcpWidget::onSendData);
 
@@ -611,7 +633,7 @@ void TcpWidget::resetTcpServer()
             this,
             &TcpWidget::onServerRecvMessage);
     auto ok = d_ptr->tcpServerPtr->listen(QHostAddress(d_ptr->localIPBox->currentText()),
-                                          quint16(port.toUInt()));
+                                          static_cast<quint16>(port.toUInt()));
     onServerOnline(ok);
 }
 
@@ -633,7 +655,7 @@ void TcpWidget::resetTcpClient()
         onAutoReconnectStartOrStop(false);
         return;
     }
-    d_ptr->tcpClientPtr.reset(new TcpClient(ip, quint16(port.toUInt())));
+    d_ptr->tcpClientPtr.reset(new TcpClient(ip, static_cast<quint16>(port.toUInt())));
     connect(d_ptr->tcpClientPtr.data(), &TcpClient::errorMessage, this, &TcpWidget::onAppendError);
     connect(d_ptr->tcpClientPtr.data(),
             &TcpClient::serverMessage,

@@ -19,11 +19,11 @@ public:
     void setRestoreMaxButtonVisible(bool);
     void setMinButtonVisible(bool);
 
-    void setTitle(const QString &);
-    void setIcon(const QIcon &);
+    void setTitle(const QString &title);
+    void setIcon(const QIcon &icon);
 
-    void setCentralWidget(QWidget *);
-    void setTitleBar(QWidget *);
+    void setCentralWidget(QWidget *centralWidget);
+    void setTitleBar(QWidget *titleBar);
 
     void setShadowPadding(int shadowPadding = 10);
     auto shadowPadding() -> int;
@@ -42,7 +42,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void changeEvent(QEvent *e) override;
+    void changeEvent(QEvent *event) override;
 
 private:
     void buildConnnect();
