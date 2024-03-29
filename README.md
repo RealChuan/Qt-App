@@ -8,7 +8,7 @@
 
 ## Qt-App
 
-- 基于插件是开发的桌面应用程序框架，可以用于快速开发桌面应用程序；
+- 插件式开发的桌面应用程序框架，可以用于快速开发桌面应用程序；
 [qt-creator/src/libs/extensionsystem at master · qt-creator/qt-creator (github.com)](https://github.com/qt-creator/qt-creator/tree/master/src/libs/extensionsystem)；
 - 配合[vcpkg](https://github.com/microsoft/vcpkg)进行使用；
 - 同时支持[cmake](.github/workflows/cmake.yml)和[qmake](.github/workflows/qmake.yml)编译；

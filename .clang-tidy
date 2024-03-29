@@ -1,15 +1,7 @@
 ---
-Checks:          '-*,clang-analyzer-*,readability-*,performance-*,modernize-*,bugprone-*,cert-,cppcoreguidelines-,portability-*,llvm-*,google-*'
+Checks:          'clang-analyzer-*,readability-*,performance-*,modernize-*,bugprone-*,cert-*,portability-*,llvm-*,google-*'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.'
 AnalyzeTemporaryDtors: false
-FormatStyle:     file
+FormatStyle:     none
 User:            user
-CheckOptions:
-  - key:             readability-identifier-naming.ClassMemberPrefix
-    value:           'm_'
-  - key:             readability-identifier-naming.ConstexprVariablePrefix
-    value:           'k'
-  - key:             readability-identifier-naming.GlobalVariablePrefix
-    value:           'g_'
-
