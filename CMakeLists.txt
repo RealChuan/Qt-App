@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21.1)
+cmake_minimum_required(VERSION 3.25.1)
 
 if(CMAKE_HOST_WIN32)
   set(CMAKE_TOOLCHAIN_FILE
@@ -8,7 +8,7 @@ elseif(CMAKE_HOST_APPLE)
   set(CMAKE_TOOLCHAIN_FILE
       "/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake"
       CACHE STRING "Vcpkg toolchain file")
-elseif(CMAKE_HOST_UNIX)
+elseif(CMAKE_HOST_LINUX)
   set(CMAKE_TOOLCHAIN_FILE
       "/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake"
       CACHE STRING "Vcpkg toolchain file")
@@ -18,11 +18,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(utils)
 
 if(CMAKE_HOST_WIN32)
-  list(APPEND CMAKE_PREFIX_PATH "C:\\Qt\\6.6.2\\msvc2019_64")
+  list(APPEND CMAKE_PREFIX_PATH "C:\\Qt\\6.7.0\\msvc2019_64")
 elseif(CMAKE_HOST_APPLE)
 
-elseif(CMAKE_HOST_UNIX)
-  list(APPEND CMAKE_PREFIX_PATH "/opt/Qt/6.6.2/gcc_64")
+elseif(CMAKE_HOST_LINUX)
+  list(APPEND CMAKE_PREFIX_PATH "/opt/Qt/6.7.0/gcc_64")
 endif()
 
 project(

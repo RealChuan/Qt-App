@@ -15,8 +15,28 @@ namespace Utils {
 
 const static int g_kRollPerSeconds = 60 * 60 * 24;
 
-struct FileUtilPrivate
+static auto getFileName(qint64 *now) -> QString
 {
+    *now = QDateTime::currentSecsSinceEpoch();
+    QString data = QDateTime::fromSecsSinceEpoch(*now).toString("yyyy-MM-dd-hh-mm-ss");
+    QString filename = QString("%1/log/%2.%3.%4.%5.log")
+                           .arg(Utils::getConfigPath(),
+                                qAppName(),
+                                data,
+                                QSysInfo::machineHostName(),
+                                QString::number(qApp->applicationPid()));
+    return filename;
+}
+
+class FileUtil::FileUtilPrivate
+{
+public:
+    explicit FileUtilPrivate(FileUtil *q)
+        : q_ptr(q)
+    {}
+
+    FileUtil *q_ptr;
+
     QFile file;
     //QTextStream 读写分离的，内部有缓冲区static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     QTextStream stream;
@@ -28,7 +48,7 @@ struct FileUtilPrivate
 
 FileUtil::FileUtil(qint64 days, QObject *parent)
     : QObject(parent)
-    , d_ptr(new FileUtilPrivate)
+    , d_ptr(new FileUtilPrivate(this))
 {
     d_ptr->autoDelFileDays = days;
     Utils::generateDirectorys(Utils::getConfigPath() + "/log");
@@ -62,24 +82,11 @@ void FileUtil::onFlush()
     d_ptr->stream.flush();
 }
 
-QString FileUtil::getFileName(qint64 *now) const
-{
-    *now = QDateTime::currentSecsSinceEpoch();
-    QString data = QDateTime::fromSecsSinceEpoch(*now).toString("yyyy-MM-dd-hh-mm-ss");
-    QString filename = QString("%1/log/%2.%3.%4.%5.log")
-                           .arg(Utils::getConfigPath(),
-                                qAppName(),
-                                data,
-                                QSysInfo::machineHostName(),
-                                QString::number(qApp->applicationPid()));
-    return filename;
-}
-
-bool FileUtil::rollFile(int count)
+auto FileUtil::rollFile(int count) -> bool
 {
     qint64 now = 0;
     QString filename = getFileName(&now);
-    if (count) {
+    if (count != 0) {
         filename += QString(".%1").arg(count);
     } else {
         autoDelFile();
@@ -120,7 +127,7 @@ void FileUtil::autoDelFile()
 
 void FileUtil::setTimer()
 {
-    QTimer *timer = new QTimer(this);
+    auto *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &FileUtil::onFlush);
     timer->start(5000); // 5秒刷新一次
 }
@@ -128,8 +135,10 @@ void FileUtil::setTimer()
 // 消息处理函数
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    if (type < LogAsync::instance()->logLevel())
+    auto *instance = LogAsync::instance();
+    if (type < instance->logLevel()) {
         return;
+    }
 
     FILE *stdPrint = stdout;
     QString level;
@@ -158,7 +167,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     }
 
     const QString dataTimeString(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"));
-    const QString threadId = QString("%1").arg(qulonglong(QThread::currentThreadId()),
+    const QString threadId = QString("%1").arg(reinterpret_cast<quint64>(QThread::currentThreadId()),
                                                5,
                                                10,
                                                QLatin1Char('0'));
@@ -171,16 +180,16 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     const QString message = QString("%1 %2 [%3] %4 - %5\n")
                                 .arg(dataTimeString, threadId, level, msg, contexInfo);
 
-    switch (LogAsync::instance()->orientation()) {
+    switch (instance->orientation()) {
     case LogAsync::Orientation::Std:
         fprintf(stdPrint, "%s", message.toLocal8Bit().constData());
         ::fflush(stdPrint);
         break;
-    case LogAsync::Orientation::File: emit LogAsync::instance()->appendBuf(message); break;
+    case LogAsync::Orientation::File: emit instance->appendBuf(message); break;
     case LogAsync::Orientation::StdAndFile:
         fprintf(stdPrint, "%s", message.toLocal8Bit().constData());
         ::fflush(stdPrint);
-        emit LogAsync::instance()->appendBuf(message);
+        emit instance->appendBuf(message);
         break;
     default:
         fprintf(stdPrint, "%s", message.toLocal8Bit().constData());
@@ -202,7 +211,7 @@ void LogAsync::setOrientation(LogAsync::Orientation orientation)
     d_ptr->orientation = orientation;
 }
 
-LogAsync::Orientation LogAsync::orientation()
+auto LogAsync::orientation() -> LogAsync::Orientation
 {
     return d_ptr->orientation;
 }
@@ -212,7 +221,7 @@ void LogAsync::setLogLevel(QtMsgType type)
     d_ptr->msgType = type;
 }
 
-QtMsgType LogAsync::logLevel()
+auto LogAsync::logLevel() -> QtMsgType
 {
     return d_ptr->msgType;
 }

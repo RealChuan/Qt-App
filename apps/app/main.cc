@@ -73,14 +73,16 @@ auto main(int argc, char *argv[]) -> int
     app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
 
-    auto breakPad = Utils::BreakPad::instance();
+    setAppInfo();
+
+    auto *breakPad = Utils::BreakPad::instance();
     QObject::connect(breakPad, &Utils::BreakPad::crash, [] { Utils::openCrashReporter(); });
 
     QDir::setCurrent(app.applicationDirPath());
     Utils::LanguageConfig::instance()->loadLanguage();
 
     // 异步日志
-    auto log = Utils::LogAsync::instance();
+    auto *log = Utils::LogAsync::instance();
     log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
@@ -95,15 +97,13 @@ auto main(int argc, char *argv[]) -> int
     // Make sure we honor the system's proxy settings
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-    setAppInfo();
-
     // 等待界面
     QScopedPointer<GUI::WaitWidget> waitWidgetPtr(new GUI::WaitWidget);
     waitWidgetPtr->show();
     app.processEvents();
 
-    auto setting = new Utils::QtcSettings(Utils::getConfigPath() + "/config/config.ini",
-                                          QSettings::IniFormat);
+    auto *setting = new Utils::QtcSettings(Utils::getConfigPath() + "/config/config.ini",
+                                           QSettings::IniFormat);
     ExtensionSystem::PluginManager pluginManager;
     ExtensionSystem::PluginManager::setSettings(setting);
     ExtensionSystem::PluginManager::setPluginIID(QLatin1String("Youth.Qt.plugin"));
@@ -119,14 +119,14 @@ auto main(int argc, char *argv[]) -> int
 
     const auto plugins = ExtensionSystem::PluginManager::plugins();
     ExtensionSystem::PluginSpec *coreSpec = nullptr;
-    for (auto spec : plugins) {
+    for (auto *spec : plugins) {
         if (spec->name() == QLatin1String("CorePlugin")) {
             coreSpec = spec;
             break;
         }
     }
 
-    if (coreSpec) {
+    if (coreSpec != nullptr) {
         QObject::connect(&app, &SharedTools::QtSingleApplication::messageReceived, [=] {
             coreSpec->plugin()->remoteCommand({}, {}, {});
         });

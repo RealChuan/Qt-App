@@ -23,15 +23,14 @@ void LanguageConfig::loadLanguage()
     switch (m_currentLanguage) {
     case Chinese:
         qInfo() << m_translatorPtr->load(qApp->applicationDirPath()
-                                         + "/translations/language.zh_cn.qm");
+                                         + "/translations/qt_app_zh_cn.qm");
         break;
     case English:
-        qInfo() << m_translatorPtr->load(qApp->applicationDirPath()
-                                         + "/translations/language.zh_en.qm");
+        qInfo() << m_translatorPtr->load(qApp->applicationDirPath() + "/translations/qt_app_en.qm");
         break;
     default:
         qInfo() << m_translatorPtr->load(qApp->applicationDirPath()
-                                         + "/translations/language.zh_cn.qm");
+                                         + "/translations/qt_app_zh_cn.qm");
         break;
     }
     qApp->installTranslator(m_translatorPtr.data());

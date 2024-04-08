@@ -41,14 +41,14 @@ jobs:
           - macos-latest
           - ubuntu-latest
         qt_ver: 
-          - 6.6.2
+          - 6.7.0
         arch:
           - x86_64
         vcpkg_libs:
           - breakpad
         include:
           - os: macos-latest
-            qt_ver: 6.6.2
+            qt_ver: 6.7.0
             arch: arm64
             vcpkg_libs: breakpad
 

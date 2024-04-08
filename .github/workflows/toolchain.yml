@@ -21,7 +21,7 @@ jobs:
           - macos-latest
           - ubuntu-latest
         qt_ver: 
-          - 6.6.2
+          - 6.7.0
         vcpkg_libs:
           - breakpad
 

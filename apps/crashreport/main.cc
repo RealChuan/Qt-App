@@ -66,12 +66,14 @@ auto main(int argc, char *argv[]) -> int
     app.setAttribute(Qt::AA_UseHighDpiPixmaps);
     app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
+
+    setAppInfo();
     Utils::BreakPad::instance();
     QDir::setCurrent(app.applicationDirPath());
     Utils::LanguageConfig::instance()->loadLanguage();
 
     // 异步日志
-    auto log = Utils::LogAsync::instance();
+    auto *log = Utils::LogAsync::instance();
     log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
@@ -85,8 +87,6 @@ auto main(int argc, char *argv[]) -> int
 
     // Make sure we honor the system's proxy settings
     QNetworkProxyFactory::setUseSystemConfiguration(true);
-
-    setAppInfo();
 
     Crash::CrashWidgets w;
     w.show();

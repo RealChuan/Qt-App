@@ -1,8 +1,6 @@
 include(../../common.pri)
 
-QT       += core gui network widgets
-
-greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
+QT       += core gui network widgets core5compat
 
 macx {
 CONFIG -= app_bundle

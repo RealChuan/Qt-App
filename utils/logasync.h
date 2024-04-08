@@ -8,7 +8,6 @@
 
 namespace Utils {
 
-struct FileUtilPrivate;
 class FileUtil : public QObject
 {
     Q_OBJECT
@@ -17,17 +16,17 @@ public:
     ~FileUtil() override;
 
 public slots:
-    void onWrite(const QString &);
+    void onWrite(const QString & /*msg*/);
 
 private slots:
     void onFlush();
 
 private:
-    auto getFileName(qint64 *now) const -> QString;
-    auto rollFile(int) -> bool;
+    auto rollFile(int /*count*/) -> bool;
     void autoDelFile();
     void setTimer();
 
+    class FileUtilPrivate;
     QScopedPointer<FileUtilPrivate> d_ptr;
 };
 
@@ -38,10 +37,10 @@ class UTILS_EXPORT LogAsync : public QThread
 public:
     enum Orientation { Std = 1, File, StdAndFile };
 
-    void setOrientation(Orientation);
+    void setOrientation(Orientation /*orientation*/);
     auto orientation() -> Orientation;
 
-    void setLogLevel(QtMsgType);
+    void setLogLevel(QtMsgType /*type*/);
     auto logLevel() -> QtMsgType;
 
     void startWork();
