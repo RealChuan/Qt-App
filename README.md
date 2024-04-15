@@ -65,3 +65,7 @@
    1. 由于[vcpkg](https://github.com/microsoft/vcpkg)目前[只支持单独编译x64-osx和arm64-osx](https://github.com/microsoft/vcpkg/discussions/19454)；
    2. 在使用[cmake](.github/workflows/cmake.yml)时，需要指定`CMAKE_OSX_ARCHITECTURES=x86_64`或者`CMAKE_OSX_ARCHITECTURES=arm64`;
    3. 在使用[qmake](.github/workflows/qmake.yml)时，需要指定`QMAKE_APPLE_DEVICE_ARCHS=x86_64`或者`QMAKE_APPLE_DEVICE_ARCHS=arm64`；
+
+- 为什么不使用google crashpad作为崩溃捕捉模块？
+   1. vcpkg对crashpad在macos和linux下支持不好；
+   2. 如果想要使用crashpad，[参考代码](https://github.com/RealChuan/Cpp-Examples/tree/master/Crashpad);
