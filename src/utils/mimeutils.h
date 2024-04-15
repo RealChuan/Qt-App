@@ -5,8 +5,8 @@
 
 #include "utils_global.h"
 
-#include <mimetypes/mimemagicrule_p.h>
-#include <mimetypes/mimetype.h>
+#include <utils/mimetypes/mimemagicrule_p.h>
+#include <utils/mimetypes/mimetype.h>
 
 #include <functional>
 
@@ -23,7 +23,7 @@ enum class MimeMatchMode {
 };
 
 UTILS_EXPORT auto mimeTypeForFile(const QString &fileName,
-                                      MimeMatchMode mode = MimeMatchMode::MatchDefault) -> MimeType;
+                                  MimeMatchMode mode = MimeMatchMode::MatchDefault) -> MimeType;
 UTILS_EXPORT auto mimeTypesForFileName(const QString &fileName) -> QList<MimeType>;
 UTILS_EXPORT auto mimeTypeForData(const QByteArray &data) -> MimeType;
 UTILS_EXPORT auto allMimeTypes() -> QList<MimeType>;
@@ -40,8 +40,8 @@ enum class MimeStartupPhase {
 
 UTILS_EXPORT void setMimeStartupPhase(MimeStartupPhase);
 UTILS_EXPORT void addMimeTypes(const QString &id, const QByteArray &data);
-UTILS_EXPORT auto magicRulesForMimeType(
-    const MimeType &mimeType) -> QMap<int, QList<MimeMagicRule>>; // priority -> rules
+UTILS_EXPORT auto magicRulesForMimeType(const MimeType &mimeType)
+    -> QMap<int, QList<MimeMagicRule>>; // priority -> rules
 UTILS_EXPORT void setGlobPatternsForMimeType(const MimeType &mimeType, const QStringList &patterns);
 UTILS_EXPORT void setMagicRulesForMimeType(
     const MimeType &mimeType, const QMap<int, QList<MimeMagicRule>> &rules); // priority -> rules

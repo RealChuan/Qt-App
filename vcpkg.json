@@ -1,10 +1,10 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-    "name": "qt-app",
-    "version": "0.0.1",
-    "description": "manifest",
-    "dependencies": [
-        "breakpad"
-    ],
-    "builtin-baseline": "3c76dc55f8bd2b7f4824bcd860055094bfbbb9ea"
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "qt-app",
+  "version": "0.0.1",
+  "description": "manifest",
+  "dependencies": [
+    "breakpad"
+  ],
+  "builtin-baseline": "ad3bae57455a3c3ce528fcd47d8e8027d0498add"
 }

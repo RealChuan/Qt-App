@@ -34,13 +34,11 @@ function(add_share_library target_name)
 endfunction(add_share_library)
 
 function(add_rpath target_name)
-  if(CMAKE_HOST_WIN32)
-
-  elseif(CMAKE_HOST_APPLE)
+  if(CMAKE_HOST_APPLE)
     set_target_properties(
       ${target_name}
       PROPERTIES LINK_FLAGS "-Wl,-rpath,./:./../Frameworks:./../../Frameworks")
-  else()
+  elseif(CMAKE_HOST_LINUX)
     set_target_properties(${target_name}
                           PROPERTIES LINK_FLAGS "-Wl,-rpath,./:./lib:./../lib")
   endif()

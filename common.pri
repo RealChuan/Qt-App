@@ -18,8 +18,8 @@ CONFIG(debug, debug|release) {
     APP_OUTPUT_PATH = $$PWD/$$BIN/Release
 }
 
-INCLUDEPATH += $$PWD/
-DEPENDPATH  += $$PWD/
+INCLUDEPATH += $$PWD/src/
+DEPENDPATH  += $$PWD/src/
 
 defineReplace(replaceLibName) {
    unset(LIBRARY_NAME)

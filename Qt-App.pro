@@ -1,17 +1,10 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS += \
-    utils \
-    resource \
-    gui \
-    3rdparty \
-    aggregation \
-    extensionsystem \
-    core \
-    plugins \
-    apps
+SUBDIRS += src
 
 DISTFILES += \
+    doc/** \
+    .clang* \
     LICENSE \
     README*
