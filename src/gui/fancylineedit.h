@@ -71,7 +71,7 @@ public:
     [[nodiscard]] auto isButtonVisible(Side side) const -> bool;
     [[nodiscard]] auto button(Side side) const -> QAbstractButton *;
 
-    void setButtonToolTip(Side side, const QString &);
+    void setButtonToolTip(Side side, const QString & /*tip*/);
     void setButtonFocusPolicy(Side side, Qt::FocusPolicy policy);
 
     // Set whether tabbing in will trigger the menu.
@@ -105,7 +105,7 @@ public:
     [[nodiscard]] auto errorMessage() const -> QString;
 
     void setValidationFunction(const ValidationFunction &fn);
-    static ValidationFunction defaultValidationFunction();
+    static auto defaultValidationFunction() -> ValidationFunction;
     void validate();
     void onEditingFinished();
 
@@ -114,7 +114,7 @@ public:
 
 protected:
     // Custom behaviour can be added here.
-    virtual void handleChanged(const QString &) {}
+    virtual void handleChanged(const QString & /*unused*/) {}
     void keyPressEvent(QKeyEvent *event) override;
 
 signals:
@@ -133,7 +133,7 @@ protected:
     virtual auto fixInputString(const QString &string) -> QString;
 
 private:
-    void iconClicked(FancyLineEdit::Side);
+    void iconClicked(FancyLineEdit::Side /*side*/);
 
     static auto validateWithValidator(FancyLineEdit *edit, QString *errorMessage) -> bool;
     // Unimplemented, to force the user to make a decision on

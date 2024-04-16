@@ -10,6 +10,7 @@ on:
         - '.github/workflows/readme.yml'
         - '.github/workflows/toolchain.yml'     
         - 'doc/**'
+        - 'translation/**'
         - '.clang-*'
         - '.gitignore'
         - 'LICENSE'
@@ -23,6 +24,7 @@ on:
         - '.github/workflows/readme.yml'
         - '.github/workflows/toolchain.yml'     
         - 'doc/**'
+        - 'translation/**'
         - '.clang-*'
         - '.gitignore'
         - 'LICENSE'
@@ -42,6 +44,8 @@ jobs:
           - ubuntu-latest
         qt_ver: 
           - 6.7.0
+        qt_modules:
+          - qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
         arch:
           - x86_64
         vcpkg_libs:
@@ -49,6 +53,7 @@ jobs:
         include:
           - os: macos-latest
             qt_ver: 6.7.0
+            qt_modules: qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
             arch: arm64
             vcpkg_libs: breakpad
 
@@ -108,7 +113,7 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           install-deps: 'true'
-          modules: 'qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats'
+          modules: '${{ matrix.qt_modules }}'
           cache: 'true'
 
       - uses: actions/checkout@v4

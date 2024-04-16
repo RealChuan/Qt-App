@@ -66,13 +66,13 @@ public:
             emit keyChanged(key);
         }
     }
-    [[nodiscard]] QKeySequence key() const { return m_key; }
+    [[nodiscard]] auto key() const -> QKeySequence { return m_key; }
 
 signals:
     void keyChanged(const QKeySequence &key);
 
 private:
-    QKeySequence m_key = Qt::Key_Space + Utils::HostOsInfo::controlModifier();
+    QKeySequence m_key = Qt::Key_Space | Utils::HostOsInfo::controlModifier();
 };
 Q_GLOBAL_STATIC(CompletionShortcut, completionShortcut)
 
@@ -139,8 +139,9 @@ auto FancyLineEditPrivate::eventFilter(QObject *obj, QEvent *event) -> bool
             break;
         }
     }
-    if (buttonIndex == -1)
+    if (buttonIndex == -1) {
         return QObject::eventFilter(obj, event);
+    }
     switch (event->type()) {
     case QEvent::FocusIn:
         if (m_menuTabFocusTrigger[buttonIndex] && (m_menu[buttonIndex] != nullptr)) {
@@ -165,8 +166,9 @@ FancyLineEdit::FancyLineEdit(QWidget *parent)
     connect(d->m_iconbutton[Right], &QAbstractButton::clicked, this, [this] { iconClicked(Right); });
     connect(this, &QLineEdit::textChanged, this, &FancyLineEdit::validate);
     connect(&d->m_completionShortcut, &QShortcut::activated, this, [this] {
-        if (!completer())
+        if (!completer()) {
             return;
+        }
         completer()->setCompletionPrefix(text().left(cursorPosition()));
         completer()->complete();
     });
@@ -179,8 +181,9 @@ FancyLineEdit::~FancyLineEdit()
         // the QueuedConnection don't have enough time to call slot callback
         // because edit widget and all of its connections are destroyed before
         // QCoreApplicationPrivate::sendPostedEvents dispatch our queued signal.
-        if (!text().isEmpty())
+        if (!text().isEmpty()) {
             d->m_historyCompleter->addEntry(text());
+        }
     }
 }
 
@@ -188,8 +191,9 @@ void FancyLineEdit::setTextKeepingActiveCursor(const QString &text)
 {
     std::optional<int> cursor = hasFocus() ? std::make_optional(cursorPosition()) : std::nullopt;
     setText(text);
-    if (cursor)
+    if (cursor) {
         setCursorPosition(*cursor);
+    }
 }
 
 void FancyLineEdit::setButtonVisible(Side side, bool visible)
@@ -199,12 +203,12 @@ void FancyLineEdit::setButtonVisible(Side side, bool visible)
     updateMargins();
 }
 
-bool FancyLineEdit::isButtonVisible(Side side) const
+auto FancyLineEdit::isButtonVisible(Side side) const -> bool
 {
     return d->m_iconEnabled[side];
 }
 
-QAbstractButton *FancyLineEdit::button(Side side) const
+auto FancyLineEdit::button(Side side) const -> QAbstractButton *
 {
     return d->m_iconbutton[side];
 }
@@ -215,10 +219,11 @@ void FancyLineEdit::iconClicked(Side side)
         Utils::execMenuAtWidget(d->m_menu[side], button(side));
     } else {
         emit buttonClicked(side);
-        if (side == Left)
+        if (side == Left) {
             emit leftButtonClicked();
-        else if (side == Right)
+        } else if (side == Right) {
             emit rightButtonClicked();
+        }
     }
 }
 
@@ -249,8 +254,9 @@ void FancyLineEdit::updateButtonPositions()
     QRect contentRect = rect();
     for (int i = 0; i < 2; ++i) {
         Side iconpos = Side(i);
-        if (layoutDirection() == Qt::RightToLeft)
+        if (layoutDirection() == Qt::RightToLeft) {
             iconpos = (iconpos == Left ? Right : Left);
+        }
 
         if (iconpos == FancyLineEdit::Right) {
             const int iconoffset = textMargins().right() + 4;
@@ -262,7 +268,7 @@ void FancyLineEdit::updateButtonPositions()
     }
 }
 
-void FancyLineEdit::resizeEvent(QResizeEvent *)
+void FancyLineEdit::resizeEvent(QResizeEvent * /*event*/)
 {
     updateButtonPositions();
 }
@@ -275,7 +281,7 @@ void FancyLineEdit::setButtonIcon(Side side, const QIcon &icon)
     update();
 }
 
-QIcon FancyLineEdit::buttonIcon(Side side) const
+auto FancyLineEdit::buttonIcon(Side side) const -> QIcon
 {
     return d->m_iconbutton[side]->icon();
 }
@@ -286,26 +292,27 @@ void FancyLineEdit::setButtonMenu(Side side, QMenu *buttonMenu)
     d->m_iconbutton[side]->setIconOpacity(1.0);
 }
 
-QMenu *FancyLineEdit::buttonMenu(Side side) const
+auto FancyLineEdit::buttonMenu(Side side) const -> QMenu *
 {
     return d->m_menu[side];
 }
 
-bool FancyLineEdit::hasMenuTabFocusTrigger(Side side) const
+auto FancyLineEdit::hasMenuTabFocusTrigger(Side side) const -> bool
 {
     return d->m_menuTabFocusTrigger[side];
 }
 
 void FancyLineEdit::setMenuTabFocusTrigger(Side side, bool v)
 {
-    if (d->m_menuTabFocusTrigger[side] == v)
+    if (d->m_menuTabFocusTrigger[side] == v) {
         return;
+    }
 
     d->m_menuTabFocusTrigger[side] = v;
     d->m_iconbutton[side]->setFocusPolicy(v ? Qt::TabFocus : Qt::NoFocus);
 }
 
-bool FancyLineEdit::hasAutoHideButton(Side side) const
+auto FancyLineEdit::hasAutoHideButton(Side side) const -> bool
 {
     return d->m_iconbutton[side]->hasAutoHide();
 }
@@ -314,8 +321,9 @@ void FancyLineEdit::setHistoryCompleter(const QString &historyKey, bool restoreL
 {
     QTC_ASSERT(!d->m_historyCompleter, return);
     d->m_historyCompleter = new HistoryCompleter(historyKey, this);
-    if (restoreLastItemFromHistory && d->m_historyCompleter->hasHistory())
+    if (restoreLastItemFromHistory && d->m_historyCompleter->hasHistory()) {
         setText(d->m_historyCompleter->historyItem());
+    }
     QLineEdit::setCompleter(d->m_historyCompleter);
 
     // Hitting <Return> in the popup first causes editingFinished()
@@ -337,16 +345,17 @@ void FancyLineEdit::onEditingFinished()
 void FancyLineEdit::keyPressEvent(QKeyEvent *event)
 {
     if (camelCaseNavigation) {
-        if (event == QKeySequence::MoveToPreviousWord)
+        if (event == QKeySequence::MoveToPreviousWord) {
             CamelCaseCursor::left(this, QTextCursor::MoveAnchor);
-        else if (event == QKeySequence::SelectPreviousWord)
+        } else if (event == QKeySequence::SelectPreviousWord) {
             CamelCaseCursor::left(this, QTextCursor::KeepAnchor);
-        else if (event == QKeySequence::MoveToNextWord)
+        } else if (event == QKeySequence::MoveToNextWord) {
             CamelCaseCursor::right(this, QTextCursor::MoveAnchor);
-        else if (event == QKeySequence::SelectNextWord)
+        } else if (event == QKeySequence::SelectNextWord) {
             CamelCaseCursor::right(this, QTextCursor::KeepAnchor);
-        else
+        } else {
             CompletingLineEdit::keyPressEvent(event);
+        }
     } else {
         CompletingLineEdit::keyPressEvent(event);
     }
@@ -371,10 +380,11 @@ void FancyLineEdit::setSpecialCompleter(QCompleter *completer)
 void FancyLineEdit::setAutoHideButton(Side side, bool h)
 {
     d->m_iconbutton[side]->setAutoHide(h);
-    if (h)
+    if (h) {
         d->m_iconbutton[side]->setIconOpacity(text().isEmpty() ? 0.0 : 1.0);
-    else
+    } else {
         d->m_iconbutton[side]->setIconOpacity(1.0);
+    }
 }
 
 void FancyLineEdit::setButtonToolTip(Side side, const QString &tip)
@@ -389,8 +399,9 @@ void FancyLineEdit::setButtonFocusPolicy(Side side, Qt::FocusPolicy policy)
 
 void FancyLineEdit::setFiltering(bool on)
 {
-    if (on == d->m_isFiltering)
+    if (on == d->m_isFiltering) {
         return;
+    }
 
     d->m_isFiltering = on;
     if (on) {
@@ -422,12 +433,12 @@ void FancyLineEdit::setValidationFunction(const FancyLineEdit::ValidationFunctio
     validate();
 }
 
-FancyLineEdit::ValidationFunction FancyLineEdit::defaultValidationFunction()
+auto FancyLineEdit::defaultValidationFunction() -> FancyLineEdit::ValidationFunction
 {
     return &FancyLineEdit::validateWithValidator;
 }
 
-bool FancyLineEdit::validateWithValidator(FancyLineEdit *edit, QString *errorMessage)
+auto FancyLineEdit::validateWithValidator(FancyLineEdit *edit, QString *errorMessage) -> bool
 {
     Q_UNUSED(errorMessage)
     if (const QValidator *v = edit->validator()) {
@@ -438,17 +449,17 @@ bool FancyLineEdit::validateWithValidator(FancyLineEdit *edit, QString *errorMes
     return true;
 }
 
-FancyLineEdit::State FancyLineEdit::state() const
+auto FancyLineEdit::state() const -> FancyLineEdit::State
 {
     return d->m_state;
 }
 
-bool FancyLineEdit::isValid() const
+auto FancyLineEdit::isValid() const -> bool
 {
     return d->m_state == Valid;
 }
 
-QString FancyLineEdit::errorMessage() const
+auto FancyLineEdit::errorMessage() const -> QString
 {
     return d->m_errorMessage;
 }
@@ -487,8 +498,9 @@ void FancyLineEdit::validate()
                    newState == Invalid ? d->m_errorTextColor : d->m_okTextColor);
         setPalette(p);
 
-        if (validHasChanged)
+        if (validHasChanged) {
             emit validChanged(newState == Valid);
+        }
     }
     const QString fixedString = fixInputString(t);
     if (t != fixedString) {
@@ -501,8 +513,9 @@ void FancyLineEdit::validate()
     // Check buttons.
     if (d->m_oldText.isEmpty() || t.isEmpty()) {
         for (auto &button : std::as_const(d->m_iconbutton)) {
-            if (button->hasAutoHide())
+            if (button->hasAutoHide()) {
                 button->animateShow(!t.isEmpty());
+            }
         }
         d->m_oldText = t;
     }
@@ -510,7 +523,7 @@ void FancyLineEdit::validate()
     handleChanged(t);
 }
 
-QString FancyLineEdit::fixInputString(const QString &string)
+auto FancyLineEdit::fixInputString(const QString &string) -> QString
 {
     return string;
 }
@@ -527,18 +540,19 @@ IconButton::IconButton(QWidget *parent)
     setFocusPolicy(Qt::NoFocus);
 }
 
-void IconButton::paintEvent(QPaintEvent *)
+void IconButton::paintEvent(QPaintEvent * /*e*/)
 {
     QWindow *window = this->window()->windowHandle();
-    const QPixmap iconPixmap = icon().pixmap(window,
-                                             sizeHint(),
+    const QPixmap iconPixmap = icon().pixmap(sizeHint(),
+                                             window->devicePixelRatio(),
                                              isEnabled() ? QIcon::Normal : QIcon::Disabled);
     QStylePainter painter(this);
     QRect pixmapRect(QPoint(), iconPixmap.size() / window->devicePixelRatio());
     pixmapRect.moveCenter(rect().center());
 
-    if (m_autoHide)
+    if (m_autoHide) {
         painter.setOpacity(m_iconOpacity);
+    }
 
     painter.drawPixmap(pixmapRect, iconPixmap);
 
@@ -557,23 +571,23 @@ void IconButton::paintEvent(QPaintEvent *)
 
 void IconButton::animateShow(bool visible)
 {
-    QPropertyAnimation *animation = new QPropertyAnimation(this, "iconOpacity");
+    auto *animation = new QPropertyAnimation(this, "iconOpacity");
     animation->setDuration(FADE_TIME);
     animation->setEndValue(visible ? 1.0 : 0.0);
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-QSize IconButton::sizeHint() const
+auto IconButton::sizeHint() const -> QSize
 {
-    QWindow *window = this->window()->windowHandle();
-    return icon().actualSize(window, QSize(32, 16)); // Find flags icon can be wider than 16px
+    return icon().actualSize(QSize(32, 16)); // Find flags icon can be wider than 16px
 }
 
 void IconButton::keyPressEvent(QKeyEvent *ke)
 {
     QAbstractButton::keyPressEvent(ke);
-    if (!ke->modifiers() && (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return))
+    if (!ke->modifiers() && (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return)) {
         click();
+    }
     // do not forward to line edit
     ke->accept();
 }

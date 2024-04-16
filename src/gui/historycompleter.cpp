@@ -51,7 +51,7 @@ public:
         QItemDelegate::paint(painter, option, index);
         // add remove button
         QWindow *window = view->window()->windowHandle();
-        const QPixmap iconPixmap = icon.pixmap(window, option.rect.size());
+        const QPixmap iconPixmap = icon.pixmap(option.rect.size(), window->devicePixelRatio());
         QRect pixmapRect = QStyle::alignedRect(option.direction,
                                                Qt::AlignRight | Qt::AlignVCenter,
                                                iconPixmap.size() / window->devicePixelRatio(),
@@ -89,9 +89,10 @@ private:
     {
         const QSize clearButtonSize = delegate->clearIconSize;
         if (clearButtonSize.isValid()) {
-            int rr = event->x();
-            if (layoutDirection() == Qt::LeftToRight)
-                rr = viewport()->width() - event->x();
+            int rr = event->position().x();
+            if (layoutDirection() == Qt::LeftToRight) {
+                rr = viewport()->width() - event->position().x();
+            }
             if (rr < clearButtonSize.width()) {
                 const QModelIndex index = indexAt(event->pos());
                 if (index.isValid()) {

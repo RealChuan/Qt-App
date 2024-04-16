@@ -10,6 +10,7 @@ on:
         - '.github/workflows/readme.yml'
         - '.github/workflows/toolchain.yml'    
         - 'doc/**'
+        - 'translation/**'
         - '.clang-*'
         - '.gitignore'
         - 'LICENSE'
@@ -22,6 +23,7 @@ on:
         - '.github/workflows/readme.yml'
         - '.github/workflows/toolchain.yml'    
         - 'doc/**'
+        - 'translation/**'
         - '.clang-*'
         - '.gitignore'
         - 'LICENSE'
@@ -40,6 +42,8 @@ jobs:
           - ubuntu-latest
         qt_ver: 
           - 6.7.0
+        qt_modules:
+          - qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
         build_type:
           - "RelWithDebInfo"
         generators:
@@ -51,6 +55,7 @@ jobs:
         include:
           - os: macos-latest
             qt_ver: 6.7.0
+            qt_modules: qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
             build_type: "RelWithDebInfo"
             generators: "Ninja"
             arch: arm64
@@ -112,7 +117,7 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           install-deps: 'true'
-          modules: 'qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats'
+          modules: '${{ matrix.qt_modules }}'
           cache: 'true'
 
       - uses: actions/checkout@v4
@@ -171,7 +176,7 @@ jobs:
           for file in $files;
           do
             if [[ $file == *.exe || $file == *.dll ]]; then
-              windeployqt --force --no-translations --compiler-runtime $file
+              windeployqt --force --compiler-runtime $file
             fi
           done
           rm -rf *plugin.dll
@@ -207,16 +212,14 @@ jobs:
             ./linuxdeployqt-continuous-x86_64.AppImage \
               ./bin-64/${{ matrix.build_type }}/$so_file \
               -qmake=${{ env.Qt6_DIR }}/bin/qmake \
-              -always-overwrite -no-translations \
-              -unsupported-allow-new-glibc 
+              -always-overwrite -unsupported-allow-new-glibc 
           done
           rm -f ./bin-64/${{ matrix.build_type }}/AppRun
           ./linuxdeployqt-continuous-x86_64.AppImage \
             ./bin-64/${{ matrix.build_type }}/Qt-App \
             -executable=./bin-64/${{ matrix.build_type }}/CrashReport \
             -qmake=${{ env.Qt6_DIR }}/bin/qmake \
-            -always-overwrite -no-translations \
-            -unsupported-allow-new-glibc \
+            -always-overwrite -unsupported-allow-new-glibc \
             -appimage
           rm linuxdeployqt-continuous-x86_64.AppImage
           rm -f ./bin-64/${{ matrix.build_type }}/*.so

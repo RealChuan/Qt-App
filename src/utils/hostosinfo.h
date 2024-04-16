@@ -71,26 +71,26 @@ public:
     static void setOverrideFileNameCaseSensitivity(Qt::CaseSensitivity sensitivity);
     static void unsetOverrideFileNameCaseSensitivity();
 
-    static Qt::CaseSensitivity fileNameCaseSensitivity()
+    static auto fileNameCaseSensitivity() -> Qt::CaseSensitivity
     {
         return m_useOverrideFileNameCaseSensitivity
                    ? m_overrideFileNameCaseSensitivity
                    : OsSpecificAspects::fileNameCaseSensitivity(hostOs());
     }
 
-    static constexpr QChar pathListSeparator()
+    static constexpr auto pathListSeparator() -> QChar
     {
         return OsSpecificAspects::pathListSeparator(hostOs());
     }
 
-    static constexpr Qt::KeyboardModifier controlModifier()
+    static constexpr auto controlModifier() -> Qt::KeyboardModifier
     {
         return OsSpecificAspects::controlModifier(hostOs());
     }
 
     static auto canCreateOpenGLContext(QString *errorMessage) -> bool;
 
-    static std::optional<quint64> totalMemoryInstalledInBytes();
+    static auto totalMemoryInstalledInBytes() -> std::optional<quint64>;
 
 private:
     static Qt::CaseSensitivity m_overrideFileNameCaseSensitivity;

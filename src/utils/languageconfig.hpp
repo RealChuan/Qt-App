@@ -28,8 +28,8 @@ private:
     void getConfig();
     void saveConfig();
 
-    Language m_currentLanguage = Chinese;
-    QScopedPointer<QTranslator> m_translatorPtr;
+    class LanguageConfigPrivate;
+    QScopedPointer<LanguageConfigPrivate> d_ptr;
 
     SINGLETON(LanguageConfig)
 };

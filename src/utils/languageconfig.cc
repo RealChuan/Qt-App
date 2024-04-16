@@ -3,41 +3,63 @@
 
 namespace Utils {
 
+class LanguageConfig::LanguageConfigPrivate
+{
+public:
+    explicit LanguageConfigPrivate(LanguageConfig *q)
+        : q_ptr(q)
+    {}
+    ~LanguageConfigPrivate() = default;
+
+    LanguageConfig *q_ptr;
+    Language currentLanguage = Chinese;
+    QScopedPointer<QTranslator> translatorPtr;
+    QScopedPointer<QTranslator> qtTranslatorPtr;
+};
+
 LanguageConfig::Language LanguageConfig::currentLanguage()
 {
-    return m_currentLanguage;
+    return d_ptr->currentLanguage;
 }
 
 void LanguageConfig::loadLanguage(Language language)
 {
-    m_currentLanguage = language;
+    d_ptr->currentLanguage = language;
     loadLanguage();
 }
 
 void LanguageConfig::loadLanguage()
 {
-    if (!m_translatorPtr.isNull()) {
-        qApp->removeTranslator(m_translatorPtr.data());
+    if (!d_ptr->translatorPtr.isNull()) {
+        qApp->removeTranslator(d_ptr->translatorPtr.data());
     }
-    m_translatorPtr.reset(new QTranslator);
-    switch (m_currentLanguage) {
+    if (!d_ptr->qtTranslatorPtr.isNull()) {
+        qApp->removeTranslator(d_ptr->qtTranslatorPtr.data());
+    }
+    d_ptr->translatorPtr.reset(new QTranslator);
+    d_ptr->qtTranslatorPtr.reset(new QTranslator);
+#ifdef Q_OS_MACOS
+    auto translationsPath = qApp->applicationDirPath() + "/../Resources/translations/";
+#else
+    auto translationsPath = qApp->applicationDirPath() + "/translations/";
+#endif
+    switch (d_ptr->currentLanguage) {
     case Chinese:
-        qInfo() << m_translatorPtr->load(qApp->applicationDirPath()
-                                         + "/translations/qt_app_zh_cn.qm");
-        break;
-    case English:
-        qInfo() << m_translatorPtr->load(qApp->applicationDirPath() + "/translations/qt_app_en.qm");
+        qInfo() << d_ptr->translatorPtr->load(translationsPath + "qt-app_zh_CN.qm")
+                << d_ptr->qtTranslatorPtr->load(translationsPath + "qt_zh_CN.qm");
         break;
     default:
-        qInfo() << m_translatorPtr->load(qApp->applicationDirPath()
-                                         + "/translations/qt_app_zh_cn.qm");
+        qInfo() << d_ptr->translatorPtr->load(translationsPath + "qt-app_en.qm")
+                << d_ptr->qtTranslatorPtr->load(translationsPath + "qt_en.qm");
         break;
     }
-    qApp->installTranslator(m_translatorPtr.data());
+    qApp->installTranslator(d_ptr->translatorPtr.data());
+    qApp->installTranslator(d_ptr->qtTranslatorPtr.data());
 }
 
 LanguageConfig::LanguageConfig(QObject *parent)
     : QObject(parent)
+    , d_ptr(new LanguageConfigPrivate(this))
 {
     getConfig();
 }
@@ -54,12 +76,12 @@ void LanguageConfig::getConfig()
     if (QFileInfo::exists(configFile)) {
         QSettings setting(configFile, QSettings::IniFormat);
         setting.beginGroup("Language_config"); //向当前组追加前缀
-        m_currentLanguage = Language(setting.value("Language").toInt());
+        d_ptr->currentLanguage = Language(setting.value("Language").toInt());
         setting.endGroup();
     } else if (QLocale().language() == QLocale::Language::Chinese) {
-        m_currentLanguage = Chinese;
+        d_ptr->currentLanguage = Chinese;
     } else {
-        m_currentLanguage = English;
+        d_ptr->currentLanguage = English;
     }
 }
 
@@ -68,7 +90,7 @@ void LanguageConfig::saveConfig()
     const QString configFile(Utils::getConfigPath() + "/config/config.ini");
     QSettings setting(configFile, QSettings::IniFormat);
     setting.beginGroup("Language_config");
-    setting.setValue("Language", m_currentLanguage);
+    setting.setValue("Language", d_ptr->currentLanguage);
     setting.endGroup();
 }
 

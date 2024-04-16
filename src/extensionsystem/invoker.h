@@ -21,12 +21,14 @@ public:
     auto wasSuccessful() const -> bool;
     void setConnectionType(Qt::ConnectionType connectionType);
 
-    template <class T> void addArgument(const T &t)
+    template<class T>
+    void addArgument(const T &t)
     {
         arg[lastArg++] = QGenericArgument(typeName<T>(), &t);
     }
 
-    template <class T> void setReturnValue(T &t)
+    template<class T>
+    void setReturnValue(T &t)
     {
         useRet = true;
         ret = QGenericReturnArgument(typeName<T>(), &t);
@@ -36,9 +38,10 @@ public:
 
 private:
     InvokerBase(const InvokerBase &); // Unimplemented.
-    template <class T> auto typeName() -> const char *
+    template<class T>
+    auto typeName() -> const char *
     {
-        return QMetaType::typeName(qMetaTypeId<T>());
+        return QMetaType(typeName<T>()).name();
     }
     QObject *target;
     QGenericArgument arg[10];
@@ -51,16 +54,13 @@ private:
     mutable bool nag;
 };
 
-template <class Result>
+template<class Result>
 class Invoker : public InvokerBase
 {
 public:
-    Invoker(QObject *target, const char *slot)
-    {
-        InvokerBase::invoke(target, slot);
-    }
+    Invoker(QObject *target, const char *slot) { InvokerBase::invoke(target, slot); }
 
-    template <class T0>
+    template<class T0>
     Invoker(QObject *target, const char *slot, const T0 &t0)
     {
         setReturnValue(result);
@@ -68,7 +68,7 @@ public:
         InvokerBase::invoke(target, slot);
     }
 
-    template <class T0, class T1>
+    template<class T0, class T1>
     Invoker(QObject *target, const char *slot, const T0 &t0, const T1 &t1)
     {
         setReturnValue(result);
@@ -77,9 +77,8 @@ public:
         InvokerBase::invoke(target, slot);
     }
 
-    template <class T0, class T1, class T2>
-    Invoker(QObject *target, const char *slot, const T0 &t0,
-        const T1 &t1, const T2 &t2)
+    template<class T0, class T1, class T2>
+    Invoker(QObject *target, const char *slot, const T0 &t0, const T1 &t1, const T2 &t2)
     {
         setReturnValue(result);
         addArgument(t0);
@@ -94,22 +93,20 @@ private:
     Result result;
 };
 
-template<> class Invoker<void> : public InvokerBase
+template<>
+class Invoker<void> : public InvokerBase
 {
 public:
-    Invoker(QObject *target, const char *slot)
-    {
-        InvokerBase::invoke(target, slot);
-    }
+    Invoker(QObject *target, const char *slot) { InvokerBase::invoke(target, slot); }
 
-    template <class T0>
+    template<class T0>
     Invoker(QObject *target, const char *slot, const T0 &t0)
     {
         addArgument(t0);
         InvokerBase::invoke(target, slot);
     }
 
-    template <class T0, class T1>
+    template<class T0, class T1>
     Invoker(QObject *target, const char *slot, const T0 &t0, const T1 &t1)
     {
         addArgument(t0);
@@ -117,9 +114,8 @@ public:
         InvokerBase::invoke(target, slot);
     }
 
-    template <class T0, class T1, class T2>
-    Invoker(QObject *target, const char *slot, const T0 &t0,
-        const T1 &t1, const T2 &t2)
+    template<class T0, class T1, class T2>
+    Invoker(QObject *target, const char *slot, const T0 &t0, const T1 &t1, const T2 &t2)
     {
         addArgument(t0);
         addArgument(t1);
@@ -129,7 +125,7 @@ public:
 };
 
 #ifndef Q_QDOC
-template <class Result>
+template<class Result>
 auto invokeHelper(InvokerBase &in, QObject *target, const char *slot) -> Result
 {
     Result result;
@@ -138,7 +134,7 @@ auto invokeHelper(InvokerBase &in, QObject *target, const char *slot) -> Result
     return result;
 }
 
-template <>
+template<>
 inline void invokeHelper<void>(InvokerBase &in, QObject *target, const char *slot)
 {
     in.invoke(target, slot);
@@ -170,8 +166,7 @@ auto invoke(QObject *target, const char *slot, const T0 &t0, const T1 &t1) -> Re
 }
 
 template<class Result, class T0, class T1, class T2>
-auto invoke(QObject *target, const char *slot,
-    const T0 &t0, const T1 &t1, const T2 &t2) -> Result
+auto invoke(QObject *target, const char *slot, const T0 &t0, const T1 &t1, const T2 &t2) -> Result
 {
     InvokerBase in;
     in.addArgument(t0);

@@ -19,27 +19,28 @@ namespace OsSpecificAspects {
 inline auto withExecutableSuffix(OsType osType, const QString &executable) -> QString
 {
     QString finalName = executable;
-    if (osType == OsTypeWindows && !finalName.endsWith(QTC_WIN_EXE_SUFFIX))
+    if (osType == OsTypeWindows && !finalName.endsWith(QTC_WIN_EXE_SUFFIX)) {
         finalName += QLatin1String(QTC_WIN_EXE_SUFFIX);
+    }
     return finalName;
 }
 
-constexpr Qt::CaseSensitivity fileNameCaseSensitivity(OsType osType)
+constexpr auto fileNameCaseSensitivity(OsType osType) -> Qt::CaseSensitivity
 {
     return osType == OsTypeWindows || osType == OsTypeMac ? Qt::CaseInsensitive : Qt::CaseSensitive;
 }
 
-constexpr Qt::CaseSensitivity envVarCaseSensitivity(OsType osType)
+constexpr auto envVarCaseSensitivity(OsType osType) -> Qt::CaseSensitivity
 {
     return fileNameCaseSensitivity(osType);
 }
 
-constexpr QChar pathListSeparator(OsType osType)
+constexpr auto pathListSeparator(OsType osType) -> QChar
 {
     return QLatin1Char(osType == OsTypeWindows ? ';' : ':');
 }
 
-constexpr Qt::KeyboardModifier controlModifier(OsType osType)
+constexpr auto controlModifier(OsType osType) -> Qt::KeyboardModifier
 {
     return osType == OsTypeMac ? Qt::MetaModifier : Qt::ControlModifier;
 }

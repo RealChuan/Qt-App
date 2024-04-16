@@ -30,19 +30,11 @@ project(
   VERSION 0.0.1
   LANGUAGES CXX)
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-# qt_standard_project_setup() 这个识别不了
-
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_CURRENT_SOURCE_DIR ON)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(CMAKE_DEBUG_POSTFIX d)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -82,8 +74,13 @@ find_package(
              Multimedia
              OpenGLWidgets
              SerialPort
-  # LinguistTools
-)
+             LinguistTools)
+
+qt_standard_project_setup(I18N_SOURCE_LANGUAGE en I18N_TRANSLATED_LANGUAGES
+                          zh_CN)
+# qt_standard_project_setup will set CMAKE_RUNTIME_OUTPUT_DIRECTORY, we need to
+# set it back, and use EXECUTABLE_OUTPUT_PATH
+unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
 find_package(unofficial-breakpad CONFIG REQUIRED)
 if(unofficial-breakpad_FOUND)
@@ -92,3 +89,19 @@ endif()
 
 include_directories(src)
 add_subdirectory(src)
+add_subdirectory(examples)
+
+string(TOLOWER ${PROJECT_NAME} Lower_PROJECT_NAME)
+
+qt_add_translations(
+  ${PROJECT_NAME}
+  TS_FILE_BASE
+  ${Lower_PROJECT_NAME}
+  TS_FILE_DIR
+  translations
+  INCLUDE_DIRECTORIES
+  directory
+  ${PROJECT_SOURCE_DIR}/src)
+
+file(GLOB_RECURSE TS_FILES "${PROJECT_SOURCE_DIR}/translations/*.ts")
+set_qt_translations_output_location(${TS_FILES})

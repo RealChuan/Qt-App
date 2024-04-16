@@ -67,5 +67,24 @@
    3. 在使用[qmake](.github/workflows/qmake.yml)时，需要指定`QMAKE_APPLE_DEVICE_ARCHS=x86_64`或者`QMAKE_APPLE_DEVICE_ARCHS=arm64`；
 
 - 为什么不使用google crashpad作为崩溃捕捉模块？
-   1. vcpkg对crashpad在macos和linux下支持不好；
-   2. 如果想要使用crashpad，[参考代码](https://github.com/RealChuan/Cpp-Examples/tree/master/Crashpad);
+   1. [vcpkg](https://github.com/microsoft/vcpkg)对[crashpad](https://github.com/chromium/crashpad)在`macos`和`linux`下支持不好；
+   2. 如果想要使用[crashpad](https://github.com/chromium/crashpad)，[参考代码](https://github.com/RealChuan/Cpp-Examples/tree/master/Crashpad);
+
+- 国际化实时翻译，当前更改完翻译设置，需要重启程序才能生效；
+   1. 懒得改代码了；
+   2. [具体参考：QT实用小技巧（想到就更新）](https://realchuan.github.io/2021/10/12/QT%E5%AE%9E%E7%94%A8%E5%B0%8F%E6%8A%80%E5%B7%A7%EF%BC%88%E6%83%B3%E5%88%B0%E5%B0%B1%E6%9B%B4%E6%96%B0%EF%BC%89/)，核心代码；
+
+      ```cpp
+      void Widget::changeEvent(QEvent *e)
+      {
+         QWidget::changeEvent(e);
+         switch (e->type()) {
+         case QEvent::LanguageChange:
+            comboBox->setItemText(0, tr("Hello"));
+            label->setText(tr("Hello")); // 代码添加的文字
+            ui->retranslateUi(this);     // 有UI文件情况下
+            break;
+         default: break;
+         }
+      }
+      ```

@@ -43,3 +43,21 @@ function(add_rpath target_name)
                           PROPERTIES LINK_FLAGS "-Wl,-rpath,./:./lib:./../lib")
   endif()
 endfunction()
+
+function(set_qt_translations_output_location)
+  set(options "")
+  set(oneValueArgs "")
+  set(multiValueArgs TS_FILES)
+
+  if(CMAKE_HOST_APPLE)
+    set(output_location
+        "${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/Resources/translations"
+    )
+  else()
+    set(output_location "${EXECUTABLE_OUTPUT_PATH}/translations")
+  endif()
+  foreach(ts_file ${TS_FILES})
+    set_source_files_properties("${ts_file}" PROPERTIES OUTPUT_LOCATION
+                                                        "${output_location}")
+  endforeach(ts_file)
+endfunction()
