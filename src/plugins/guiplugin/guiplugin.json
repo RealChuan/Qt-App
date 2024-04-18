@@ -1,0 +1,11 @@
+{
+    "Name": "GuiPlugin",
+    "Version": "0.1.1",
+    "CompatVersion": "0.1.1",
+    "Required": false,
+    "Vendor": "Youth",
+    "Copyright": "(C) 2024 The Youth Ltd",
+    "License": "GNU General Public License v3.0",
+    "Category": "Main",
+    "Description": "Gui"
+}

@@ -11,6 +11,7 @@ LIBS += -ldbghelp
 }
 
 SOURCES += \
+    appinfo.cc \
     benchmarker.cpp \
     countdownlatch.cc \
     hostosinfo.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
 
 HEADERS += \
     algorithm.h \
+    appinfo.hpp \
     benchmarker.h \
     countdownlatch.hpp \
     executeondestruction.h \

@@ -36,7 +36,6 @@ public:
 
     void setupUI()
     {
-        initToolBar();
         createSystemTray();
         setInitWidget(tr("Hello World!"));
 
@@ -62,25 +61,6 @@ public:
     QVBoxLayout *vLayoutGroup3;
 
 private:
-    void initToolBar()
-    {
-        auto *configButton = new QPushButton(q_ptr);
-        configButton->setText(QCoreApplication::translate("MainWindowPrivate", "Settings"));
-        configButton->setToolTip(QCoreApplication::translate("MainWindowPrivate", "Settings"));
-        auto *configWidget = new ConfigWidget(q_ptr);
-        stackedWidget->addWidget(configWidget);
-        QObject::connect(configButton, &QPushButton::clicked, q_ptr, [=] {
-            stackedWidget->setCurrentWidget(configWidget);
-        });
-
-        auto *titleBar = new QWidget(q_ptr);
-        auto *layout = new QHBoxLayout(titleBar);
-        layout->setContentsMargins(QMargins());
-        layout->setSpacing(10);
-        layout->addWidget(configButton);
-        q_ptr->setTitleBar(titleBar);
-    }
-
     void createSystemTray()
     {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -91,7 +71,8 @@ private:
         }
 
         auto *menu = new QMenu(q_ptr);
-        menu->addAction(tr("Quit"), q_ptr, &MainWindow::onQuit);
+        menu->addAction(
+            tr("Quit"), q_ptr, [] { Utils::quitApplication(); }, Qt::QueuedConnection);
 
         auto *trayIcon = new QSystemTrayIcon(q_ptr);
         trayIcon->setToolTip(tr("This is an Qt-App."));
@@ -120,7 +101,7 @@ private:
                          });
     }
 
-    void setInitWidget(const QString &text)
+    void setInitWidget(const QString &text) const
     {
         auto *label = new QLabel(text, q_ptr);
         label->setAlignment(Qt::AlignCenter);
@@ -131,32 +112,34 @@ private:
 
     auto createSidebar() -> QWidget *
     {
-        auto *toolsButton = new QPushButton(tr("Common Tools"), q_ptr);
-        auto *aboutButton = new QPushButton(tr("About"), q_ptr);
-        auto *pluginButton = new QPushButton(tr("About Plugins"), q_ptr);
-        auto *qtButton = new QPushButton(tr("About Qt"), q_ptr);
+        auto *toolsButton = new QPushButton(tr("Main"), q_ptr);
+        auto *helpButton = new QPushButton(tr("Help"), q_ptr);
+        auto *settingsButton = new QPushButton(tr("Settings"), q_ptr);
+        auto *pluginButton = new QPushButton(tr("Plugins"), q_ptr);
 
-        QObject::connect(pluginButton, &QPushButton::clicked, q_ptr, &MainWindow::onAboutPlugins);
-        QObject::connect(qtButton, &QPushButton::clicked, q_ptr, [this] {
-            QMessageBox::aboutQt(q_ptr);
+        auto *configWidget = new ConfigWidget(q_ptr);
+        stackedWidget->addWidget(configWidget);
+        QObject::connect(settingsButton, &QPushButton::clicked, q_ptr, [=] {
+            stackedWidget->setCurrentWidget(configWidget);
         });
+        QObject::connect(pluginButton, &QPushButton::clicked, q_ptr, &MainWindow::onAboutPlugins);
 
-        toolsButton->setProperty("Type", Core::CoreWidget::Tool);
-        aboutButton->setProperty("Type", Core::CoreWidget::About);
-        pluginButton->setProperty("Type", Core::CoreWidget::About);
-        qtButton->setProperty("Type", Core::CoreWidget::About);
+        toolsButton->setProperty("Type", Core::CoreWidget::Type::Main);
+        helpButton->setProperty("Type", Core::CoreWidget::Type::Help);
+        settingsButton->setProperty("Type", Core::CoreWidget::Type::Help);
+        pluginButton->setProperty("Type", Core::CoreWidget::Type::Help);
 
         switchBtnGroup->addButton(toolsButton, 0);
-        switchBtnGroup->addButton(aboutButton, 1);
+        switchBtnGroup->addButton(helpButton, 1);
 
+        menuBtnGroup->addButton(settingsButton);
         menuBtnGroup->addButton(pluginButton);
-        menuBtnGroup->addButton(qtButton);
 
         vLayoutGroup1->addWidget(toolsButton);
 
-        vLayoutGroup2->addWidget(aboutButton);
+        vLayoutGroup2->addWidget(helpButton);
+        vLayoutGroup2->addWidget(settingsButton);
         vLayoutGroup2->addWidget(pluginButton);
-        vLayoutGroup2->addWidget(qtButton);
 
         auto *widget = new QWidget(q_ptr);
         widget->setObjectName("MenuWidget");
@@ -188,9 +171,9 @@ void MainWindow::extensionsInitialized()
         if (page->widget() == nullptr) {
             continue;
         }
-        if (page->button()->property("Type") == Core::CoreWidget::Tool) {
+        if (page->button()->property("Type") == Core::CoreWidget::Type::Main) {
             d_ptr->vLayoutGroup1->addWidget(page->button());
-        } else if (page->button()->property("Type") == Core::CoreWidget::About) {
+        } else if (page->button()->property("Type") == Core::CoreWidget::Type::Help) {
             d_ptr->vLayoutGroup2->addWidget(page->button());
         } else {
             continue;
@@ -224,14 +207,14 @@ void MainWindow::onAboutPlugins()
     dialog.exec();
 }
 
-void MainWindow::onQuit()
-{
-    QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
-}
-
 void MainWindow::buildConnect()
 {
-    connect(this, &MainWindow::aboutToclose, this, &MainWindow::onQuit);
+    connect(
+        this,
+        &MainWindow::aboutToclose,
+        this,
+        [] { Utils::quitApplication(); },
+        Qt::QueuedConnection);
 }
 
 void MainWindow::initMenu()

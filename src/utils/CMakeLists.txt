@@ -17,6 +17,8 @@ set(PROJECT_SOURCES
     mimetypes/mimetypeparser.cpp
     mimetypes/mimeutils.cpp
     algorithm.h
+    appinfo.cc
+    appinfo.hpp
     benchmarker.cpp
     benchmarker.h
     countdownlatch.cc

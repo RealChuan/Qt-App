@@ -8,7 +8,7 @@ namespace Plugin {
 HashPluginWidget::HashPluginWidget(QObject *parent)
 {
     setWidget(new HashWidget);
-    setButton(new QPushButton(tr("Hash Tool")), Core::CoreWidget::Tool);
+    setButton(new QPushButton(tr("Hash")), Core::CoreWidget::Main);
 }
 
 auto HashPlugin::initialize(const QStringList &arguments, QString *errorString) -> bool

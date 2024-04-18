@@ -11,7 +11,9 @@
 
 namespace ExtensionSystem {
 
-namespace Internal { class IPluginPrivate; }
+namespace Internal {
+class IPluginPrivate;
+}
 
 using TestCreator = std::function<QObject *()>;
 
@@ -20,10 +22,7 @@ class EXTENSIONSYSTEM_EXPORT IPlugin : public QObject
     Q_OBJECT
 
 public:
-    enum ShutdownFlag {
-        SynchronousShutdown,
-        AsynchronousShutdown
-    };
+    enum ShutdownFlag { SynchronousShutdown, AsynchronousShutdown };
 
     IPlugin();
     ~IPlugin() override;
@@ -33,18 +32,23 @@ public:
     virtual auto delayedInitialize() -> bool { return false; }
     virtual auto aboutToShutdown() -> ShutdownFlag { return SynchronousShutdown; }
     virtual auto remoteCommand(const QStringList & /* options */,
-                                   const QString & /* workingDirectory */,
-                                   const QStringList & /* arguments */) -> QObject * { return nullptr; }
-
+                               const QString & /* workingDirectory */,
+                               const QStringList & /* arguments */) -> QObject *
+    {
+        return nullptr;
+    }
 
     // Deprecated in 10.0, use addTest()
-    [[nodiscard]] virtual QVector<QObject *> createTestObjects() const;
+    [[nodiscard]] virtual auto createTestObjects() const -> QVector<QObject *>;
 
 protected:
     virtual void initialize() {}
 
-    template <typename Test, typename ...Args>
-    void addTest(Args && ...args) { addTestCreator([args...] { return new Test(args...); }); }
+    template<typename Test, typename... Args>
+    void addTest(Args &&...args)
+    {
+        addTestCreator([args...] { return new Test(args...); });
+    }
     void addTestCreator(const TestCreator &creator);
 
 signals:

@@ -18,7 +18,7 @@ void openDir(const QString &path)
 class CrashWidgets::CrashWidgetsPrivate
 {
 public:
-    CrashWidgetsPrivate(CrashWidgets *q)
+    explicit CrashWidgetsPrivate(CrashWidgets *q)
         : q_ptr(q)
     {
         auto appArgs = qApp->arguments();
@@ -45,7 +45,7 @@ CrashWidgets::CrashWidgets(QWidget *parent)
     resize(450, 450);
 }
 
-CrashWidgets::~CrashWidgets() {}
+CrashWidgets::~CrashWidgets() = default;
 
 void CrashWidgets::onOpenCrashPath()
 {
@@ -58,24 +58,24 @@ void CrashWidgets::onRestart()
     QProcess::startDetached(d_ptr->appPath, d_ptr->args);
 }
 
-void CrashWidgets::onQuit()
-{
-    QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
-}
-
 void CrashWidgets::setupUI()
 {
-    auto crashButton = new QPushButton(tr("Path of Crash File"), this);
-    auto restartButton = new QPushButton(tr("Restart"), this);
-    auto closeButton = new QPushButton(tr("Close"), this);
+    auto *crashButton = new QPushButton(tr("Path of Crash File"), this);
+    auto *restartButton = new QPushButton(tr("Restart"), this);
+    auto *closeButton = new QPushButton(tr("Close"), this);
     crashButton->setObjectName("BlueButton");
     restartButton->setObjectName("BlueButton");
     closeButton->setObjectName("BlueButton");
     connect(crashButton, &QPushButton::clicked, this, &CrashWidgets::onOpenCrashPath);
     connect(restartButton, &QPushButton::clicked, this, &CrashWidgets::onRestart);
-    connect(closeButton, &QPushButton::clicked, this, &CrashWidgets::onQuit);
+    connect(
+        closeButton,
+        &QPushButton::clicked,
+        this,
+        [] { Utils::quitApplication(); },
+        Qt::QueuedConnection);
 
-    auto crashLabel = new QLabel(this);
+    auto *crashLabel = new QLabel(this);
     crashLabel->setObjectName("CrashLabel");
     crashLabel->setWordWrap(true);
     crashLabel->setAlignment(Qt::AlignCenter);
@@ -87,8 +87,8 @@ void CrashWidgets::setupUI()
                            "Contact Me - Email: \n"
                            "1070753498@qq.com"));
 
-    auto widget = new QWidget(this);
-    auto layout = new QVBoxLayout(widget);
+    auto *widget = new QWidget(this);
+    auto *layout = new QVBoxLayout(widget);
     layout->addStretch();
     layout->addWidget(crashLabel);
     layout->addStretch();

@@ -3,8 +3,8 @@
 IDI_ICON1	ICON	"app.ico"
 
 VS_VERSION_INFO VERSIONINFO
-	FILEVERSION 0,0,0,1
-	PRODUCTVERSION 0,0,0,1
+	FILEVERSION 0,1,1,0
+	PRODUCTVERSION 0,1,1,0
 	FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 	FILEFLAGS VS_FF_DEBUG
@@ -21,11 +21,11 @@ VS_VERSION_INFO VERSIONINFO
 			BEGIN
 				VALUE "CompanyName", "The Youth.\0"
 				VALUE "FileDescription", "Qt-App\0"
-				VALUE "FileVersion", "0.0.0.1\0"
-				VALUE "LegalCopyright", "Copyright (C) 2023 Youth.\0"
+				VALUE "FileVersion", "0.1.1.0\0"
+				VALUE "LegalCopyright", "Copyright (C) 2024 Youth.\0"
 				VALUE "OriginalFilename", "Qt-App\0"
 				VALUE "ProductName", "Qt-App\0"
-				VALUE "ProductVersion", "0.0.0.1\0"
+				VALUE "ProductVersion", "0.1.1.0\0"
 				VALUE "InternalName", "Qt-App\0"
 				VALUE "Comments", "Qt-App\0"
 				VALUE "LegalTrademarks", "Youth\0"

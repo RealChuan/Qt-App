@@ -1,11 +1,11 @@
 {
     "Name": "HashPlugin",
-    "Version": "0.0.1",
-    "CompatVersion": "0.0.1",
+    "Version": "0.1.1",
+    "CompatVersion": "0.1.1",
     "Required": false,
     "Vendor": "Youth",
-    "Copyright": "(C) 2023 The Youth Ltd",
+    "Copyright": "(C) 2024 The Youth Ltd",
     "License": "GNU General Public License v3.0",
-    "Category": "Tool",
-    "Description": "HashTool"
+    "Category": "Main",
+    "Description": "Hash"
 }

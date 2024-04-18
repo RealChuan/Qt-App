@@ -5,14 +5,13 @@
 #include <extensionsystem/pluginspec.h>
 #include <gui/waitwidget.h>
 #include <resource/resource.hpp>
+#include <utils/appinfo.hpp>
 #include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
 #include <utils/utils.h>
 
 #include <QNetworkProxyFactory>
 #include <QStyle>
-
-#define AppName "Qt-App"
 
 void initResource()
 {
@@ -24,12 +23,12 @@ void initResource()
 
 void setAppInfo()
 {
-    qApp->setApplicationVersion("0.0.1");
-    qApp->setApplicationDisplayName(AppName);
-    qApp->setApplicationName(AppName);
-    qApp->setDesktopFileName(AppName);
-    qApp->setOrganizationDomain("Youth");
-    qApp->setOrganizationName("Youth");
+    qApp->setApplicationVersion(Utils::version.toString());
+    qApp->setApplicationDisplayName(Utils::appName);
+    qApp->setApplicationName(Utils::appName);
+    qApp->setDesktopFileName(Utils::appName);
+    qApp->setOrganizationDomain(Utils::organizationDomain);
+    qApp->setOrganizationName(Utils::organzationName);
     qApp->setWindowIcon(QIcon(":/icon/icon/app.png"));
 }
 
@@ -38,8 +37,7 @@ void setQss()
     Utils::setQSS({":/qss/qss/common.css",
                    ":/qss/qss/commonwidget.css",
                    ":/qss/qss/sidebarbutton.css",
-                   ":/qss/qss/carshdialog.css",
-                   ":/qss/qss/corewidget.css"});
+                   ":/qss/qss/specific.css"});
 }
 
 auto main(int argc, char *argv[]) -> int
@@ -53,7 +51,7 @@ auto main(int argc, char *argv[]) -> int
 #endif
     Utils::setHighDpiEnvironmentVariable();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    SharedTools::QtSingleApplication app(AppName, argc, argv);
+    SharedTools::QtSingleApplication app(Utils::appName, argc, argv);
     if (app.isRunning()) {
         qWarning() << "This is already running";
         if (app.sendMessage("raise_window_noop", 5000)) {
@@ -88,8 +86,7 @@ auto main(int argc, char *argv[]) -> int
     log->startWork();
 
     initResource();
-    Utils::printBuildInfo();
-    //Utils::setUTF8Code();
+    qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
     Utils::setGlobalThreadPoolMaxSize();
     Utils::loadFonts(app.applicationDirPath() + "/fonts");
     setQss();

@@ -21,6 +21,9 @@ public:
                 continue;
             }
             hashComboBox->addItem(metaEnums.key(i), value);
+            if (value == QCryptographicHash::Md5) {
+                hashComboBox->setCurrentText(metaEnums.key(i));
+            }
         }
 
         selectFileButton = new QPushButton(QCoreApplication::translate("HashWidgetPrivate",
@@ -41,26 +44,15 @@ public:
         hashThread = new HashThread(q_ptr);
     }
 
-    void setupUI()
+    void setupUI() const
     {
-        auto buttonLayout = new QVBoxLayout;
-        buttonLayout->addWidget(hashComboBox);
+        auto *buttonLayout = new QHBoxLayout;
+        buttonLayout->setSpacing(20);
         buttonLayout->addWidget(selectFileButton);
+        buttonLayout->addWidget(hashComboBox);
         buttonLayout->addWidget(calculateButton);
 
-        auto leftLayout = new QVBoxLayout;
-        leftLayout->addWidget(
-            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Input:"), q_ptr));
-        leftLayout->addWidget(inputEdit);
-        leftLayout->addWidget(
-            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Output:"), q_ptr));
-        leftLayout->addWidget(outputEdit);
-
-        auto bottomLayout = new QHBoxLayout;
-        bottomLayout->addLayout(leftLayout);
-        bottomLayout->addLayout(buttonLayout);
-
-        auto descriptionLabel = new QLabel(
+        auto *descriptionLabel = new QLabel(
             QCoreApplication::translate(
                 "HashWidgetPrivate",
                 "If Input String is file path and file exists, calculate hash of file. "
@@ -68,9 +60,15 @@ public:
             q_ptr);
         descriptionLabel->setWordWrap(true);
 
-        auto layout = new QVBoxLayout(q_ptr);
+        auto *layout = new QVBoxLayout(q_ptr);
         layout->addWidget(descriptionLabel);
-        layout->addLayout(bottomLayout);
+        layout->addWidget(
+            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Input:"), q_ptr));
+        layout->addWidget(inputEdit);
+        layout->addLayout(buttonLayout);
+        layout->addWidget(
+            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Output:"), q_ptr));
+        layout->addWidget(outputEdit);
     }
 
     HashWidget *q_ptr;

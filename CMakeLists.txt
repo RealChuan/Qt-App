@@ -27,7 +27,7 @@ endif()
 
 project(
   Qt-App
-  VERSION 0.0.1
+  VERSION 0.1.1
   LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)

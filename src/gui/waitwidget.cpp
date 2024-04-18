@@ -9,10 +9,11 @@ namespace GUI {
 class WaitWidget::WaitWidgetPrivate
 {
 public:
-    WaitWidgetPrivate(WaitWidget *q)
+    explicit WaitWidgetPrivate(WaitWidget *q)
         : q_ptr(q)
     {
         processBar = new QProgressBar(q_ptr);
+        processBar->setMaximumHeight(5);
         processBar->setTextVisible(false);
         processBar->setRange(0, 100);
 
@@ -21,7 +22,7 @@ public:
 
     void setupUI()
     {
-        auto layout = new QHBoxLayout(q_ptr);
+        auto *layout = new QHBoxLayout(q_ptr);
         layout->setContentsMargins(QMargins());
         layout->setSpacing(0);
         layout->addWidget(processBar);

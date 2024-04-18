@@ -30,7 +30,6 @@ private:
     QScopedPointer<FileUtilPrivate> d_ptr;
 };
 
-struct LogAsyncPrivate;
 class UTILS_EXPORT LogAsync : public QThread
 {
     Q_OBJECT
@@ -56,6 +55,7 @@ private:
     explicit LogAsync(QObject *parent = nullptr);
     ~LogAsync() override;
 
+    class LogAsyncPrivate;
     QScopedPointer<LogAsyncPrivate> d_ptr;
 
     SINGLETON(LogAsync)

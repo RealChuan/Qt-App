@@ -26,14 +26,14 @@ PluginDialog::PluginDialog(QWidget *parent)
     : GUI::Dialog(parent)
     , m_view(new ExtensionSystem::PluginView(this))
 {
-    auto widget = new QWidget(this);
+    auto *widget = new QWidget(this);
     setCentralWidget(widget);
 
-    auto vl = new QVBoxLayout(widget);
+    auto *vl = new QVBoxLayout(widget);
 
-    auto filterLayout = new QHBoxLayout;
+    auto *filterLayout = new QHBoxLayout;
     vl->addLayout(filterLayout);
-    auto filterEdit = new GUI::FancyLineEdit(this);
+    auto *filterEdit = new GUI::FancyLineEdit(this);
     filterEdit->setFiltering(true);
     connect(filterEdit,
             &GUI::FancyLineEdit::filterChanged,
@@ -49,7 +49,7 @@ PluginDialog::PluginDialog(QWidget *parent)
     m_detailsButton->setEnabled(false);
     m_errorDetailsButton->setEnabled(false);
 
-    auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     buttonBox->addButton(m_detailsButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(m_errorDetailsButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(m_installButton, QDialogButtonBox::ActionRole);
@@ -97,7 +97,7 @@ void PluginDialog::showInstallWizard()
 void PluginDialog::updateButtons()
 {
     ExtensionSystem::PluginSpec *selectedSpec = m_view->currentPlugin();
-    if (selectedSpec) {
+    if (selectedSpec != nullptr) {
         m_detailsButton->setEnabled(true);
         m_errorDetailsButton->setEnabled(selectedSpec->hasError());
     } else {
@@ -108,13 +108,14 @@ void PluginDialog::updateButtons()
 
 void PluginDialog::openDetails(ExtensionSystem::PluginSpec *spec)
 {
-    if (!spec)
+    if (spec == nullptr) {
         return;
+    }
     QDialog dialog(this);
     dialog.setWindowTitle(Tr::tr("Plugin Details of %1").arg(spec->name()));
-    auto layout = new QVBoxLayout;
+    auto *layout = new QVBoxLayout;
     dialog.setLayout(layout);
-    auto details = new ExtensionSystem::PluginDetailsView(&dialog);
+    auto *details = new ExtensionSystem::PluginDetailsView(&dialog);
     layout->addWidget(details);
     details->update(spec);
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Close,
@@ -130,13 +131,14 @@ void PluginDialog::openDetails(ExtensionSystem::PluginSpec *spec)
 void PluginDialog::openErrorDetails()
 {
     ExtensionSystem::PluginSpec *spec = m_view->currentPlugin();
-    if (!spec)
+    if (spec == nullptr) {
         return;
+    }
     QDialog dialog(this);
     dialog.setWindowTitle(Tr::tr("Plugin Errors of %1").arg(spec->name()));
-    auto layout = new QVBoxLayout;
+    auto *layout = new QVBoxLayout;
     dialog.setLayout(layout);
-    auto errors = new ExtensionSystem::PluginErrorView(&dialog);
+    auto *errors = new ExtensionSystem::PluginErrorView(&dialog);
     layout->addWidget(errors);
     errors->update(spec);
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Close,

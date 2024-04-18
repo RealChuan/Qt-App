@@ -12,7 +12,7 @@ elseif(CMAKE_HOST_APPLE)
                MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT_NAME}"
                MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
                MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-               MACOSX_BUNDLE_COPYRIGHT "(C) 2023 Youth"
+               MACOSX_BUNDLE_COPYRIGHT "(C) 2024 Youth"
                MACOSX_BUNDLE_GUI_IDENTIFIER "com.Youth.${PROJECT_NAME}"
                MACOSX_BUNDLE_ICON_FILE app.icns
                MACOSX_BUNDLE_INFO_STRING "APPL???")
@@ -20,10 +20,17 @@ elseif(CMAKE_HOST_APPLE)
                               PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
   set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/PkgInfo
                               PROPERTIES MACOSX_PACKAGE_LOCATION .)
-  add_dependencies(${PROJECT_NAME} coreplugin serialplugin tcpplugin
-                   CrashReport)
+  add_dependencies(
+    ${PROJECT_NAME}
+    aboutplugin
+    coreplugin
+    guiplugin
+    hashplugin
+    helloplugin
+    systeminfoplugin
+    CrashReport)
   add_rpath(${PROJECT_NAME})
-else()
+elseif(CMAKE_HOST_LINUX)
   qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
   add_rpath(${PROJECT_NAME})
 endif()

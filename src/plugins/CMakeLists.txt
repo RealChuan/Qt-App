@@ -1,4 +1,6 @@
 add_subdirectory(coreplugin)
-add_subdirectory(tcpplugin)
-add_subdirectory(serialplugin)
 add_subdirectory(hashplugin)
+add_subdirectory(systeminfoplugin)
+add_subdirectory(helloplugin)
+add_subdirectory(aboutplugin)
+add_subdirectory(guiplugin)

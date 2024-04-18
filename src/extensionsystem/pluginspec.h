@@ -22,22 +22,20 @@ class OptionsParser;
 class PluginSpecPrivate;
 class PluginManagerPrivate;
 
-} // Internal
+} // namespace Internal
 
 class IPlugin;
 class PluginView;
 
 struct EXTENSIONSYSTEM_EXPORT PluginDependency
 {
-    enum Type {
-        Required,
-        Optional,
-        Test
-    };
+    enum Type { Required, Optional, Test };
 
-    PluginDependency() : type(Required) {}
+    PluginDependency()
+        : type(Required)
+    {}
 
-    friend size_t qHash(const PluginDependency &value);
+    friend auto qHash(const PluginDependency &value) -> size_t;
 
     QString name;
     QString version;
@@ -56,7 +54,7 @@ struct EXTENSIONSYSTEM_EXPORT PluginArgumentDescription
 class EXTENSIONSYSTEM_EXPORT PluginSpec
 {
 public:
-    enum State { Invalid, Read, Resolved, Loaded, Initialized, Running, Stopped, Deleted};
+    enum State { Invalid, Read, Resolved, Loaded, Initialized, Running, Stopped, Deleted };
 
     ~PluginSpec();
 
@@ -82,11 +80,11 @@ public:
     [[nodiscard]] auto isEnabledIndirectly() const -> bool;
     [[nodiscard]] auto isForceEnabled() const -> bool;
     [[nodiscard]] auto isForceDisabled() const -> bool;
-    [[nodiscard]] QVector<PluginDependency> dependencies() const;
+    [[nodiscard]] auto dependencies() const -> QVector<PluginDependency>;
     [[nodiscard]] auto metaData() const -> QJsonObject;
 
     using PluginArgumentDescriptions = QVector<PluginArgumentDescription>;
-    [[nodiscard]] PluginArgumentDescriptions argumentDescriptions() const;
+    [[nodiscard]] auto argumentDescriptions() const -> PluginArgumentDescriptions;
 
     // other information, valid after 'Read' state is reached
     [[nodiscard]] auto location() const -> QString;

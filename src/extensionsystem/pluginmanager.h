@@ -36,7 +36,7 @@ public:
     // Object pool operations
     static void addObject(QObject *obj);
     static void removeObject(QObject *obj);
-    static QVector<QObject *> allObjects();
+    static auto allObjects() -> QVector<QObject *>;
     static auto listLock() -> QReadWriteLock *;
 
     // This is useful for soft dependencies using pure interfaces.
@@ -65,7 +65,7 @@ public:
     }
 
     template<typename T>
-    static QVector<T *> getObjects()
+    static auto getObjects() -> QVector<T *>
     {
         QReadLocker lock(listLock());
         QVector<T *> results;
@@ -79,7 +79,7 @@ public:
     }
 
     template<typename T, typename Predicate>
-    static QVector<T *> getObjects(Predicate predicate)
+    static auto getObjects(Predicate predicate) -> QVector<T *>
     {
         QReadLocker lock(listLock());
         QVector<T *> results;
@@ -95,14 +95,14 @@ public:
     static auto getObjectByName(const QString &name) -> QObject *;
 
     // Plugin operations
-    static QVector<PluginSpec *> loadQueue();
+    static auto loadQueue() -> QVector<PluginSpec *>;
     static void loadPlugins();
     static auto pluginPaths() -> QStringList;
     static void setPluginPaths(const QStringList &paths);
     static auto pluginIID() -> QString;
     static void setPluginIID(const QString &iid);
-    static const QVector<PluginSpec *> plugins();
-    static QHash<QString, QVector<PluginSpec *>> pluginCollections();
+    static auto plugins() -> const QVector<PluginSpec *>;
+    static auto pluginCollections() -> QHash<QString, QVector<PluginSpec *>>;
     static auto hasError() -> bool;
     static auto allErrors() -> const QStringList;
     static auto pluginsRequiringPlugin(PluginSpec *spec) -> const QSet<PluginSpec *>;

@@ -12,8 +12,9 @@ class QMenu;
 
 namespace Utils {
 
-UTILS_EXPORT void printBuildInfo();
+UTILS_EXPORT auto systemInfo() -> QString;
 UTILS_EXPORT void setHighDpiEnvironmentVariable();
+UTILS_EXPORT void quitApplication();
 UTILS_EXPORT void setUTF8Code();
 UTILS_EXPORT void setQSS(const QStringList &qssFilePaths);
 UTILS_EXPORT void loadFonts(const QString &fontPath);

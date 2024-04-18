@@ -90,8 +90,7 @@
         <file>qss/common.css</file>
         <file>qss/commonwidget.css</file>
         <file>qss/sidebarbutton.css</file>
-        <file>qss/carshdialog.css</file>
-        <file>qss/corewidget.css</file>
+        <file>qss/specific.css</file>
     </qresource>
     <qresource prefix="/common">
         <file>icon/common/checkbox-checked.png</file>

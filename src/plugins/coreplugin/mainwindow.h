@@ -17,7 +17,6 @@ public:
 private slots:
     void onShowGroupButton(int id);
     void onAboutPlugins();
-    void onQuit();
 
 private:
     void setupUI();

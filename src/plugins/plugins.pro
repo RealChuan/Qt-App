@@ -2,7 +2,9 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
+    aboutplugin \
     coreplugin \
-    serialplugin \
-    tcpplugin \
-    hashplugin
+    guiplugin \
+    hashplugin \
+    helloplugin \
+    systeminfoplugin

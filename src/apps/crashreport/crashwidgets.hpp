@@ -15,7 +15,6 @@ public:
 private slots:
     void onOpenCrashPath();
     void onRestart();
-    void onQuit();
 
 private:
     void setupUI();

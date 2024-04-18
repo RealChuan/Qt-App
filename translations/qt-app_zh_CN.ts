@@ -24,17 +24,17 @@
 <context>
     <name>Crash::CrashWidgets</name>
     <message>
-        <location filename="../src/apps/crashreport/crashwidgets.cc" line="68"/>
+        <location filename="../src/apps/crashreport/crashwidgets.cc" line="63"/>
         <source>Path of Crash File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/apps/crashreport/crashwidgets.cc" line="69"/>
+        <location filename="../src/apps/crashreport/crashwidgets.cc" line="64"/>
         <source>Restart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/apps/crashreport/crashwidgets.cc" line="70"/>
+        <location filename="../src/apps/crashreport/crashwidgets.cc" line="65"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -53,27 +53,27 @@ Contact Me - Email:
 <context>
     <name>GUI::CommonWidget</name>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="324"/>
+        <location filename="../src/gui/commonwidget.cc" line="325"/>
         <source>Minimize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="325"/>
+        <location filename="../src/gui/commonwidget.cc" line="326"/>
         <source>Maximize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="326"/>
+        <location filename="../src/gui/commonwidget.cc" line="327"/>
         <source>Restore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="327"/>
+        <location filename="../src/gui/commonwidget.cc" line="328"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="335"/>
+        <location filename="../src/gui/commonwidget.cc" line="336"/>
         <source>TitleBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -94,47 +94,38 @@ Contact Me - Email:
 <context>
     <name>HashWidgetPrivate</name>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="26"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="29"/>
         <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="30"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="33"/>
         <source>Select file to calculate hash.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="32"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="35"/>
         <source>Calculate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="36"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="39"/>
         <source>Calculate hash.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="53"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="56"/>
+        <source>If Input String is file path and file exists, calculate hash of file. Otherwise calculate hash of Input String.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="66"/>
         <source>Input:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="56"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="70"/>
         <source>Output:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="64"/>
-        <source>If Input String is file path and file exists, calculate hash of file. Otherwise calculate hash of Input String.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowPrivate</name>
-    <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="68"/>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="69"/>
-        <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -157,406 +148,199 @@ Contact Me - Email:
     </message>
 </context>
 <context>
+    <name>Plugin::AboutPluginWidget</name>
+    <message>
+        <location filename="../src/plugins/aboutplugin/aboutplugin.cc" line="13"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Plugin::AboutWidget</name>
+    <message>
+        <location filename="../src/plugins/aboutplugin/aboutwidget.cc" line="42"/>
+        <source>About Qt</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Plugin::GuiPluginWidget</name>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiplugin.cc" line="11"/>
+        <source>Gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Plugin::GuiWidget</name>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="23"/>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="24"/>
+        <source>Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="26"/>
+        <source>Gray</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="28"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="39"/>
+        <source>Radio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="30"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="41"/>
+        <source>Check</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="33"/>
+        <source>Buttons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="59"/>
+        <source>Boxes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="80"/>
+        <source>Bars</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Plugin::HashPluginWidget</name>
     <message>
         <location filename="../src/plugins/hashplugin/hashplugin.cc" line="11"/>
-        <source>Hash Tool</source>
+        <source>Hash</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Plugin::HashWidget</name>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="101"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="99"/>
         <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="109"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="107"/>
         <source>Input is empty!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="116"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="114"/>
         <source>Hash thread is running!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="120"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="118"/>
         <source>Calculating...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="127"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="125"/>
         <source>Calculate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Plugin::HelloPluginWidget</name>
+    <message>
+        <location filename="../src/plugins/helloplugin/helloplugin.cc" line="11"/>
+        <source>Hello</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Plugin::HelloWidget</name>
+    <message>
+        <location filename="../src/plugins/helloplugin/hellowidget.cc" line="94"/>
+        <source>Hello there! How&apos;s your day going so far?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/helloplugin/hellowidget.cc" line="95"/>
+        <source>Hi, it&apos;s great to see you again!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/helloplugin/hellowidget.cc" line="96"/>
+        <source>Good morning/afternoon/evening! How are you?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/helloplugin/hellowidget.cc" line="97"/>
+        <source>Hey, hope you&apos;re having a wonderful day!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/helloplugin/hellowidget.cc" line="103"/>
+        <source>Previous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/helloplugin/hellowidget.cc" line="104"/>
+        <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Plugin::MainWindow</name>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="41"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="40"/>
         <source>Hello World!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="88"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="68"/>
         <source>Systray, I couldn&apos;t detect any system tray on this system.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="94"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="75"/>
         <source>Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="97"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="78"/>
         <source>This is an Qt-App.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="134"/>
-        <source>Common Tools</source>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="115"/>
+        <source>Main</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="135"/>
-        <source>About</source>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="116"/>
+        <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="136"/>
-        <source>About Plugins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="137"/>
-        <source>About Qt</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Plugin::SerialPluginWidget</name>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialplugin.cc" line="11"/>
-        <source>Serial Tool</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Plugin::SerialPort</name>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialport.cpp" line="21"/>
-        <source>Serial Error: PortName is Empty!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialport.cpp" line="57"/>
-        <source>Serial Error[%1]: %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Plugin::SerialWidget</name>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="198"/>
-        <source> &gt;&gt; Serial Send: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="202"/>
-        <source> &gt;&gt; Serial Recv: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="206"/>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="210"/>
-        <source> &gt;&gt; Prompt Message: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="216"/>
-        <source>Time [%1] %2 %3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="222"/>
-        <source>Send: %1 Bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="224"/>
-        <source>Recv: %1 Bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="344"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="117"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="444"/>
-        <source>Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="444"/>
-        <source>Open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="454"/>
-        <source>Serial Open!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="456"/>
-        <source>Serial Close!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="502"/>
-        <source>Open File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="506"/>
-        <source>Text Files(*.txt)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="508"/>
-        <source>No file saved.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="514"/>
-        <source>Write File: Can&apos;t open file:
- %1 !</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="521"/>
-        <source>The file was saved successfully.</source>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="118"/>
+        <source>Plugins</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>Plugin::TcpClient</name>
+    <name>Plugin::SystemInfoPluginWidget</name>
     <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="67"/>
-        <source>[Client Error]: %1,%2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="87"/>
-        <source>The socket is not connected.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="90"/>
-        <source>The socket is performing a host name lookup.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="93"/>
-        <source>The socket has started establishing a connection.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="96"/>
-        <source>A connection is established.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="99"/>
-        <source>The socket is bound to an address and port.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="103"/>
-        <source>The socket is about to close (data may still be waiting to be written).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpclient.cpp" line="106"/>
-        <source>For internal use only.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Plugin::TcpPluginWidget</name>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpplugin.cc" line="17"/>
-        <source>Tcp Tool</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Plugin::TcpServer</name>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpserver.cpp" line="40"/>
-        <source>There is currently no client online, sending failed, please stop sending!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpserver.cpp" line="64"/>
-        <source>TCPServer accept Error: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpserver.cpp" line="74"/>
-        <location filename="../src/plugins/tcpplugin/tcpserver.cpp" line="105"/>
-        <source>%1 : %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpserver.cpp" line="90"/>
-        <source>Client [%1 : %2] Error: %3.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpserver.cpp" line="128"/>
-        <source>Client [%1 : %2] : </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Plugin::TcpWidget</name>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="331"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="363"/>
-        <source>TcpServer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="332"/>
-        <source>Local IP List: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="335"/>
-        <source>Local Port: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="336"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="424"/>
-        <source>Listen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="341"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="372"/>
-        <source>TcpClient</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="342"/>
-        <source>Server IP: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="345"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="475"/>
-        <source>Connect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="346"/>
-        <source>Server Port: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="350"/>
-        <source>The socket is not connected.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="402"/>
-        <source>No client is currently online, please stop sending invalid!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="407"/>
-        <source>Connect All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="408"/>
-        <source>Send To All Online Clients: %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="411"/>
-        <source>Send To Clients [%1] : %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="424"/>
-        <source>Stop Listen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="433"/>
-        <source>Server Online!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="435"/>
-        <source>Server Offline!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="442"/>
-        <source> Online.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="449"/>
-        <source> Offline.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="475"/>
-        <source>Disconnect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="553"/>
-        <source>Open File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="557"/>
-        <source>Text Files(*.txt)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="559"/>
-        <source>No file saved.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="565"/>
-        <source>Write File: Can&apos;t open file:
- %1 !</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="572"/>
-        <source>The file was saved successfully.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="617"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="644"/>
-        <source>Please enter the port number!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="652"/>
-        <source>Please enter the ip address!</source>
+        <location filename="../src/plugins/systeminfoplugin/systeminfoplugin.cc" line="11"/>
+        <source>System Info</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -583,12 +367,12 @@ Contact Me - Email:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/plugindialog.cpp" line="114"/>
+        <location filename="../src/plugins/coreplugin/plugindialog.cpp" line="115"/>
         <source>Plugin Details of %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/plugindialog.cpp" line="136"/>
+        <location filename="../src/plugins/coreplugin/plugindialog.cpp" line="138"/>
         <source>Plugin Errors of %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1107,209 +891,6 @@ will also disable the following plugins:
     </message>
 </context>
 <context>
-    <name>SerialWidgetPrivate</name>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="58"/>
-        <source>Send</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="63"/>
-        <source>Search Available Serial</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="77"/>
-        <source>Hex</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="78"/>
-        <source>Auto Delivery</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="82"/>
-        <source> ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="87"/>
-        <source>Send: 0 Bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="90"/>
-        <source>Receive: 0 Bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="93"/>
-        <source>Save Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="95"/>
-        <source>Clear Screen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="304"/>
-        <source>Data Display</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="313"/>
-        <source>Data Send</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="325"/>
-        <source>Port: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="327"/>
-        <source>Baud Rate: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="329"/>
-        <source>Data Bits: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="331"/>
-        <source>Stop Bits: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="333"/>
-        <source>Parity: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/serialplugin/serialwidget.cpp" line="335"/>
-        <source>Flow Control: </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TcpWidgetPrivate</name>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="37"/>
-        <source>Send</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="43"/>
-        <source>Local IP List: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="48"/>
-        <source>Please enter the server IP address.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="53"/>
-        <source>Local Port: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="57"/>
-        <source>Please enter the port number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="63"/>
-        <source>Hex</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="64"/>
-        <source>Auto Delivery</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="67"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="78"/>
-        <source> ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="73"/>
-        <source>Connect All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="74"/>
-        <source>Auto Reconnect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="85"/>
-        <source>Save Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="87"/>
-        <source>Clear Screen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="132"/>
-        <source>Send: %1 Bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="138"/>
-        <source>Recv: %1 Bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="157"/>
-        <source> &gt;&gt; Network Send: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="161"/>
-        <source> &gt;&gt; Network Recv: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="165"/>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="169"/>
-        <source> &gt;&gt; Prompt Message: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="175"/>
-        <source>Time [%1] %2 %3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="256"/>
-        <source>Data Display</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="265"/>
-        <source>Data Send</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="278"/>
-        <source>Mode: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/tcpplugin/tcpwidget.cpp" line="287"/>
-        <source>Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Utils</name>
     <message>
         <location filename="../src/utils/utils.cpp" line="22"/>
@@ -1322,27 +903,22 @@ will also disable the following plugins:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="95"/>
-        <source>Build with: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/utils/utils.cpp" line="190"/>
+        <location filename="../src/utils/utils.cpp" line="194"/>
         <source>Cannot remove file &quot;%1&quot;: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="233"/>
+        <location filename="../src/utils/utils.cpp" line="237"/>
         <source>Cannot remove directory &quot;%1&quot;: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="257"/>
+        <location filename="../src/utils/utils.cpp" line="261"/>
         <source>Cannot open the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="270"/>
+        <location filename="../src/utils/utils.cpp" line="274"/>
         <source>%1
 Offset: %2</source>
         <translation type="unfinished"></translation>

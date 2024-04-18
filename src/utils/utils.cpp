@@ -86,13 +86,17 @@ auto compilerString() -> QString
     return QLatin1String("<unknown compiler>");
 }
 
-void Utils::printBuildInfo()
+auto Utils::systemInfo() -> QString
 {
-    //    qInfo() << QSysInfo::buildAbi() << QSysInfo::machineUniqueId()
-    //            << QOperatingSystemVersion::current();
-    const QString info = QString("Qt %1 (%2, %3 bit)")
-                             .arg(qVersion(), compilerString(), QString::number(QSysInfo::WordSize));
-    qInfo() << QCoreApplication::translate("Utils", "Build with: ") << info;
+    auto text = QString("%1 (%2) on %3 (%4)")
+                    .arg(QSysInfo::prettyProductName(),
+                         QSysInfo::kernelVersion(),
+                         QSysInfo::currentCpuArchitecture(),
+                         QSysInfo::machineHostName())
+                + "\n"
+                + QString("Build with: Qt %1 (%2, %3)")
+                      .arg(qVersion(), compilerString(), QSysInfo::buildAbi());
+    return text;
 }
 
 void Utils::setHighDpiEnvironmentVariable()
@@ -397,4 +401,9 @@ void Utils::setMacComboBoxStyle(QWidget *parent)
     for (auto *const comboBox : comboBoxs) {
         comboBox->setStyle(QStyleFactory::create("Fusion"));
     }
+}
+
+void Utils::quitApplication()
+{
+    QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }

@@ -9,7 +9,7 @@ namespace GUI {
 class CommonWidget::CommonWidgetPrivate
 {
 public:
-    CommonWidgetPrivate(CommonWidget *q)
+    explicit CommonWidgetPrivate(CommonWidget *q)
         : q_ptr(q)
     {
         titleButton = new QPushButton(qApp->windowIcon(), qAppName(), q_ptr);
@@ -70,7 +70,7 @@ private:
         titleWidget = new QWidget(q_ptr);
         titleWidget->setObjectName("TitleWidget");
         auto *layout = new QHBoxLayout(titleWidget);
-        layout->setContentsMargins(5, 5, 5, 5);
+        layout->setContentsMargins(6, 6, 6, 6);
         layout->setSpacing(10);
         layout->addWidget(titleButton);
         layout->addStretch();
@@ -137,13 +137,14 @@ private:
                                         ":/icon/icon/mactitle/titlebutton-close-active-alt@2.png"*/},
                                        q_ptr);
 
-        const QSize size{16, 16};
+        const QSize size{18, 18};
+        titleButton->setIconSize(size);
         minButton->setFixedSize(size);
         maxButton->setFixedSize(size);
         restoreButton->setFixedSize(size);
         closeButton->setFixedSize(size);
 
-        const auto objectName("TitleButton");
+        const auto *const objectName("TitleButton");
         titleButton->setObjectName(objectName);
         minButton->setObjectName(objectName);
         maxButton->setObjectName(objectName);
@@ -226,7 +227,7 @@ void CommonWidget::setShadowPadding(int shadowPadding)
     d_ptr->shadowPadding = shadowPadding;
 }
 
-int CommonWidget::shadowPadding()
+auto CommonWidget::shadowPadding() -> int
 {
     return d_ptr->shadowPadding;
 }

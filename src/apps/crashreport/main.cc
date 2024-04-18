@@ -3,14 +3,13 @@
 #include <3rdparty/breakpad.hpp>
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
 #include <resource/resource.hpp>
+#include <utils/appinfo.hpp>
 #include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
 #include <utils/utils.h>
 
 #include <QNetworkProxyFactory>
 #include <QStyle>
-
-#define AppName "CrashReport"
 
 void initResource()
 {
@@ -22,19 +21,21 @@ void initResource()
 
 void setAppInfo()
 {
-    qApp->setApplicationVersion("0.0.1");
-    qApp->setApplicationDisplayName(AppName);
-    qApp->setApplicationName(AppName);
-    qApp->setDesktopFileName(AppName);
-    qApp->setOrganizationDomain("Youth");
-    qApp->setOrganizationName("Youth");
+    qApp->setApplicationVersion(Utils::version.toString());
+    qApp->setApplicationDisplayName(Utils::crashName);
+    qApp->setApplicationName(Utils::crashName);
+    qApp->setDesktopFileName(Utils::crashName);
+    qApp->setOrganizationDomain(Utils::organizationDomain);
+    qApp->setOrganizationName(Utils::organzationName);
     qApp->setWindowIcon(QIcon(":/icon/icon/crash.png"));
 }
 
 void setQss()
 {
-    Utils::setQSS(
-        {":/qss/qss/common.css", ":/qss/qss/commonwidget.css", ":/qss/qss/carshdialog.css"});
+    Utils::setQSS({":/qss/qss/common.css",
+                   ":/qss/qss/commonwidget.css",
+                   ":/qss/qss/sidebarbutton.css",
+                   ":/qss/qss/specific.css"});
 }
 
 auto main(int argc, char *argv[]) -> int
@@ -48,7 +49,7 @@ auto main(int argc, char *argv[]) -> int
 #endif
     Utils::setHighDpiEnvironmentVariable();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    SharedTools::QtSingleApplication app(AppName, argc, argv);
+    SharedTools::QtSingleApplication app(Utils::crashName, argc, argv);
     if (app.isRunning()) {
         qWarning() << "This is already running";
         if (app.sendMessage("raise_window_noop", 5000)) {
@@ -79,8 +80,7 @@ auto main(int argc, char *argv[]) -> int
     log->startWork();
 
     initResource();
-    Utils::printBuildInfo();
-    //Utils::setUTF8Code();
+    qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
     Utils::setGlobalThreadPoolMaxSize();
     Utils::loadFonts(app.applicationDirPath() + "/fonts");
     setQss();

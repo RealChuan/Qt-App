@@ -21,7 +21,7 @@
 
 namespace Utils {
 
-QString getCrashPath()
+auto getCrashPath() -> QString
 {
     const QString path = Utils::getConfigPath() + "/crashes";
     Utils::generateDirectorys(path);
@@ -52,12 +52,12 @@ void createEnvironment()
 
 // 程序崩溃回调函数;
 #if defined(Q_OS_WIN)
-bool callback(const wchar_t *dump_path,
+auto callback(const wchar_t *dump_path,
               const wchar_t *id,
               void *,
               EXCEPTION_POINTERS *,
               MDRawAssertionInfo *,
-              bool succeeded)
+              bool succeeded) -> bool
 {
     if (succeeded) {
         qInfo() << "Create dump file success:" << QString::fromWCharArray(dump_path)
@@ -126,7 +126,7 @@ struct BreakPad::BreakPadPrivate
     QScopedPointer<google_breakpad::ExceptionHandler> exceptionHandlerPtr;
 };
 
-BreakPad *BreakPad::instance()
+auto BreakPad::instance() -> BreakPad *
 {
     static BreakPad breakPad;
     return &breakPad;
