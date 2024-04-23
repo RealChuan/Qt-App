@@ -17,11 +17,11 @@ public:
     static auto Info(QWidget *parent, const QString &msg, MessButton button = CloseButton) -> int;
     static auto Warning(QWidget *parent, const QString &msg, MessButton button) -> int;
 
-    void setMessage(const QString &);
-    void setIconLabelObjectName(const QString &);
+    void setIcon(const QIcon &icon);
+    void setMessage(const QString &msg);
 
-    void setYesAndNoButtonVisible(bool);
-    void setCloseButtonVisible(bool);
+    void setYesAndNoButtonVisible(bool visible);
+    void setCloseButtonVisible(bool visible);
 
 private:
     void buildConnect();

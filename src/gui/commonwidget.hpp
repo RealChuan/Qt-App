@@ -16,8 +16,8 @@ public:
     explicit CommonWidget(QWidget *parent = nullptr);
     ~CommonWidget() override;
 
-    void setRestoreMaxButtonVisible(bool);
-    void setMinButtonVisible(bool);
+    void setRestoreMaxButtonVisible(bool visible);
+    void setMinButtonVisible(bool visible);
 
     void setTitle(const QString &title);
     void setIcon(const QIcon &icon);

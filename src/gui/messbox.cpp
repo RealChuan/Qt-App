@@ -10,10 +10,13 @@ public:
     explicit MessBoxPrivate(MessBox *q)
         : q_ptr(q)
     {
-        iconLabel = new QLabel(q_ptr);
+        iconButton = new QToolButton(q_ptr);
+        iconButton->setIconSize({48, 48});
+        iconButton->setObjectName("IconButton");
         messageLabel = new QLabel(q_ptr);
         messageLabel->setObjectName("MessageLabel");
         messageLabel->setWordWrap(true);
+        messageLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         closeButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "Close"), q_ptr);
         closeButton->setObjectName("BlueButton");
         yesButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "Yes"), q_ptr);
@@ -24,41 +27,26 @@ public:
 
     void setupUI()
     {
-        auto *hLayout = new QHBoxLayout;
-        hLayout->setSpacing(20);
-        hLayout->addSpacerItem(
-            new QSpacerItem(20, 10, QSizePolicy::Maximum, QSizePolicy::Expanding));
-        hLayout->addWidget(iconLabel);
-        hLayout->addWidget(messageLabel);
-        hLayout->addSpacerItem(
-            new QSpacerItem(20, 10, QSizePolicy::Maximum, QSizePolicy::Expanding));
+        auto *widget = new QWidget(q_ptr);
+        auto *layout = new QVBoxLayout(widget);
+        layout->setContentsMargins(20, 40, 20, 20);
+        layout->setSpacing(10);
+        layout->addWidget(iconButton, 0, Qt::AlignCenter);
+        layout->addWidget(messageLabel);
+        layout->addWidget(yesButton);
+        layout->addWidget(noButton);
+        layout->addWidget(closeButton);
 
-        auto *btnWidget = new QWidget(q_ptr);
-        btnWidget->setObjectName("MessBtnWidget");
-        auto *btnLayout = new QHBoxLayout(btnWidget);
-        btnLayout->setContentsMargins(10, 5, 20, 5);
-        btnLayout->setSpacing(5);
-        btnLayout->addStretch();
-        btnLayout->addWidget(yesButton);
-        btnLayout->addWidget(noButton);
-        btnLayout->addWidget(closeButton);
+        q_ptr->setCentralWidget(widget);
 
         yesButton->hide();
         noButton->hide();
         closeButton->hide();
-
-        auto *widget = new QWidget(q_ptr);
-        auto *layout = new QVBoxLayout(widget);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addLayout(hLayout);
-        layout->addWidget(btnWidget);
-
-        q_ptr->setCentralWidget(widget);
     }
 
     MessBox *q_ptr;
 
-    QLabel *iconLabel;
+    QToolButton *iconButton;
     QLabel *messageLabel;
     QPushButton *yesButton;
     QPushButton *noButton;
@@ -69,11 +57,9 @@ MessBox::MessBox(QWidget *parent)
     : Dialog(parent)
     , d_ptr(new MessBoxPrivate(this))
 {
-    setMinButtonVisible(false);
-    setRestoreMaxButtonVisible(false);
     d_ptr->setupUI();
     buildConnect();
-    resize(400, 250);
+    resize(300, 450);
 }
 
 MessBox::~MessBox() = default;
@@ -81,7 +67,7 @@ MessBox::~MessBox() = default;
 auto MessBox::Info(QWidget *parent, const QString &msg, MessButton button) -> int
 {
     MessBox messBox(parent);
-    messBox.setIconLabelObjectName("InfoLabel");
+    messBox.setIcon(messBox.style()->standardIcon(QStyle::SP_MessageBoxInformation));
     messBox.setMessage(msg);
     switch (button) {
     case YesAndNoButton: messBox.setYesAndNoButtonVisible(true); break;
@@ -94,7 +80,7 @@ auto MessBox::Info(QWidget *parent, const QString &msg, MessButton button) -> in
 auto MessBox::Warning(QWidget *parent, const QString &msg, MessButton button) -> int
 {
     MessBox messBox(parent);
-    messBox.setIconLabelObjectName("WarningLabel");
+    messBox.setIcon(messBox.style()->standardIcon(QStyle::SP_MessageBoxWarning));
     messBox.setMessage(msg);
     switch (button) {
     case YesAndNoButton: messBox.setYesAndNoButtonVisible(true); break;
@@ -104,25 +90,25 @@ auto MessBox::Warning(QWidget *parent, const QString &msg, MessButton button) ->
     return messBox.exec();
 }
 
+void MessBox::setIcon(const QIcon &icon)
+{
+    d_ptr->iconButton->setIcon(icon);
+}
+
 void MessBox::setMessage(const QString &msg)
 {
     d_ptr->messageLabel->setText(msg);
 }
 
-void MessBox::setIconLabelObjectName(const QString &objectName)
+void MessBox::setYesAndNoButtonVisible(bool visible)
 {
-    d_ptr->iconLabel->setObjectName(objectName);
+    d_ptr->yesButton->setVisible(visible);
+    d_ptr->noButton->setVisible(visible);
 }
 
-void MessBox::setYesAndNoButtonVisible(bool state)
+void MessBox::setCloseButtonVisible(bool visible)
 {
-    d_ptr->yesButton->setVisible(state);
-    d_ptr->noButton->setVisible(state);
-}
-
-void MessBox::setCloseButtonVisible(bool state)
-{
-    d_ptr->closeButton->setVisible(state);
+    d_ptr->closeButton->setVisible(visible);
 }
 
 void MessBox::buildConnect()

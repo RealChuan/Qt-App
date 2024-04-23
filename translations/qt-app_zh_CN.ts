@@ -53,27 +53,27 @@ Contact Me - Email:
 <context>
     <name>GUI::CommonWidget</name>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="325"/>
+        <location filename="../src/gui/commonwidget.cc" line="327"/>
         <source>Minimize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="326"/>
+        <location filename="../src/gui/commonwidget.cc" line="328"/>
         <source>Maximize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="327"/>
+        <location filename="../src/gui/commonwidget.cc" line="329"/>
         <source>Restore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="328"/>
+        <location filename="../src/gui/commonwidget.cc" line="330"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/commonwidget.cc" line="336"/>
+        <location filename="../src/gui/commonwidget.cc" line="338"/>
         <source>TitleBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -132,17 +132,17 @@ Contact Me - Email:
 <context>
     <name>MessBoxPrivate</name>
     <message>
-        <location filename="../src/gui/messbox.cpp" line="17"/>
+        <location filename="../src/gui/messbox.cpp" line="20"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/messbox.cpp" line="19"/>
+        <location filename="../src/gui/messbox.cpp" line="22"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/messbox.cpp" line="21"/>
+        <location filename="../src/gui/messbox.cpp" line="24"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -174,45 +174,90 @@ Contact Me - Email:
 <context>
     <name>Plugin::GuiWidget</name>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="23"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="25"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="24"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="26"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="26"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="28"/>
         <source>Gray</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="28"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="39"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="30"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="49"/>
         <source>Radio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="30"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="41"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="32"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="51"/>
         <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="33"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="36"/>
+        <source>This is an info message.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="39"/>
+        <source>This is a warning message.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="43"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="59"/>
-        <source>Boxes</source>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="78"/>
+        <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="80"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="102"/>
         <source>Bars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="114"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="125"/>
+        <source>Action 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="115"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="126"/>
+        <source>Action 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="117"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="128"/>
+        <source>Action 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="121"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="132"/>
+        <source>Action 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="122"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="133"/>
+        <source>Action 5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="124"/>
+        <source>Submenu</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

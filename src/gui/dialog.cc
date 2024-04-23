@@ -10,10 +10,12 @@ namespace GUI {
 class Dialog::DialogPrivate
 {
 public:
-    DialogPrivate(Dialog *q)
+    explicit DialogPrivate(Dialog *q)
         : q_ptr(q)
     {}
+
     Dialog *q_ptr;
+
     QEventLoop loop;
     Dialog::ExecFlags flag = Dialog::ExecFlags::Close;
 };
@@ -29,9 +31,9 @@ Dialog::Dialog(QWidget *parent)
     resize(600, 370);
 }
 
-Dialog::~Dialog() {}
+Dialog::~Dialog() = default;
 
-int Dialog::exec()
+auto Dialog::exec() -> int
 {
 #ifdef Q_OS_LINUX
     auto widget = parentWidget();

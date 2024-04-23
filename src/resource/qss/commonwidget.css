@@ -55,38 +55,14 @@
 *                                   MesaaBox
 *****************************************************************************/
 
-#InfoLabel {
-    min-width: 48px;
-    max-width: 48px;
-    min-height: 48px;
-    max-height: 48px;
-    border-width: 0;
-    border-image: url(resource/image/base/controls/info.png);
-}
-
-#WarningLabel {
-    min-width: 48px;
-    max-width: 48px;
-    min-height: 48px;
-    max-height: 48px;
-    border-width: 0;
-    border-image: url(resource/image/base/controls/warn.png);
+#IconButton{
+    border: none;
+    background: transparent;
 }
 
 #MessageLabel {
     font-size: 20px;
     qproperty-alignment: AlignCenter;
-}
-
-#MessBtnWidget {
-    background: white;
-    height: 35px;
-    max-height: 40px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    border-width: 1px;
-    border-style: solid none none none;
-    border-color: rgb(231, 231, 231);
 }
 
 /******************************************************************************

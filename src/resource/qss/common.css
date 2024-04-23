@@ -96,22 +96,26 @@ QAbstractItemView::icon {
 }
 
 /******************************************************************************
-*                                   QGroupBox
-*****************************************************************************/
-/*
+ *                                   QGroupBox
+ *****************************************************************************/
+ 
 QGroupBox {
-border: 1px solid white;
-border-radius: 5px;
-margin-top: 1ex; /* leave space at the top for the title
+    border: 1px solid #dddee1;
+    border-radius: 4px;
+    margin-top: 10px; /* leave space at the top for the title */
+	font-size: 14px;
 }
 
 QGroupBox::title {
-subcontrol-origin: margin;
-/*subcontrol-position: top center; */
-/* position at the top center
-padding: 0 3px;
+    subcontrol-origin: margin;
+    subcontrol-position: top center; /* position at the top center */
+    padding: 2px 3px;
+    margin-top: 0px;
+    /* background: #80848f; */
+    /* color: white; */
+    /* border-radius: 3px; */
+    /* spacing: 5px; */
 }
-*/
 
 /******************************************************************************
 *                                   QStackedWidget
@@ -491,54 +495,49 @@ QScrollBar::add-line:horizontal {
 
 QMenu {
     background: white;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 QMenu::item {
     background: transparent;
+    font-size: 12px; 
+    padding: 5px 15px 5px 15px;
+    border: 1px solid transparent;
 }
 
 QMenu::item:selected {
-    background: #009dd1;
+    background: rgb(56, 156, 255);
     color: white;
-}
-
-QMenu::icon::checked {
-    background: red;
-    border: 3px inset red;
-    position: absolute;
-
-    top: 2px;
-    right: 2px;
-    bottom: 4px;
-    left: 4px;
 }
 
 QMenu::separator {
     height: 2px;
     background: lightblue;
-    margin-left: 10px;
+    margin-left: 5px;
     margin-right: 5px;
+}
+
+QMenu::icon {
+    width: 20px;
+    height: 20px;
+    padding: 0 5px 0 5px;
 }
 
 QMenu::indicator {
     width: 20px;
     height: 20px;
+    /* item padding left */
+    padding-right: -15px; 
 }
 
-/* non-exclusive indicator = check box style indicator (see QActionGroup::setExclusive) */
+QMenu::indicator:exclusive:unchecked,
 QMenu::indicator:non-exclusive:unchecked {
     image: url(:/common/icon/common/checkbox-unchecked-insensitive.png);
 }
 
-QMenu::indicator:non-exclusive:unchecked:selected {
-    image: url(:/common/icon/common/checkbox-unchecked-insensitive.png);
-}
-
-QMenu::indicator:non-exclusive:checked {
-    image: url(:/common/icon/common/checkbox-checked-selectionmode.png);
-}
-
+QMenu::indicator:exclusive:checked,
+QMenu::indicator:exclusive:checked:selected,
+QMenu::indicator:non-exclusive:checked,
 QMenu::indicator:non-exclusive:checked:selected {
     image: url(:/common/icon/common/checkbox-checked-selectionmode.png);
 }

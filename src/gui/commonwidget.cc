@@ -167,7 +167,7 @@ CommonWidget::CommonWidget(QWidget *parent)
     QMetaObject::invokeMethod(this, &CommonWidget::onShowNormal, Qt::QueuedConnection);
 }
 
-CommonWidget::~CommonWidget() {}
+CommonWidget::~CommonWidget() = default;
 
 void CommonWidget::setRestoreMaxButtonVisible(bool visible)
 {
@@ -252,8 +252,10 @@ void CommonWidget::onShowNormal()
                                       d_ptr->shadowPadding,
                                       d_ptr->shadowPadding);
     showNormal();
-    d_ptr->maxButton->show();
-    d_ptr->restoreButton->hide();
+    if (d_ptr->maxButton->isVisible() || d_ptr->restoreButton->isVisible()) {
+        d_ptr->maxButton->show();
+        d_ptr->restoreButton->hide();
+    }
 }
 
 void CommonWidget::mousePressEvent(QMouseEvent *event)

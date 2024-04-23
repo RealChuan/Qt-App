@@ -16,8 +16,9 @@ public:
 private:
     void setupUI();
     auto createButtonGroup() -> QGroupBox *;
-    auto createBoxGroup() -> QGroupBox *;
+    auto createInputGroup() -> QGroupBox *;
     auto createBarGroup() -> QGroupBox *;
+    auto createMenu() -> QMenu *;
 };
 
 } // namespace Plugin
