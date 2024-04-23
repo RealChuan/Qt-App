@@ -40,7 +40,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE TRUE
 
 target_link_libraries(
   ${PROJECT_NAME}
-  PRIVATE extensionsystem
+  PRIVATE dump
+          extensionsystem
           thirdparty
           gui
           resource
@@ -48,10 +49,13 @@ target_link_libraries(
           Qt6::Network
           Qt6::Core5Compat
           Qt6::Widgets
-          unofficial::breakpad::libbreakpad
-          unofficial::breakpad::libbreakpad_client)
+          crashpad::crashpad)
 
 qt_finalize_executable(${PROJECT_NAME})
+
+string(REPLACE "share/crashpad" "tools/crashpad" crash_handler_path
+               ${crashpad_DIR})
+message(STATUS "crashpad tools directory: ${crash_handler_path}")
 
 if(CMAKE_HOST_APPLE)
   add_custom_command(
@@ -64,5 +68,15 @@ if(CMAKE_HOST_APPLE)
       # copy crashrepoter to bundle
     COMMAND
       ${CMAKE_COMMAND} -E copy ${EXECUTABLE_OUTPUT_PATH}/CrashReport
-      ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS/CrashReport)
+      ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS/CrashReport
+      # copy crashpad_handler to bundle
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${crash_handler_path}
+            ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS)
+else()
+  add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    # copy crashpad_handler to bundle
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${crash_handler_path}
+            ${EXECUTABLE_OUTPUT_PATH})
 endif()

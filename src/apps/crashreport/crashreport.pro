@@ -10,16 +10,8 @@ TEMPLATE = app
 
 TARGET = CrashReport
 
-win32 {
-LIBS += -L$$APP_OUTPUT_PATH/../libs
-}
-
-unix {
-LIBS += -L$$APP_OUTPUT_PATH
-}
-
-
 LIBS += \
+    -l$$replaceLibName(dump) \
     -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(gui) \
     -l$$replaceLibName(resource) \

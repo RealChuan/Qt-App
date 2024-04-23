@@ -12,6 +12,12 @@ class QMenu;
 
 namespace Utils {
 
+UTILS_EXPORT auto configLocation() -> QString;
+UTILS_EXPORT auto configPath() -> QString;
+UTILS_EXPORT auto configFilePath() -> QString;
+UTILS_EXPORT auto crashPath() -> QString;
+UTILS_EXPORT auto logPath() -> QString;
+
 UTILS_EXPORT auto systemInfo() -> QString;
 UTILS_EXPORT void setHighDpiEnvironmentVariable();
 UTILS_EXPORT void quitApplication();
@@ -28,7 +34,6 @@ UTILS_EXPORT void removeDirectory(const QString &path);
 UTILS_EXPORT auto convertBytesToString(qint64 bytes) -> QString;
 UTILS_EXPORT auto jsonFromFile(const QString &filePath) -> QJsonObject;
 UTILS_EXPORT auto jsonFromBytes(const QByteArray &bytes) -> QJsonObject;
-UTILS_EXPORT auto getConfigPath() -> QString;
 UTILS_EXPORT auto execMenuAtWidget(QMenu *menu, QWidget *widget) -> QAction *;
 UTILS_EXPORT void setMacComboBoxStyle(QWidget *parent);
 UTILS_EXPORT auto getPidFromProcessName(const QString &processName) -> qint64;

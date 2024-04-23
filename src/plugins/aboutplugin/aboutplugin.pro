@@ -1,6 +1,6 @@
 include(../plugins.pri)
 
-QT += widgets
+QT += widgets core5compat
 
 DEFINES += ABOUTPLUGIN_LIBRARY
 TARGET = $$replaceLibName(aboutplugin)

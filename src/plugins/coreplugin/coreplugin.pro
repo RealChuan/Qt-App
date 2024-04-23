@@ -1,6 +1,6 @@
 include(../plugins.pri)
 
-QT += widgets
+QT += widgets core5compat
 
 DEFINES += COREPLUGIN_LIBRARY
 TARGET = $$replaceLibName(coreplugin)
@@ -25,4 +25,6 @@ HEADERS += \
     mainwindow.h \
     plugindialog.h
 
-OTHER_FILES += coreplugin.json
+DISTFILES += \
+    coreplugin.json
+

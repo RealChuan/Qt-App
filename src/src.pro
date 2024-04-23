@@ -3,6 +3,7 @@ CONFIG += ordered
 
 SUBDIRS += \
     utils \
+    dump \
     resource \
     gui \
     3rdparty \

@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     name: Build
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 11.0
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -25,9 +27,49 @@ jobs:
         qt_modules:
           - qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
         vcpkg_libs:
-          - breakpad
+          - breakpad crashpad
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install vcpkg on macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          sudo chmod +x install-vcpkg.sh
+          sudo ./install-vcpkg.sh
+        working-directory: ./scripts/macos
+
+      - name: Delete vcpkg.json
+        shell: bash
+        run: |
+          rm vcpkg.json
+
+      - name: Cache windows vcpkg
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/cache@v4
+        with: 
+          path: C:\vcpkg\installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+            ${{ runner.os }}-
+          save-always: true
+      - name: Cache macos or ubuntu vcpkg
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+        uses: actions/cache@v4
+        with: 
+          path: /usr/local/share/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+            ${{ runner.os }}-
+          save-always: true
+          
       - name: Install dependencies on windows
         if: startsWith(matrix.os, 'windows')
         shell: bash
@@ -35,40 +77,27 @@ jobs:
           choco install ninja
           ninja --version
           cmake --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-windows
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
       - name: Install dependencies on macos
         if: startsWith(matrix.os, 'macos')
         shell: bash
         run: |
-          brew install ninja nasm pkg-config
+          brew install ninja pkg-config
           ninja --version
           cmake --version
           clang --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-osx
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet arm64-osx
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build nasm build-essential libgl1-mesa-dev
+          sudo apt-get install ninja-build nasm build-essential libgl1-mesa-dev clang
           ninja --version
           cmake --version
           gcc --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-linux
-
-      - name: cache windows vcpkg
-        if: startsWith(matrix.os, 'windows')
-        uses: actions/cache/save@v4
-        with: 
-          path: C:\vcpkg\installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
-      - name: cache macos or ubuntu vcpkg
-        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
-        uses: actions/cache/save@v4
-        with: 
-          path: /usr/local/share/vcpkg/installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3

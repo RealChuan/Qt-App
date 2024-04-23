@@ -17,7 +17,7 @@ def icon_from_app(app_path):
     return os.path.join(app_path, "Contents", "Resources", icon_name)
 
 
-application = defines.get("app", "bin-64/RelWithDebInfo/Qt-App.app")
+application = defines.get("app", "Qt-App.app")
 icon = icon_from_app(application)
 
 # Volume format (see hdiutil create -help)

@@ -19,44 +19,15 @@
 #define CrashReportName "CrashReport"
 #endif
 
-namespace Utils {
-
-auto getCrashPath() -> QString
-{
-    const QString path = Utils::getConfigPath() + "/crashes";
-    Utils::generateDirectorys(path);
-    return QDir::toNativeSeparators(path);
-}
-
-void createEnvironment()
-{
-    const auto strTime = QDateTime::currentDateTime().toString("yyyy-MM-dd-HH-mm-ss-zzz");
-    const auto path = QString("%1/crashes/%2-System Environment.txt")
-                          .arg(Utils::getConfigPath(), strTime);
-
-    QFile file(path);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        auto systemEnviroment = QProcess::systemEnvironment();
-        QString str;
-        for (const QString &info : std::as_const(systemEnviroment)) {
-            str += info;
-            str += '\n';
-        }
-        file.write(str.toUtf8());
-        file.flush();
-        file.close();
-    } else {
-        qWarning() << file.errorString();
-    }
-}
+namespace Dump {
 
 // 程序崩溃回调函数;
 #if defined(Q_OS_WIN)
 auto callback(const wchar_t *dump_path,
               const wchar_t *id,
-              void *,
-              EXCEPTION_POINTERS *,
-              MDRawAssertionInfo *,
+              void * /*unused*/,
+              EXCEPTION_POINTERS * /*unused*/,
+              MDRawAssertionInfo * /*unused*/,
               bool succeeded) -> bool
 {
     if (succeeded) {
@@ -93,19 +64,24 @@ bool callback(const google_breakpad::MinidumpDescriptor &descriptor, void *conte
 }
 #endif
 
-struct BreakPad::BreakPadPrivate
+class BreakPad::BreakPadPrivate
 {
-    BreakPadPrivate()
+public:
+    explicit BreakPadPrivate(BreakPad *q)
+        : q_ptr(q)
+    {}
+
+    void setDumpPath(const QString &path)
     {
 #if defined(Q_OS_WIN)
         exceptionHandlerPtr.reset(
-            new google_breakpad::ExceptionHandler(getCrashPath().toStdWString(),
+            new google_breakpad::ExceptionHandler(path.toStdWString(),
                                                   nullptr,
                                                   callback,
                                                   nullptr,
                                                   google_breakpad::ExceptionHandler::HANDLER_ALL));
 #elif defined(Q_OS_MAC)
-        exceptionHandlerPtr.reset(new google_breakpad::ExceptionHandler(getCrashPath().toStdString(),
+        exceptionHandlerPtr.reset(new google_breakpad::ExceptionHandler(path.toStdString(),
                                                                         nullptr,
                                                                         callback,
                                                                         nullptr,
@@ -114,7 +90,7 @@ struct BreakPad::BreakPadPrivate
 #elif defined(Q_OS_LINUX)
         exceptionHandlerPtr.reset(
             new google_breakpad::ExceptionHandler(google_breakpad::MinidumpDescriptor(
-                                                      getCrashPath().toStdString()),
+                                                      path.toStdString()),
                                                   nullptr,
                                                   callback,
                                                   nullptr,
@@ -122,40 +98,32 @@ struct BreakPad::BreakPadPrivate
                                                   -1));
 #endif
     }
-    ~BreakPadPrivate() {}
+
+    ~BreakPadPrivate() = default;
+
+    BreakPad *q_ptr;
     QScopedPointer<google_breakpad::ExceptionHandler> exceptionHandlerPtr;
 };
 
-auto BreakPad::instance() -> BreakPad *
+void BreakPad::setDumpPath(const QString &path)
 {
-    static BreakPad breakPad;
-    return &breakPad;
+    d_ptr->setDumpPath(path);
 }
 
 BreakPad::BreakPad(QObject *parent)
     : QObject{parent}
-    , d_ptr(new BreakPadPrivate)
+    , d_ptr(new BreakPadPrivate(this))
 {}
 
-BreakPad::~BreakPad() {}
+BreakPad::~BreakPad() = default;
 
 void openCrashReporter()
 {
-    createEnvironment();
-
     const auto reporterPath = qApp->applicationDirPath() + "/" + CrashReportName;
-    QStringList args{Utils::getConfigPath() + "/crashes",
-                     Utils::getConfigPath() + "/log",
-                     qApp->applicationFilePath()};
+    QStringList args{Utils::crashPath(), Utils::logPath(), qApp->applicationFilePath()};
     args.append(qApp->arguments());
     QProcess process;
     process.startDetached(reporterPath, args);
 }
 
-void crash()
-{
-    int *p;
-    *p = 10;
-}
-
-} // namespace Utils
+} // namespace Dump

@@ -1,4 +1,5 @@
 add_subdirectory(utils)
+add_subdirectory(dump)
 add_subdirectory(resource)
 add_subdirectory(gui)
 add_subdirectory(3rdparty)

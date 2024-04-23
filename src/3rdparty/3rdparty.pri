@@ -35,4 +35,25 @@ CONFIG(debug, debug|release) {
             -llibbreakpad_client -llibbreakpad
 }
 
-INCLUDEPATH += $$vcpkg_path/include
+LIBS += -lclient -lutil -lbase -lcommon
+
+INCLUDEPATH += \
+    $$vcpkg_path/include \
+    $$vcpkg_path/include/crashpad
+
+# for crashpad
+win32{
+    DEFINES += NOMINMAX
+    LIBS += -lAdvapi32
+}
+
+macx{
+    LIBS += \
+        -lbsm \
+        -lmig_output \
+        -framework ApplicationServices \
+        -framework CoreFoundation \
+        -framework Foundation \
+        -framework IOKit \
+        -framework Security
+}

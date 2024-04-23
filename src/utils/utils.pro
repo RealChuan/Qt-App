@@ -1,4 +1,4 @@
-include(../libs.pri)
+include(../slib.pri)
 include(mimetypes/mimetypes.pri)
 
 QT += widgets core5compat

@@ -71,8 +71,7 @@ LanguageConfig::~LanguageConfig()
 
 void LanguageConfig::getConfig()
 {
-    Utils::generateDirectorys(Utils::getConfigPath() + "/config");
-    const QString configFile(Utils::getConfigPath() + "/config/config.ini");
+    const QString configFile(Utils::configFilePath());
     if (QFileInfo::exists(configFile)) {
         QSettings setting(configFile, QSettings::IniFormat);
         setting.beginGroup("Language_config"); //向当前组追加前缀
@@ -87,7 +86,7 @@ void LanguageConfig::getConfig()
 
 void LanguageConfig::saveConfig()
 {
-    const QString configFile(Utils::getConfigPath() + "/config/config.ini");
+    const QString configFile(Utils::configFilePath());
     QSettings setting(configFile, QSettings::IniFormat);
     setting.beginGroup("Language_config");
     setting.setValue("Language", d_ptr->currentLanguage);

@@ -288,7 +288,7 @@ void Utils::setGlobalThreadPoolMaxSize(int maxSize)
     instance->setMaxThreadCount(qMax(4, 2 * instance->maxThreadCount()));
 }
 
-auto Utils::getConfigPath() -> QString
+auto Utils::configLocation() -> QString
 {
     static QString path;
     if (path.isEmpty()) {
@@ -406,4 +406,31 @@ void Utils::setMacComboBoxStyle(QWidget *parent)
 void Utils::quitApplication()
 {
     QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
+}
+
+auto Utils::crashPath() -> QString
+{
+    const auto path = configLocation() + "/crash";
+    generateDirectorys(path);
+    return QDir::toNativeSeparators(path);
+}
+
+auto Utils::logPath() -> QString
+{
+    const auto path = configLocation() + "/log";
+    generateDirectorys(path);
+    return QDir::toNativeSeparators(path);
+}
+
+auto Utils::configPath() -> QString
+{
+    const auto path = configLocation() + "/config";
+    generateDirectorys(path);
+    return QDir::toNativeSeparators(path);
+}
+
+auto Utils::configFilePath() -> QString
+{
+    const auto path = configPath() + "/config.ini";
+    return QDir::toNativeSeparators(path);
 }

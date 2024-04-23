@@ -21,17 +21,9 @@ CONFIG(debug, debug|release) {
 INCLUDEPATH += $$PWD/src/
 DEPENDPATH  += $$PWD/src/
 
-defineReplace(replaceLibName) {
-   unset(LIBRARY_NAME)
-   LIBRARY_NAME = $$1
-   CONFIG(debug, debug|release) {
-      !debug_and_release|build_pass {
-          RET = $$member(LIBRARY_NAME, 0)d
-      }
-   }
-   isEmpty(RET):RET = $$LIBRARY_NAME
-   return($$RET)
-}
+LIBS += \
+    -L$$APP_OUTPUT_PATH \
+    -L$$APP_OUTPUT_PATH/../libs
 
 isEmpty(RC_LANG): RC_LANG = 0x0004
 isEmpty(VERSION): VERSION = 0.1.1.0
@@ -45,3 +37,15 @@ isEmpty(QMAKE_TARGET_ORIGINAL_FILENAME): QMAKE_TARGET_ORIGINAL_FILENAME = Qt-App
 isEmpty(QMAKE_TARGET_INTERNALNAME): QMAKE_TARGET_INTERNALNAME = Qt-App
 isEmpty(QMAKE_TARGET_COMMENTS): QMAKE_TARGET_COMMENTS = Qt-App
 isEmpty(QMAKE_TARGET_TRADEMARKS): QMAKE_TARGET_TRADEMARKS = Youth
+
+defineReplace(replaceLibName) {
+   unset(LIBRARY_NAME)
+   LIBRARY_NAME = $$1
+   CONFIG(debug, debug|release) {
+      !debug_and_release|build_pass {
+          RET = $$member(LIBRARY_NAME, 0)d
+      }
+   }
+   isEmpty(RET):RET = $$LIBRARY_NAME
+   return($$RET)
+}

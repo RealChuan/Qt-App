@@ -7,7 +7,8 @@ add_rpath(CrashReport)
 set_target_properties(CrashReport PROPERTIES WIN32_EXECUTABLE ON)
 target_link_libraries(
   CrashReport
-  PRIVATE thirdparty
+  PRIVATE dump
+          thirdparty
           gui
           resource
           utils

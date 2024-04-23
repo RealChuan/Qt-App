@@ -1,4 +1,4 @@
-include(../libs.pri)
+include(../slib.pri)
 
 DEFINES += AGGREGATION_LIBRARY
 TARGET = $$replaceLibName(aggregation)

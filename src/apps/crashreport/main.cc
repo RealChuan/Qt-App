@@ -1,7 +1,7 @@
 #include "crashwidgets.hpp"
 
-#include <3rdparty/breakpad.hpp>
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
+#include <dump/breakpad.hpp>
 #include <resource/resource.hpp>
 #include <utils/appinfo.hpp>
 #include <utils/languageconfig.hpp>
@@ -69,7 +69,7 @@ auto main(int argc, char *argv[]) -> int
 #endif
 
     setAppInfo();
-    Utils::BreakPad::instance();
+    Dump::BreakPad::instance();
     QDir::setCurrent(app.applicationDirPath());
     Utils::LanguageConfig::instance()->loadLanguage();
 

@@ -1,4 +1,4 @@
-include(../libs.pri)
+include(../lib.pri)
 
 QT += widgets
 

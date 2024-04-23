@@ -32,6 +32,8 @@ on:
 jobs:
   build:
     name: Build
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 11.0
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -51,7 +53,7 @@ jobs:
         arch:
           - x86_64
         vcpkg_libs:
-          - breakpad
+          - breakpad crashpad
         include:
           - os: macos-latest
             qt_ver: 6.7.0
@@ -59,70 +61,20 @@ jobs:
             build_type: "RelWithDebInfo"
             generators: "Ninja"
             arch: arm64
-            vcpkg_libs: breakpad
+            vcpkg_libs: breakpad crashpad
 
     steps:
-      - name: Restore windows vcpkg
-        if: startsWith(matrix.os, 'windows')
-        uses: actions/cache/restore@v4
-        with: 
-          path: C:\vcpkg\installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
-      - name: Restore macos or ubuntu vcpkg
-        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
-        uses: actions/cache/restore@v4
-        with: 
-          path: /usr/local/share/vcpkg/installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
-          
-      - name: Install dependencies on windows
-        if: startsWith(matrix.os, 'windows')
-        shell: bash
-        run: |
-          choco install ninja
-          ninja --version
-          cmake --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-windows
-      - name: Install dependencies on ubuntu
-        if: startsWith(matrix.os, 'ubuntu')
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install ninja-build build-essential libgl1-mesa-dev
-          ninja --version
-          cmake --version
-          gcc --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-linux
-      - name: Install dependencies on macos-x86_64
-        if: startsWith(matrix.os, 'macos') && matrix.arch == 'x86_64'
-        shell: bash
-        run: |
-          brew install ninja pkg-config
-          ninja --version
-          cmake --version
-          clang --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-osx
-      - name: Install dependencies on macos-arm64
-        if: startsWith(matrix.os, 'macos') && matrix.arch == 'arm64'
-        shell: bash
-        run: |
-          brew install ninja pkg-config
-          ninja --version
-          cmake --version
-          clang --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet arm64-osx
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: ${{ matrix.qt_ver }}
-          install-deps: 'true'
-          modules: '${{ matrix.qt_modules }}'
-          cache: 'true'
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Install vcpkg on macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          sudo chmod +x install-vcpkg.sh
+          sudo ./install-vcpkg.sh
+        working-directory: ./scripts/macos
 
       # jurplel/install-qt-action@v3, 这个action会修改默认的python版本，
       # 会导致部分使用vcpkg的库编译失败，比如libsystemd，所以需要删除vcpkg.json
@@ -131,9 +83,69 @@ jobs:
         run: |
           rm vcpkg.json
 
-      - name: Enable Developer Command Prompt
+      - name: Cache windows vcpkg
         if: startsWith(matrix.os, 'windows')
-        uses: ilammy/msvc-dev-cmd@v1.12.1
+        uses: actions/cache@v4
+        with: 
+          path: C:\vcpkg\installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+            ${{ runner.os }}-
+          save-always: true
+      - name: Cache macos or ubuntu vcpkg
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+        uses: actions/cache@v4
+        with: 
+          path: /usr/local/share/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+            ${{ runner.os }}-
+          save-always: true
+
+      - name: Install dependencies on windows
+        if: startsWith(matrix.os, 'windows')
+        shell: bash
+        run: |
+          choco install ninja
+          ninja --version
+          cmake --version
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+      - name: Install dependencies on ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang
+          ninja --version
+          cmake --version
+          gcc --version
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+      - name: Install dependencies on macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          brew install ninja pkg-config python-setuptools
+          ninja --version
+          cmake --version
+          clang --version
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+          vcpkg install ${{ matrix.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+   
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ matrix.qt_ver }}
+          install-deps: 'true'
+          modules: '${{ matrix.qt_modules }}'
+          cache: 'true'
+
+      - name: Configure msvc for amd64
+        if: startsWith(matrix.os, 'windows')
+        uses: ilammy/msvc-dev-cmd@v1 
         with:
           arch: amd64
       - name: Configure windows
@@ -165,76 +177,42 @@ jobs:
         run: |
           cmake --build ./build --config ${{ matrix.build_type }}
 
-      - name: Deploy Windows
+      - name: Deploy windows
         if: startsWith(matrix.os, 'windows')
         shell: bash
         run: |
-          cd ./bin-64/${{ matrix.build_type }}
-          # deploy contains plugins         
-          cp -rf ./plugins/* .
-          files=$(find . -maxdepth 1 -type f -printf '%P\n')
-          for file in $files;
-          do
-            if [[ $file == *.exe || $file == *.dll ]]; then
-              windeployqt --force --compiler-runtime $file
-            fi
-          done
-          rm -rf *plugin.dll
-          ls -l
+          ./../../packaging/windows/deploy.sh 
+        working-directory: ./bin-64/${{ matrix.build_type }}
       - name: Deploy macos
         if: startsWith(matrix.os, 'macos')
         shell: bash
         run: |
-          macdeployqt ./bin-64/${{ matrix.build_type }}/Qt-App.app -always-overwrite
-          ls -l ./bin-64/${{ matrix.build_type }}/Qt-App.app/Contents/Frameworks
-          rm -rf ./bin-64/${{ matrix.build_type }}/plugins
-          rm -f ./bin-64/${{ matrix.build_type }}/CrashReport
-          rm -f ./bin-64/${{ matrix.build_type }}/*.dylib
-          # make dmg
-          pip3 install dmgbuild
-          dmgbuild -s ./packaging/macos/Qt-App.dmgbuild.py "Qt-App" ./bin-64/${{ matrix.build_type }}/Qt-App.dmg
+          sudo chmod -R a+x .
+          sudo chmod 755 ./../../packaging/macos/deploy.sh
+          ./../../packaging/macos/deploy.sh
+        working-directory: ./bin-64/${{ matrix.build_type }}
       - name: Deploy ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
-          sudo add-apt-repository universe
-          sudo apt update
-          sudo apt install libfuse2 libxcb-cursor0
-          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-          cp -f ./packaging/ubuntu/Qt-App.desktop ./bin-64/${{ matrix.build_type }}/Qt-App.desktop
-          cp -f ./src/resource/icon/app.png ./bin-64/${{ matrix.build_type }}/app.png
-          cp -f ./bin-64/${{ matrix.build_type }}/plugins/* ./bin-64/${{ matrix.build_type }}
-
-          so_files=$(find ./bin-64/${{ matrix.build_type }} -maxdepth 1 -name "*.so" -printf '%P\n')
-          for so_file in $so_files;
-          do
-            ./linuxdeployqt-continuous-x86_64.AppImage \
-              ./bin-64/${{ matrix.build_type }}/$so_file \
-              -qmake=${{ env.Qt6_DIR }}/bin/qmake \
-              -always-overwrite -unsupported-allow-new-glibc 
-          done
-          rm -f ./bin-64/${{ matrix.build_type }}/AppRun
-          ./linuxdeployqt-continuous-x86_64.AppImage \
-            ./bin-64/${{ matrix.build_type }}/Qt-App \
-            -executable=./bin-64/${{ matrix.build_type }}/CrashReport \
-            -qmake=${{ env.Qt6_DIR }}/bin/qmake \
-            -always-overwrite -unsupported-allow-new-glibc \
-            -appimage
-          rm linuxdeployqt-continuous-x86_64.AppImage
-          rm -f ./bin-64/${{ matrix.build_type }}/*.so
-          mv *.AppImage ./bin-64/${{ matrix.build_type }}
+          sudo chmod -R a+x .
+          sudo chmod 755 ./../../packaging/ubuntu/deploy.sh
+          ./../../packaging/ubuntu/deploy.sh
+        working-directory: ./bin-64/${{ matrix.build_type }}
 
       - name: 7z package
         shell: bash
         run: |
           ls -al ./bin-64/${{ matrix.build_type }}
-          7z a -t7z -r -mx=9 -mmt Qt-App-${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}.7z ./bin-64/${{ matrix.build_type }}/*
+          CURRENT_DATE=$(date '+%Y%m%d')
+          filename=Qt-App_${{ runner.os }}_${{ matrix.arch }}_${CURRENT_DATE}.7z
+          echo "artifactPath=$filename" >> $GITHUB_ENV
+          7z a -t7z -r -mx=9 -mmt ${filename} ./bin-64/${{ matrix.build_type }}/*
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}
-          path: Qt-App-${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}.7z
+          path: ${{ env.artifactPath }}
 
   release:
     name: Release
@@ -250,20 +228,37 @@ jobs:
           wget -c -nv "https://github.com/RealChuan/Qt-App/releases/download/0.0.1/fonts.7z"
 
       - name: Download packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Move packages
         shell: bash
         run: |
           ls -al
-          mv ./windows-latest-x86_64-RelWithDebInfo/Qt-App-*.7z .
-          mv ./ubuntu-latest-x86_64-RelWithDebInfo/Qt-App-*.7z .
-          mv ./macos-latest-x86_64-RelWithDebInfo/Qt-App-*.7z .
-          mv ./macos-latest-arm64-RelWithDebInfo/Qt-App-*.7z .
+          mv ./windows*/*.7z .
+          mv ./ubuntu*/*.7z .
+          mv ./macos*/*.7z .
           ls -al
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Rename Files According to Tag
+        shell: bash
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+
+          for FILE in Qt-App_*.7z; do
+            if [[ -f "$FILE" ]]; then
+              BASENAME=$(basename "$FILE" .7z)
+              REST="${BASENAME#Qt-App_}"
+              NEW_BASENAME="Qt-App_${TAG_NAME}_${REST}"
+              NEW_FILE="${NEW_BASENAME}.7z"
+              mv "$FILE" "$NEW_FILE"
+              echo "Renamed $FILE to $NEW_FILE"
+            fi
+          done
+
+          ls -al
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
         with:
           draft: false
           prerelease: false

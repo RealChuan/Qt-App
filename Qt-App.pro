@@ -3,7 +3,8 @@ CONFIG += ordered
 
 SUBDIRS += \
     src \
-    examples
+    examples \
+    tests
 
 TRANSLATIONS += \
     translations/qt-app_en.ts \

@@ -4,7 +4,8 @@
   "version": "0.1.1",
   "description": "manifest",
   "dependencies": [
-    "breakpad"
+    "breakpad",
+    "crashpad"
   ],
-  "builtin-baseline": "ad3bae57455a3c3ce528fcd47d8e8027d0498add"
+  "builtin-baseline": "8150939b69720adc475461978e07c2d2bf5fb76e"
 }

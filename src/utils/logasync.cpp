@@ -15,17 +15,36 @@ namespace Utils {
 
 const static int g_kRollPerSeconds = 60 * 60 * 24;
 
-static auto getFileName(qint64 *now) -> QString
+static auto getFileName(qint64 seconds) -> QString
 {
-    *now = QDateTime::currentSecsSinceEpoch();
-    QString data = QDateTime::fromSecsSinceEpoch(*now).toString("yyyy-MM-dd-hh-mm-ss");
-    QString filename = QString("%1/log/%2.%3.%4.%5.log")
-                           .arg(Utils::getConfigPath(),
-                                qAppName(),
-                                data,
-                                QSysInfo::machineHostName(),
-                                QString::number(qApp->applicationPid()));
+    auto data = QDateTime::fromSecsSinceEpoch(seconds).toString("yyyy-MM-dd-hh-mm-ss");
+    auto filename = QString("%1/%2.%3.%4.%5.log")
+                        .arg(LogAsync::instance()->logPath(),
+                             qAppName(),
+                             data,
+                             QSysInfo::machineHostName(),
+                             QString::number(qApp->applicationPid()));
     return filename;
+}
+
+static void autoDelFile()
+{
+    auto *instance = LogAsync::instance();
+    const QString path(instance->logPath());
+    QDir dir(path);
+    if (!dir.exists()) {
+        return;
+    }
+
+    const QFileInfoList list = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
+    const QDateTime cur = QDateTime::currentDateTime();
+    const QDateTime pre = cur.addDays(-instance->autoDelFileDays());
+
+    for (const QFileInfo &info : std::as_const(list)) {
+        if (info.lastModified() <= pre) {
+            dir.remove(info.fileName());
+        }
+    }
 }
 
 class FileUtil::FileUtilPrivate
@@ -43,15 +62,12 @@ public:
     qint64 startTime = 0;
     qint64 lastRoll = 0;
     int count = 0;
-    qint64 autoDelFileDays = 30;
 };
 
-FileUtil::FileUtil(qint64 days, QObject *parent)
+FileUtil::FileUtil(QObject *parent)
     : QObject(parent)
     , d_ptr(new FileUtilPrivate(this))
 {
-    d_ptr->autoDelFileDays = days;
-    Utils::generateDirectorys(Utils::getConfigPath() + "/log");
     rollFile(0);
     setTimer();
 }
@@ -84,11 +100,11 @@ void FileUtil::onFlush()
 
 auto FileUtil::rollFile(int count) -> bool
 {
-    qint64 now = 0;
-    QString filename = getFileName(&now);
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    QString filename = getFileName(now);
     if (count != 0) {
         filename += QString(".%1").arg(count);
-    } else {
+    } else if (LogAsync::instance()->autoDelFile()) {
         autoDelFile();
     }
     qint64 start = now / g_kRollPerSeconds * g_kRollPerSeconds;
@@ -106,23 +122,6 @@ auto FileUtil::rollFile(int count) -> bool
         return true;
     }
     return false;
-}
-
-void FileUtil::autoDelFile()
-{
-    const QString path(Utils::getConfigPath() + "/log");
-    Utils::generateDirectorys(path);
-    QDir dir(path);
-
-    const QFileInfoList list = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
-    const QDateTime cur = QDateTime::currentDateTime();
-    const QDateTime pre = cur.addDays(-d_ptr->autoDelFileDays);
-
-    for (const QFileInfo &info : std::as_const(list)) {
-        if (info.lastModified() <= pre) {
-            dir.remove(info.fileName());
-        }
-    }
 }
 
 void FileUtil::setTimer()
@@ -207,11 +206,44 @@ public:
 
     LogAsync *q_ptr;
 
+    QString logPath;
+    bool autoDelFile = false;
+    qint64 autoDelFileDays = 7;
     QtMsgType msgType = QtWarningMsg;
     LogAsync::Orientation orientation = LogAsync::Orientation::Std;
     QWaitCondition waitCondition;
     QMutex mutex;
 };
+
+void LogAsync::setLogPath(const QString &path)
+{
+    d_ptr->logPath = path;
+}
+
+auto LogAsync::logPath() -> QString
+{
+    return d_ptr->logPath;
+}
+
+void LogAsync::setAutoDelFile(bool on)
+{
+    d_ptr->autoDelFile = on;
+}
+
+auto LogAsync::autoDelFile() -> bool
+{
+    return d_ptr->autoDelFile;
+}
+
+void LogAsync::setAutoDelFileDays(qint64 days)
+{
+    d_ptr->autoDelFileDays = days;
+}
+
+auto LogAsync::autoDelFileDays() -> qint64
+{
+    return d_ptr->autoDelFileDays;
+}
 
 void LogAsync::setOrientation(LogAsync::Orientation orientation)
 {

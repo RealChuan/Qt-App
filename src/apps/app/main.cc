@@ -1,5 +1,5 @@
-#include <3rdparty/breakpad.hpp>
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
+#include <dump/crashpad.hpp>
 #include <extensionsystem/iplugin.h>
 #include <extensionsystem/pluginmanager.h>
 #include <extensionsystem/pluginspec.h>
@@ -73,14 +73,19 @@ auto main(int argc, char *argv[]) -> int
 
     setAppInfo();
 
-    auto *breakPad = Utils::BreakPad::instance();
-    QObject::connect(breakPad, &Utils::BreakPad::crash, [] { Utils::openCrashReporter(); });
+    Dump::CrashPad crashpad(Utils::crashPath(), app.applicationDirPath(), "", true);
+    // auto *breakPad = Dump::BreakPad::instance();
+    // breakPad->setDumpPath(Utils::crashPath());
+    // QObject::connect(breakPad, &Dump::BreakPad::crash, [] { Dump::openCrashReporter(); });
 
     QDir::setCurrent(app.applicationDirPath());
     Utils::LanguageConfig::instance()->loadLanguage();
 
     // 异步日志
     auto *log = Utils::LogAsync::instance();
+    log->setLogPath(Utils::logPath());
+    log->setAutoDelFile(true);
+    log->setAutoDelFileDays(7);
     log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
@@ -99,8 +104,7 @@ auto main(int argc, char *argv[]) -> int
     waitWidgetPtr->show();
     app.processEvents();
 
-    auto *setting = new Utils::QtcSettings(Utils::getConfigPath() + "/config/config.ini",
-                                           QSettings::IniFormat);
+    auto *setting = new Utils::QtcSettings(Utils::configFilePath(), QSettings::IniFormat);
     ExtensionSystem::PluginManager pluginManager;
     ExtensionSystem::PluginManager::setSettings(setting);
     ExtensionSystem::PluginManager::setPluginIID(QLatin1String("Youth.Qt.plugin"));

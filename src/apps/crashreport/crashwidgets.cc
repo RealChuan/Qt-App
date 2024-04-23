@@ -1,6 +1,6 @@
 #include "crashwidgets.hpp"
 
-#include <3rdparty/breakpad.hpp>
+#include <dump/breakpad.hpp>
 #include <utils/utils.h>
 
 #include <QtWidgets>

@@ -8,9 +8,6 @@ DLLDESTDIR = $$APP_OUTPUT_PATH
 }
 
 unix{
-#CONFIG += staticlib
-#DESTDIR = $$APP_OUTPUT_PATH/../libs
-DESTDIR = $$APP_OUTPUT_PATH
+CONFIG += staticlib
+DESTDIR = $$APP_OUTPUT_PATH/../libs
 }
-
-LIBS += -L$$DESTDIR
