@@ -9,6 +9,8 @@ if [[ "$parent_dir" != */bin-64 ]]; then
     exit 1
 fi
 
+sudo chmod -R +x .
+
 # 部署Qt应用
 macdeployqt "Qt-App.app" -always-overwrite
 

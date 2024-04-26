@@ -9,6 +9,8 @@ if [[ "$parent_dir" != */bin-64 ]]; then
     exit 1
 fi
 
+sudo chmod -R +x .
+
 # 添加universe仓库
 sudo add-apt-repository universe
 sudo apt update
@@ -17,34 +19,46 @@ sudo apt update
 sudo apt install -y libfuse2 libxcb-cursor0
 
 # 下载linuxdeployqt
-wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" \
+    -O /usr/local/bin/linuxdeployqt
 
 # 给予执行权限
-sudo chmod -R a+x linuxdeployqt
+sudo chmod +x /usr/local/bin/linuxdeployqt
 
 # 复制桌面文件和图标
 cp -f ./../../packaging/ubuntu/Qt-App.desktop .
 cp -f ./../../src/resource/icon/app.png .
 cp -f ./plugins/* .
 
+# 删除测试文件
+rm -rf examples
+rm -f *Test*
+
+export LD_LIBRARY_PATH=.:./libs:$LD_LIBRARY_PATH
+
 # 使用linuxdeployqt部署
 so_files=$(find . -maxdepth 1 -name "*.so" -printf '%P\n')
 for so_file in $so_files; do
-    ./linuxdeployqt-continuous-x86_64.AppImage \
+    linuxdeployqt \
         $so_file \
         -qmake=qmake \
-        -always-overwrite -unsupported-allow-new-glibc
+        -always-overwrite \
+        -unsupported-allow-new-glibc
 done
+
+# 删除插件
+rm -f *plugin*
 rm -f AppRun
-./linuxdeployqt-continuous-x86_64.AppImage \
+mv -f *.so ./lib
+
+linuxdeployqt \
     Qt-App \
     -executable=CrashReport \
     -qmake=qmake \
-    -always-overwrite -unsupported-allow-new-glibc \
+    -always-overwrite \
+    -unsupported-allow-new-glibc \
     -appimage
 
-# 清理
-rm linuxdeployqt-continuous-x86_64.AppImage
-rm -f *.so
+chmod +x *.AppImage
 
 echo "Deployment ubuntu completed."

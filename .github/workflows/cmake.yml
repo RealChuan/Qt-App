@@ -29,11 +29,12 @@ on:
         - 'LICENSE'
         - 'README*'
 
+env:
+  MACOSX_DEPLOYMENT_TARGET: 11.0
+
 jobs:
   build:
     name: Build
-    env:
-      MACOSX_DEPLOYMENT_TARGET: 11.0
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -42,106 +43,26 @@ jobs:
           - windows-latest
           - macos-latest
           - ubuntu-latest
-        qt_ver: 
-          - 6.7.0
-        qt_modules:
-          - qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
         build_type:
           - "RelWithDebInfo"
         generators:
           - "Ninja"
         arch:
           - x86_64
-        vcpkg_libs:
-          - breakpad crashpad
         include:
           - os: macos-latest
-            qt_ver: 6.7.0
-            qt_modules: qt5compat qtserialport qtnetworkauth qtmultimedia qtimageformats
             build_type: "RelWithDebInfo"
             generators: "Ninja"
             arch: arm64
-            vcpkg_libs: breakpad crashpad
 
     steps:
       - uses: actions/checkout@v4
-        with:
+        with: 
           fetch-depth: 1
-
-      - name: Install vcpkg on macos
-        if: startsWith(matrix.os, 'macos')
-        shell: bash
-        run: |
-          sudo chmod +x install-vcpkg.sh
-          sudo ./install-vcpkg.sh
-        working-directory: ./scripts/macos
-
-      # jurplel/install-qt-action@v3, 这个action会修改默认的python版本，
-      # 会导致部分使用vcpkg的库编译失败，比如libsystemd，所以需要删除vcpkg.json
-      - name: Delete vcpkg.json
-        shell: bash
-        run: |
-          rm vcpkg.json
-
-      - name: Cache windows vcpkg
-        if: startsWith(matrix.os, 'windows')
-        uses: actions/cache@v4
-        with: 
-          path: C:\vcpkg\installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
-            ${{ runner.os }}-vcpkg-installed-
-            ${{ runner.os }}-
-          save-always: true
-      - name: Cache macos or ubuntu vcpkg
-        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
-        uses: actions/cache@v4
-        with: 
-          path: /usr/local/share/vcpkg/installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
-            ${{ runner.os }}-vcpkg-installed-
-            ${{ runner.os }}-
-          save-always: true
-
-      - name: Install dependencies on windows
-        if: startsWith(matrix.os, 'windows')
-        shell: bash
-        run: |
-          choco install ninja
-          ninja --version
-          cmake --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
-      - name: Install dependencies on ubuntu
-        if: startsWith(matrix.os, 'ubuntu')
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang
-          ninja --version
-          cmake --version
-          gcc --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
-      - name: Install dependencies on macos
-        if: startsWith(matrix.os, 'macos')
-        shell: bash
-        run: |
-          brew install ninja pkg-config python-setuptools
-          ninja --version
-          cmake --version
-          clang --version
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
-          vcpkg install ${{ matrix.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
-   
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+          
+      - uses: ./.github/actions/install-dependencies
         with:
-          version: ${{ matrix.qt_ver }}
-          install-deps: 'true'
-          modules: '${{ matrix.qt_modules }}'
-          cache: 'true'
+          os_name: ${{ matrix.os }}
 
       - name: Configure msvc for amd64
         if: startsWith(matrix.os, 'windows')
@@ -187,7 +108,6 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         shell: bash
         run: |
-          sudo chmod -R a+x .
           sudo chmod 755 ./../../packaging/macos/deploy.sh
           ./../../packaging/macos/deploy.sh
         working-directory: ./bin-64/${{ matrix.build_type }}
@@ -195,7 +115,6 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
-          sudo chmod -R a+x .
           sudo chmod 755 ./../../packaging/ubuntu/deploy.sh
           ./../../packaging/ubuntu/deploy.sh
         working-directory: ./bin-64/${{ matrix.build_type }}

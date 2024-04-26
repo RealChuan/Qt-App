@@ -23,11 +23,8 @@ for file in $files; do
     fi
 done
 
-# 要删除的文件模式列表
-DELETE_PATTERNS=("*Test*" "*plugin*")
-
 # 执行删除操作，但不包括子目录中的文件
-find . -maxdepth 1 -type f -name "${DELETE_PATTERNS[@]}" -exec rm -f {} +
+find . -maxdepth 1 -type f \( -name "*Test*" -o -name "*plugin*" \) -exec rm -f {} +
 
 # 删除examples文件夹及其内容
 rm -rf examples

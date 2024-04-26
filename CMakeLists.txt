@@ -21,10 +21,6 @@ find_package(
   COMPONENTS Widgets
              Network
              Core5Compat
-             Concurrent
-             Multimedia
-             OpenGLWidgets
-             SerialPort
              LinguistTools)
 
 qt_standard_project_setup(I18N_SOURCE_LANGUAGE en I18N_TRANSLATED_LANGUAGES

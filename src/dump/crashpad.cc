@@ -29,13 +29,18 @@ CrashPad::CrashPad(const QString &dumpPath,
     , d_ptr(new CrashPadPrivate(this))
 {
     auto handlerPath = libexecPath + "/crashpad_handler";
-#ifdef _WIN32
+#ifdef Q_OS_WIN
     handlerPath += ".exe";
     base::FilePath database(dumpPath.toStdWString());
     base::FilePath handler(handlerPath.toStdWString());
 #else
     base::FilePath database(dumpPath.toStdString());
     base::FilePath handler(handlerPath.toStdString());
+#endif
+#ifdef Q_OS_LINUX
+    bool asynchronous_start = false;
+#else
+    bool asynchronous_start = true;
 #endif
 
     auto dbPtr = crashpad::CrashReportDatabase::Initialize(database);
@@ -50,7 +55,7 @@ CrashPad::CrashPad(const QString &dumpPath,
                                            {},
                                            {"--no-rate-limit"},
                                            true,
-                                           true);
+                                           asynchronous_start);
 }
 
 CrashPad::~CrashPad() {}

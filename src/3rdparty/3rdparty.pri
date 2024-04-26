@@ -35,7 +35,7 @@ CONFIG(debug, debug|release) {
             -llibbreakpad_client -llibbreakpad
 }
 
-LIBS += -lclient -lutil -lbase -lcommon
+LIBS += -lcommon -lclient -lutil -lbase
 
 INCLUDEPATH += \
     $$vcpkg_path/include \
@@ -43,8 +43,17 @@ INCLUDEPATH += \
 
 # for crashpad
 win32{
+    CONFIG(debug, debug|release) {
+        LIBS += -lzlibd
+    }else{
+        LIBS += -lzlib
+    }
     DEFINES += NOMINMAX
     LIBS += -lAdvapi32
+}
+
+unix{
+    LIBS += -lz
 }
 
 macx{
