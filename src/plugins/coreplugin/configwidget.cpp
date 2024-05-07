@@ -8,21 +8,22 @@
 class ConfigWidget::ConfigWidgetPrivate
 {
 public:
-    ConfigWidgetPrivate(ConfigWidget *q)
+    explicit ConfigWidgetPrivate(ConfigWidget *q)
         : q_ptr(q)
     {
         languageBox = new QComboBox(q_ptr);
-        languageBox->addItem(tr("Chinese"), Utils::LanguageConfig::Language::Chinese);
-        languageBox->addItem(tr("English"), Utils::LanguageConfig::Language::English);
+        languageBox->setView(new QListView(languageBox));
+        languageBox->addItem("", Utils::LanguageConfig::Language::Chinese);
+        languageBox->addItem("", Utils::LanguageConfig::Language::English);
     }
 
     void setupUI()
     {
-        auto fromLayout = new QFormLayout(q_ptr);
+        auto *fromLayout = new QFormLayout(q_ptr);
         fromLayout->addRow(tr("Language(Requires Restart): "), languageBox);
     }
 
-    void setData()
+    void setData() const
     {
         languageBox->setCurrentIndex(Utils::LanguageConfig::instance()->currentLanguage());
     }
@@ -39,20 +40,21 @@ ConfigWidget::ConfigWidget(QWidget *parent)
     buildConnect();
     Utils::setMacComboBoxStyle(this);
     d_ptr->setData();
+    setTr();
 }
 
-ConfigWidget::~ConfigWidget() {}
+ConfigWidget::~ConfigWidget() = default;
 
-void ConfigWidget::onReloadLanguage(int)
+void ConfigWidget::onReloadLanguage(int /*unused*/)
 {
     Utils::LanguageConfig::instance()->loadLanguage(
         Utils::LanguageConfig::Language(d_ptr->languageBox->currentData().toInt()));
 }
 
-void ConfigWidget::changeEvent(QEvent *e)
+void ConfigWidget::changeEvent(QEvent *event)
 {
-    QWidget::changeEvent(e);
-    switch (e->type()) {
+    QWidget::changeEvent(event);
+    switch (event->type()) {
     case QEvent::LanguageChange: setTr(); break;
     default: break;
     }

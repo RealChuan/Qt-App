@@ -412,25 +412,24 @@ auto Utils::crashPath() -> QString
 {
     const auto path = configLocation() + "/crash";
     generateDirectorys(path);
-    return QDir::toNativeSeparators(path);
+    return path;
 }
 
 auto Utils::logPath() -> QString
 {
     const auto path = configLocation() + "/log";
     generateDirectorys(path);
-    return QDir::toNativeSeparators(path);
+    return path;
 }
 
 auto Utils::configPath() -> QString
 {
     const auto path = configLocation() + "/config";
     generateDirectorys(path);
-    return QDir::toNativeSeparators(path);
+    return path;
 }
 
 auto Utils::configFilePath() -> QString
 {
-    const auto path = configPath() + "/config.ini";
-    return QDir::toNativeSeparators(path);
+    return (configPath() + "/config.ini");
 }

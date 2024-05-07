@@ -132,7 +132,7 @@ QStackedWidget {
 *****************************************************************************/
 
 QHeaderView::section {
-    background: rgb(45, 45, 45);
+    background: rgb(54, 62, 78);
     color: white;
     border: 1px soild white;
 }
@@ -359,6 +359,7 @@ QComboBox {
     color: #495060;
     background: #fff;
     padding: 0 4px;
+    combobox-popup: 0;
 }
 
 QComboBox:!editable{

@@ -14,7 +14,7 @@ private slots:
     void onReloadLanguage(int index);
 
 protected:
-    void changeEvent(QEvent *e) override;
+    void changeEvent(QEvent *event) override;
 
 private:
     void buildConnect();
