@@ -1,36 +1,31 @@
 name: CMake Build
 
 on: 
-  # push代码时触发workflow
   push:
-    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
-        - '.github/workflows/clean_cache.yml'
-        - '.github/workflows/delete_workflow.yml'
-        - '.github/workflows/qmake.yml'
-        - '.github/workflows/readme.yml'
-        - '.github/workflows/toolchain.yml'    
+    paths-ignore:
         - 'doc/**'
-        - 'translation/**'
+        - 'translations/**'
         - '.clang-*'
         - '.gitignore'
+        - '*.pri'
         - 'LICENSE'
+        - '*.pro'
         - 'README*'
   pull_request:
-    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
-        - '.github/workflows/clean_cache.yml'
-        - '.github/workflows/delete_workflow.yml'
-        - '.github/workflows/qmake.yml'
-        - '.github/workflows/readme.yml'
-        - '.github/workflows/toolchain.yml'    
+    paths-ignore:
         - 'doc/**'
-        - 'translation/**'
+        - 'translations/**'
         - '.clang-*'
         - '.gitignore'
+        - '*.pri'
         - 'LICENSE'
+        - '*.pro'
         - 'README*'
 
 env:
   MACOSX_DEPLOYMENT_TARGET: 11.0
+  PACKET_DIR: ./packaging/packet
+  RELEASES_DIR: ./packaging/releases
 
 jobs:
   build:
@@ -64,25 +59,29 @@ jobs:
         with:
           os_name: ${{ matrix.os }}
 
-      - name: Configure msvc for amd64
+      - name: Configure and build windows
         if: startsWith(matrix.os, 'windows')
-        uses: ilammy/msvc-dev-cmd@v1 
-        with:
-          arch: amd64
-      - name: Configure windows
-        if: startsWith(matrix.os, 'windows')
+        shell: pwsh
+        run: |
+          .\scripts\windows\setVsDev.ps1
+          cmake `
+            -S . `
+            -B ./build `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -G "${{ matrix.generators }}"
+          cmake --build ./build --config ${{ matrix.build_type }}
+      - name: Configure and build ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
           cmake \
             -S . \
             -B ./build \
-            -DCMAKE_C_COMPILER=cl \
-            -DCMAKE_CXX_COMPILER=cl \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -G "${{ matrix.generators }}" \
-            -DCMAKE_INSTALL_PREFIX:PATH=instdir
-      - name: Configure macos or ubuntu
-        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+            -G "${{ matrix.generators }}"
+          cmake --build ./build --config ${{ matrix.build_type }}
+      - name: Configure and build macos
+        if: startsWith(matrix.os, 'macos')
         shell: bash
         run: |
           cmake \
@@ -90,43 +89,51 @@ jobs:
             -B ./build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
-            -G "${{ matrix.generators }}" \
-            -DCMAKE_INSTALL_PREFIX:PATH=instdir
-
-      - name: Build
-        shell: bash
-        run: |
+            -G "${{ matrix.generators }}"
           cmake --build ./build --config ${{ matrix.build_type }}
 
-      - name: Deploy windows
-        if: startsWith(matrix.os, 'windows')
+      - name: Move compiled files to packaging/packet
         shell: bash
         run: |
-          ./../../packaging/windows/deploy.sh 
-        working-directory: ./bin-64/${{ matrix.build_type }}
-      - name: Deploy macos
-        if: startsWith(matrix.os, 'macos')
+          mkdir -p ${{ env.PACKET_DIR }}
+          mkdir -p ${{ env.RELEASES_DIR }}
+          mv -v ./bin-64/${{ matrix.build_type }}/* ${{ env.PACKET_DIR }}/
+          ls -al ${{ env.PACKET_DIR }}
+
+      - name: Download fonts
+        shell: bash
+        working-directory: ${{ env.PACKET_DIR }}
+        run: |
+          cmake -P ./../fonts.cmake
+          ls -al
+          ls -al ./fonts
+
+      - name: Packaging windows
+        if: startsWith(runner.os, 'Windows')
+        shell: pwsh
+        run: |
+          .\packaging\windows\package.ps1
+      - name: Packaging macos
+        if: startsWith(runner.os, 'macOS')
         shell: bash
         run: |
-          sudo chmod 755 ./../../packaging/macos/deploy.sh
-          ./../../packaging/macos/deploy.sh
-        working-directory: ./bin-64/${{ matrix.build_type }}
-      - name: Deploy ubuntu
-        if: startsWith(matrix.os, 'ubuntu')
+          sudo chmod +x ./packaging/macos/package.sh
+          ./packaging/macos/package.sh
+      - name: Packaging ubuntu
+        if: startsWith(runner.os, 'Linux')
         shell: bash
         run: |
-          sudo chmod 755 ./../../packaging/ubuntu/deploy.sh
-          ./../../packaging/ubuntu/deploy.sh
-        working-directory: ./bin-64/${{ matrix.build_type }}
+          sudo chmod 755 ./packaging/ubuntu/package.sh
+          ./packaging/ubuntu/package.sh
 
       - name: 7z package
         shell: bash
         run: |
-          ls -al ./bin-64/${{ matrix.build_type }}
+          ls -al ${{ env.PACKET_DIR }}
           CURRENT_DATE=$(date '+%Y%m%d')
           filename=Qt-App_${{ runner.os }}_${{ matrix.arch }}_${CURRENT_DATE}.7z
           echo "artifactPath=$filename" >> $GITHUB_ENV
-          7z a -t7z -r -mx=9 -mmt ${filename} ./bin-64/${{ matrix.build_type }}/*
+          7z a -t7z -r -mx=9 -mmt ${filename} ${{ env.PACKET_DIR }}/*
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:

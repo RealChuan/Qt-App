@@ -24,7 +24,6 @@ UTILS_EXPORT void quitApplication();
 UTILS_EXPORT void setUTF8Code();
 UTILS_EXPORT void setQSS(const QStringList &qssFilePaths);
 UTILS_EXPORT void loadFonts(const QString &fontPath);
-UTILS_EXPORT void setGlobalThreadPoolMaxSize(int maxSize = -1);
 UTILS_EXPORT void windowCenter(QWidget *child, QWidget *parent);
 UTILS_EXPORT void windowCenter(QWidget *window);
 UTILS_EXPORT void reboot();

@@ -57,7 +57,7 @@ auto main(int argc, char *argv[]) -> int
         }
     }
 #ifdef Q_OS_WIN
-    if (!qFuzzyCompare(qApp->devicePixelRatio(), 1.0)
+    if (!qFuzzyCompare(app.devicePixelRatio(), 1.0)
         && QApplication::style()->objectName().startsWith(QLatin1String("windows"),
                                                           Qt::CaseInsensitive)) {
         QApplication::setStyle(QLatin1String("fusion"));
@@ -69,19 +69,21 @@ auto main(int argc, char *argv[]) -> int
 #endif
 
     setAppInfo();
-    Dump::BreakPad::instance();
+    Dump::BreakPad::instance()->setDumpPath(Utils::crashPath());
     QDir::setCurrent(app.applicationDirPath());
     Utils::LanguageConfig::instance()->loadLanguage();
 
     // 异步日志
     auto *log = Utils::LogAsync::instance();
+    log->setLogPath(Utils::logPath());
+    log->setAutoDelFile(true);
+    log->setAutoDelFileDays(7);
     log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
 
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
-    Utils::setGlobalThreadPoolMaxSize();
     Utils::loadFonts(app.applicationDirPath() + "/fonts");
     setQss();
 

@@ -2,6 +2,10 @@ CONFIG += c++17
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
+# add debug info
+QMAKE_CXXFLAGS_RELEASE += $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+QMAKE_LFLAGS_RELEASE += $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+
 # unix add rpath
 macx:QMAKE_LFLAGS += "-Wl,-rpath,@executable_path:@executable_path/../Frameworks:@executable_path/../../Frameworks"
 unix:!macx:QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\':\'\$$ORIGIN/lib\':'\$$ORIGIN/../lib'"

@@ -88,11 +88,12 @@ auto compilerString() -> QString
 
 auto Utils::systemInfo() -> QString
 {
-    auto text = QString("%1 (%2) on %3 (%4)")
+    auto text = QString("%1 (%2) on %3 (%4) with CPU Cores: %5")
                     .arg(QSysInfo::prettyProductName(),
                          QSysInfo::kernelVersion(),
                          QSysInfo::currentCpuArchitecture(),
-                         QSysInfo::machineHostName())
+                         QSysInfo::machineHostName(),
+                         QString::number(QThread::idealThreadCount()))
                 + "\n"
                 + QString("Build with: Qt %1 (%2, %3)")
                       .arg(qVersion(), compilerString(), QSysInfo::buildAbi());
@@ -101,24 +102,23 @@ auto Utils::systemInfo() -> QString
 
 void Utils::setHighDpiEnvironmentVariable()
 {
-    if (Utils::HostOsInfo::isMacHost()) {
-        return;
-    }
+#ifdef Q_OS_WIN
 
-    if (Utils::HostOsInfo::isWindowsHost()
-        && !qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") // legacy in 5.6, but still functional
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (!qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") // legacy in 5.6, but still functional
         && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
         && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
         && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
     }
+#endif
 
-#if defined(Q_OS_WIN) && (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
+
+#endif // Q_OS_WIN
 }
 
 void Utils::reboot()
@@ -276,16 +276,6 @@ auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
         return {};
     }
     return jsonDocument.object();
-}
-
-void Utils::setGlobalThreadPoolMaxSize(int maxSize)
-{
-    auto *instance = QThreadPool::globalInstance();
-    if (maxSize > 0) {
-        instance->setMaxThreadCount(maxSize);
-        return;
-    }
-    instance->setMaxThreadCount(qMax(4, 2 * instance->maxThreadCount()));
 }
 
 auto Utils::configLocation() -> QString

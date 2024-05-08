@@ -25,21 +25,11 @@ runs:
   using: 'composite'
 
   steps:
-    - name: Install vcpkg on macos
-      if: startsWith(runner.os, 'macOS')
-      shell: bash
-      run: |
-        sudo chmod +x install-vcpkg.sh
-        sudo ./install-vcpkg.sh
-      working-directory: ./scripts/macos
-
-    - name: Update vcpkg 
-      if: startsWith(runner.os, 'Windows') || startsWith(runner.os, 'Linux')
-      shell: bash
-      run: |
-        cd "$VCPKG_INSTALLATION_ROOT"
-        git reset --hard
-        git pull --quiet
+    - name: Install Custom VCPKG
+      uses: RealChuan/install-vcpkg@main
+      with:
+        repo: 'https://github.com/RealChuan/vcpkg.git'
+        branch: 'dev'
         
     - name: Delete vcpkg.json
       shell: bash
@@ -83,7 +73,7 @@ runs:
       if: startsWith(runner.os, 'macOS')
       shell: bash
       run: |
-        brew install ninja pkg-config python-setuptools
+        brew install ninja python-setuptools
         ninja --version
         cmake --version
         clang --version
@@ -102,7 +92,7 @@ runs:
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v3
+      uses: jurplel/install-qt-action@v4
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}

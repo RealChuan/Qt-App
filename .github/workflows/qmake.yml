@@ -1,34 +1,27 @@
 name: QMake Build
 
 on: 
-  # push代码时触发workflow
   push:
-    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
-        - '.github/workflows/clean_cache.yml'
-        - '.github/workflows/delete_workflow.yml'
-        - '.github/workflows/cmake.yml'
-        - '.github/workflows/readme.yml'
-        - '.github/workflows/toolchain.yml'     
+    paths-ignore:
+        - 'cmake/**' 
         - 'doc/**'
         - 'packaging/**'
-        - 'translation/**'
+        - 'translations/**'
         - '.clang-*'
         - '.gitignore'
+        - 'CMake*'
         - 'LICENSE'
         - 'README*'
         - 'vcpkg.json'
   pull_request:
-    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
-        - '.github/workflows/clean_cache.yml'
-        - '.github/workflows/delete_workflow.yml'
-        - '.github/workflows/cmake.yml'
-        - '.github/workflows/readme.yml'
-        - '.github/workflows/toolchain.yml'     
+    paths-ignore:
+        - 'cmake/**' 
         - 'doc/**'
         - 'packaging/**'
-        - 'translation/**'
+        - 'translations/**'
         - '.clang-*'
         - '.gitignore'
+        - 'CMake*'
         - 'LICENSE'
         - 'README*'
         - 'vcpkg.json'
@@ -62,6 +55,8 @@ jobs:
         with:
           os_name: ${{ matrix.os }}
 
+      - uses: RealChuan/install-jom@main
+
       - name: mkdir build
         shell: bash
         run: |
@@ -69,11 +64,11 @@ jobs:
 
       - name: msvc-build
         if: startsWith(matrix.os, 'windows')
-        shell: cmd
+        shell: pwsh
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-          qmake ./../.
-          nmake
+          ..\scripts\windows\setVsDev.ps1 -VersionRange "[16.0,17.0)" -Arch "x64"
+          & qmake ./../.
+          & jom
         working-directory: build
       - name: ubuntu-build
         if: startsWith(matrix.os, 'ubuntu')

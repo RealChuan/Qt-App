@@ -1,5 +1,5 @@
 # Path: packaging/macos/Qt-App.dmgbuild.py
-# Use: dmgbuild -s ./packaging/macos/Qt-App.dmgbuild.py "Qt-App" bin-64/RelWithDebInfo/Qt-App.dmg
+# Use: dmgbuild -s ./packaging/macos/dmgbuild.py "Qt-App" bin-64/RelWithDebInfo/Qt-App.dmg
 
 import os.path
 import plistlib
@@ -105,40 +105,3 @@ scroll_position = (0, 0)
 label_pos = "bottom"  # or 'right'
 text_size = 16
 icon_size = 128
-
-# Code signing identity (optional)
-# Developer ID Application: Your Name (XXXXXXXXXX)
-# identity = "Developer ID Application: Your Name (XXXXXXXXXX)"
-
-# Code signing entitlements (optional)
-# entitlements = "entitlements.plist"
-
-# Code signing requirements (optional)
-# requirements = "requirements.plist"
-
-# Code signing resource rules (optional)
-# resource_rules = "resource-rules.plist"
-
-# Code signing options (optional)
-# code_sign = True
-
-# Code signing flags (optional)
-# code_sign_flags = "--deep"
-
-# Code signing timestamp (optional)
-# code_sign_timestamp = True
-
-# Code signing identifier (optional)
-# code_sign_identifier = "com.example.pkg"
-
-# Code signing entitlements (optional)
-# code_sign_entitlements = "entitlements.plist"
-
-# Code signing requirements (optional)
-# code_sign_requirements = "requirements.plist"
-
-# Code signing resource rules (optional)
-# code_sign_resource_rules = "resource-rules.plist"
-
-# Code signing options (optional)
-# code_sign_options = "--timestamp --options=runtime"
