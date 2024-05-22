@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+killall -q -9 Qt-App || true
+killall -q -9 CrashReport || true
+
+exit 0

@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+delete_file_or_dir() {
+    local target=$1
+
+    if [ -e "$target" ]; then
+        if [ -d "$target" ]; then
+            rm -rf "$target"
+        else
+            rm "$target"
+        fi
+    fi
+}
+
+if [ "$1" = "remove" -o "$1" = "purge" ]; then
+    delete_file_or_dir ~/.config/Youth/Qt-App
+    delete_file_or_dir ~/.config/Youth/CrashReport
+fi
+
+exit 0

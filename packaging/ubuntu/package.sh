@@ -56,4 +56,28 @@ linuxdeployqt ${packet_dir}/Qt-App \
 sudo chmod +x *.AppImage
 cd "${project_dir}"
 
+mv -v "${packet_dir}"/*.AppImage "$releases_dir"/Qt-App.AppImage
+
+# package with 7z
+zip_path="${releases_dir}/Qt-App.7z"
+7z a -t7z -r -mx=9 -mmt "${zip_path}" "${packet_dir}"/*
+
+# package with deb
+mkdir -p "${project_dir}"/packaging/Qt-App/
+mv -v "${packet_dir}"/* "${project_dir}"/packaging/Qt-App
+mkdir -p "${packet_dir}"/opt
+mv -v "${project_dir}"/packaging/Qt-App "${packet_dir}"/opt/
+cp -rv "${project_dir}"/packaging/ubuntu/DEBIAN "${packet_dir}"/
+cp -rv "${project_dir}"/packaging/ubuntu/usr "${packet_dir}"/
+cp -v "${project_dir}"/packaging/ubuntu/Qt-App.sh "${packet_dir}"/opt/Qt-App/
+
+sudo chmod -R +x "${packet_dir}"/DEBIAN
+sudo chmod 777 "${packet_dir}"/opt/Qt-App/app.png
+sudo chmod 744 "${packet_dir}"/usr/share/applications/Qt-App.desktop
+
+deb_path="${releases_dir}/Qt-App.deb"
+sudo dpkg -b ${packet_dir}/. ${deb_path}
+
+sudo chmod -R +x ${releases_dir}
+
 echo "Deployment ubuntu completed."

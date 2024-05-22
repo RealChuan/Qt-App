@@ -8,6 +8,7 @@ Import-Module (Join-Path $ProjectDir "packaging\windows\utils.ps1")
 
 Invoke-Expression -Command "$ProjectDir\scripts\windows\setVsDev.ps1"
 
+$releases_dir = Join-Path $ProjectDir "packaging\releases"
 $packet_dir = Join-Path $ProjectDir "packaging\packet"
 $plugin_dir = Join-Path $packet_dir "plugins"
 if (Test-Path $plugin_dir) {
@@ -35,6 +36,13 @@ $Remove_List_Absolute = $Remove_List_Relative | ForEach-Object {
 foreach ($item in $Remove_List_Absolute) {
     Remove-SafeItem -Path $item
 }
+
+# packaging with 7z
+$zip_path = Join-Path $releases_dir "Qt-App.7z"
+7z a -t7z -r -mx=9 -mmt $zip_path $packet_dir\*
+
+# packaging with iscc
+ISCC (Join-Path $PSScriptRoot "app.iss")
 
 Write-Host "Packaging complete."
 

@@ -126,19 +126,16 @@ jobs:
           sudo chmod 755 ./packaging/ubuntu/package.sh
           ./packaging/ubuntu/package.sh
 
-      - name: 7z package
+      - name: Check packages
         shell: bash
         run: |
           ls -al ${{ env.PACKET_DIR }}
-          CURRENT_DATE=$(date '+%Y%m%d')
-          filename=Qt-App_${{ runner.os }}_${{ matrix.arch }}_${CURRENT_DATE}.7z
-          echo "artifactPath=$filename" >> $GITHUB_ENV
-          7z a -t7z -r -mx=9 -mmt ${filename} ${{ env.PACKET_DIR }}/*
+          ls -al ${{ env.RELEASES_DIR }}
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}
-          path: ${{ env.artifactPath }}
+          path: ${{ env.RELEASES_DIR }}
 
   release:
     name: Release

@@ -2,8 +2,8 @@
 Name=Qt-App
 Comment=A qt Application template
 GenericName=Qt-App
-Exec=AppRun %F
-Icon=app
+Exec=/opt/Qt-App/Qt-App
+Icon=/opt/Qt-App/app.png
 Type=Application
 StartupNotify=false
 StartupWMClass=Qt-App

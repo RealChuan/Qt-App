@@ -1,0 +1,9 @@
+Package: qt-app
+Version: 0.1.1
+Architecture: amd64
+Description: qt-app
+Section: admin
+Priority: optional
+Maintainer: https://github.com/RealChuan
+Homepage: https://github.com/RealChuan/Qt-App
+Depends: libc6 (>= 2.35)
