@@ -145,40 +145,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download fonts
+      - uses: actions/checkout@v4
+        with: 
+          fetch-depth: 1
+
+      - name: Mkdir releases
         shell: bash
         run: |
-          wget -c -nv "https://github.com/RealChuan/Qt-App/releases/download/0.0.1/fonts.7z"
+          mkdir -p ${{ env.RELEASES_DIR }}
 
       - name: Download packages
         uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.RELEASES_DIR }}
 
       - name: Move packages
+        working-directory: packaging
         shell: bash
         run: |
-          ls -al
-          mv ./windows*/*.7z .
-          mv ./ubuntu*/*.7z .
-          mv ./macos*/*.7z .
-          ls -al
-
-      - name: Rename Files According to Tag
-        shell: bash
-        run: |
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-
-          for FILE in Qt-App_*.7z; do
-            if [[ -f "$FILE" ]]; then
-              BASENAME=$(basename "$FILE" .7z)
-              REST="${BASENAME#Qt-App_}"
-              NEW_BASENAME="Qt-App_${TAG_NAME}_${REST}"
-              NEW_FILE="${NEW_BASENAME}.7z"
-              mv "$FILE" "$NEW_FILE"
-              echo "Renamed $FILE to $NEW_FILE"
-            fi
-          done
-
-          ls -al
+          sudo chmod +x rename_packages.sh
+          ./rename_packages.sh
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -187,4 +173,4 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            *.7z
+            ${{ env.RELEASES_DIR }}/*
