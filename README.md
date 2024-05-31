@@ -15,13 +15,17 @@
 - [支持Apple Silicon原生编译；](#问题和备注)
 - 支持[actions](.github/workflows/cmake.yml)编译，打包、发布；
 
-<div align="center"><img src="doc/Qt-App.jpg" width="90%" height="90%" /></div>
+<div align="center">
+<img src="doc/Qt-App.jpg" width="90%" height="90%">
+</div>
 
 ## CrashReport
 
 崩溃报告程序；
 
-<div align="center"><img src="doc/CrashReport.jpg" width="50%" height="50%" /></div>
+<div align="center">
+<img src="doc/CrashReport.jpg" width="50%" height="50%">
+</div>
 
 ## 代码结构
 
