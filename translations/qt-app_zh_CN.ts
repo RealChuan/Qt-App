@@ -4,20 +4,18 @@
 <context>
     <name>ConfigWidget</name>
     <message>
-        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="15"/>
-        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="71"/>
+        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="23"/>
+        <source>Language(Requires Restart): </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="73"/>
         <source>Chinese</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="16"/>
-        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="72"/>
+        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="74"/>
         <source>English</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/coreplugin/configwidget.cpp" line="22"/>
-        <source>Language(Requires Restart): </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -92,45 +90,7 @@ Contact Me - Email:
     </message>
 </context>
 <context>
-    <name>HashWidgetPrivate</name>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="29"/>
-        <source>Select File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="33"/>
-        <source>Select file to calculate hash.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="35"/>
-        <source>Calculate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="39"/>
-        <source>Calculate hash.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="56"/>
-        <source>If Input String is file path and file exists, calculate hash of file. Otherwise calculate hash of Input String.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="66"/>
-        <source>Input:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="70"/>
-        <source>Output:</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MessBoxPrivate</name>
+    <name>GUI::MessBox</name>
     <message>
         <location filename="../src/gui/messbox.cpp" line="20"/>
         <source>Close</source>
@@ -272,28 +232,55 @@ Contact Me - Email:
 <context>
     <name>Plugin::HashWidget</name>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="99"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="29"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="89"/>
         <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="107"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="30"/>
+        <source>Select file to calculate hash.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="32"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="115"/>
+        <source>Calculate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="33"/>
+        <source>Calculate hash.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="50"/>
+        <source>If Input String is file path and file exists, calculate hash of file. Otherwise calculate hash of Input String.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="57"/>
+        <source>Input:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="60"/>
+        <source>Output:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="97"/>
         <source>Input is empty!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="114"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="104"/>
         <source>Hash thread is running!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="118"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="108"/>
         <source>Calculating...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="125"/>
-        <source>Calculate</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -923,7 +910,7 @@ will also disable the following plugins:
     </message>
 </context>
 <context>
-    <name>QtC::Utils</name>
+    <name>Utils</name>
     <message>
         <location filename="../src/utils/hostosinfo.cpp" line="85"/>
         <source>Cannot create OpenGL context.</source>
@@ -934,36 +921,18 @@ will also disable the following plugins:
         <source>Elapsed time: %1.</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>Utils</name>
     <message>
-        <location filename="../src/utils/utils.cpp" line="22"/>
-        <source>Loading QSS file: %1.</source>
+        <location filename="../src/utils/utils.cpp" line="177"/>
+        <source>Directory does not exist: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="25"/>
-        <source>Cannot open the file: %1!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/utils/utils.cpp" line="194"/>
-        <source>Cannot remove file &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/utils/utils.cpp" line="237"/>
-        <source>Cannot remove directory &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/utils/utils.cpp" line="261"/>
+        <location filename="../src/utils/utils.cpp" line="200"/>
         <source>Cannot open the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="274"/>
+        <location filename="../src/utils/utils.cpp" line="213"/>
         <source>%1
 Offset: %2</source>
         <translation type="unfinished"></translation>
