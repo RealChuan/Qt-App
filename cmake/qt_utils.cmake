@@ -11,7 +11,9 @@ function(add_translations OUTPUT_NAME)
     translations
     INCLUDE_DIRECTORIES
     directory
-    ${PROJECT_SOURCE_DIR}/src)
+    ${PROJECT_SOURCE_DIR}/src
+    LUPDATE_OPTIONS
+    -no-obsolete)
 
   # 确定翻译文件的输出位置
   if(CMAKE_HOST_APPLE)

@@ -4,7 +4,7 @@ on:
   push:
     paths-ignore:
         - 'cmake/**' 
-        - 'doc/**'
+        - 'docs/**'
         - 'packaging/**'
         - 'translations/**'
         - '.clang-*'
@@ -16,7 +16,7 @@ on:
   pull_request:
     paths-ignore:
         - 'cmake/**' 
-        - 'doc/**'
+        - 'docs/**'
         - 'packaging/**'
         - 'translations/**'
         - '.clang-*'
