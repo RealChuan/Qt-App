@@ -18,7 +18,7 @@ inputs:
   qt_ver:
     description: 'qt version'
     required: false
-    default: '6.7.0'
+    default: '6.8.1'
     type: string
 
 runs:
@@ -46,7 +46,6 @@ runs:
           ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
           ${{ inputs.os_name }}-vcpkg-installed-
           ${{ inputs.os_name }}-
-        save-always: true
 
     - name: Cache macos or linux vcpkg
       if: startsWith(runner.os, 'macOS') || startsWith(runner.os, 'Linux')
@@ -58,7 +57,6 @@ runs:
           ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
           ${{ inputs.os_name }}-vcpkg-installed-
           ${{ inputs.os_name }}-
-        save-always: true
 
     - name: Install dependencies on windows
       if: startsWith(runner.os, 'Windows')
@@ -96,4 +94,4 @@ runs:
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
-        cache: 'true'
+        cache: true
