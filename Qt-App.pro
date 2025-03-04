@@ -11,7 +11,7 @@ TRANSLATIONS += \
     translations/qt-app_zh_CN.ts
 
 DISTFILES += \
-    doc/** \
+    docs/** \
     .clang* \
     LICENSE \
     README*

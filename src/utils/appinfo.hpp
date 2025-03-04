@@ -5,12 +5,12 @@
 
 namespace Utils {
 
-static const QVersionNumber version = QVersionNumber(0, 1, 1);
-static const QString appName = "Qt-App";
-static const QString crashName = "CrashReport";
-static const QString organzationName = "Youth";
-static const QString organizationDomain = "Youth";
-static const QString copyright = "Copyright 2017-2024 Youth. All rights reserved.";
+static const auto version = QVersionNumber(0, 1, 1);
+static constexpr auto appName = "Qt-App";
+static constexpr auto crashName = "CrashReport";
+static constexpr auto organzationName = "Youth";
+static constexpr auto organizationDomain = "Youth";
+static constexpr auto copyright = "Copyright 2017-2024 Youth. All rights reserved.";
 
 } // namespace Utils
 

@@ -15,19 +15,23 @@
 - [支持Apple Silicon原生编译；](#问题和备注)
 - 支持[actions](.github/workflows/cmake.yml)编译，打包、发布；
 
-<div align="center"><img src="doc/Qt-App.jpg" width="90%" height="90%" /></div>
+<div align="center">
+<img src="docs/Qt-App.jpg" width="90%" height="90%">
+</div>
 
 ## CrashReport
 
 崩溃报告程序；
 
-<div align="center"><img src="doc/CrashReport.jpg" width="50%" height="50%" /></div>
+<div align="center">
+<img src="docs/CrashReport.jpg" width="50%" height="50%">
+</div>
 
 ## 代码结构
 
 1. [cmake](cmake)：封装的CMake实用函数；
    1. [utils](cmake/utils.cmake)：实用函数；
-2. [doc](doc)：文档说明和图片；
+2. [docs](docs)：文档说明和图片；
 3. [examples](examples)：示例代码;
 4. [packaging](packaging)：打包和发布；
 5. [src](src)：源码；
@@ -82,8 +86,14 @@
    3. 在使用[qmake](.github/workflows/qmake.yml)时，需要指定`QMAKE_APPLE_DEVICE_ARCHS=x86_64`或者`QMAKE_APPLE_DEVICE_ARCHS=arm64`；
 
 - > 国际化实时翻译，当前更改完翻译设置，需要重启程序才能生效；
-   1. 懒得改代码了；
-   2. [具体参考：QT实用小技巧（想到就更新）](https://realchuan.github.io/2021/10/12/QT%E5%AE%9E%E7%94%A8%E5%B0%8F%E6%8A%80%E5%B7%A7%EF%BC%88%E6%83%B3%E5%88%B0%E5%B0%B1%E6%9B%B4%E6%96%B0%EF%BC%89/)，核心代码；
+   1. 更新翻译的命令
+
+      ```bash
+       cmake --build build --target Qt-App_lupdate
+      ```
+
+   2. 懒得改代码了；
+   3. [具体参考：QT实用小技巧（想到就更新）](https://realchuan.github.io/2021/10/12/QT%E5%AE%9E%E7%94%A8%E5%B0%8F%E6%8A%80%E5%B7%A7%EF%BC%88%E6%83%B3%E5%88%B0%E5%B0%B1%E6%9B%B4%E6%96%B0%EF%BC%89/)，核心代码；
 
       ```cpp
       void Widget::changeEvent(QEvent *e)

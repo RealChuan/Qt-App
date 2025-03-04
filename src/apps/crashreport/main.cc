@@ -91,6 +91,7 @@ auto main(int argc, char *argv[]) -> int
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     Crash::CrashWidgets w;
+    app.setActiveWindow(&w);
     w.show();
 
     auto result = app.exec();

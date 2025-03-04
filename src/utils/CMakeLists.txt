@@ -31,6 +31,8 @@ set(PROJECT_SOURCES
     languageconfig.hpp
     logasync.cpp
     logasync.h
+    logfile.cc
+    logfile.hpp
     mimeutils.h
     osspecificaspects.h
     predicates.h

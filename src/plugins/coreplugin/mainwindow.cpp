@@ -79,26 +79,26 @@ private:
         trayIcon->setIcon(QIcon(":/icon/icon/app.png"));
         trayIcon->setContextMenu(menu);
         trayIcon->show();
-        QObject::connect(trayIcon,
-                         &QSystemTrayIcon::activated,
-                         q_ptr,
-                         [this](QSystemTrayIcon::ActivationReason reason) {
-                             switch (reason) {
-                             case QSystemTrayIcon::DoubleClick: q_ptr->show(); break;
-                             default: break;
-                             }
-                         });
+        q_ptr->connect(trayIcon,
+                       &QSystemTrayIcon::activated,
+                       q_ptr,
+                       [this](QSystemTrayIcon::ActivationReason reason) {
+                           switch (reason) {
+                           case QSystemTrayIcon::DoubleClick: q_ptr->show(); break;
+                           default: break;
+                           }
+                       });
 
         qApp->setQuitOnLastWindowClosed(false);
 
-        QObject::connect(qApp,
-                         &QApplication::applicationStateChanged,
-                         q_ptr,
-                         [this](Qt::ApplicationState state) {
-                             if (state == Qt::ApplicationActive) {
-                                 q_ptr->show();
-                             }
-                         });
+        q_ptr->connect(qApp,
+                       &QApplication::applicationStateChanged,
+                       q_ptr,
+                       [this](Qt::ApplicationState state) {
+                           if (state == Qt::ApplicationActive) {
+                               q_ptr->show();
+                           }
+                       });
     }
 
     void setInitWidget(const QString &text) const
@@ -119,10 +119,10 @@ private:
 
         auto *configWidget = new ConfigWidget(q_ptr);
         stackedWidget->addWidget(configWidget);
-        QObject::connect(settingsButton, &QPushButton::clicked, q_ptr, [=] {
+        q_ptr->connect(settingsButton, &QPushButton::clicked, q_ptr, [=] {
             stackedWidget->setCurrentWidget(configWidget);
         });
-        QObject::connect(pluginButton, &QPushButton::clicked, q_ptr, &MainWindow::onAboutPlugins);
+        q_ptr->connect(pluginButton, &QPushButton::clicked, q_ptr, &MainWindow::onAboutPlugins);
 
         toolsButton->setProperty("Type", Core::CoreWidget::Type::Main);
         helpButton->setProperty("Type", Core::CoreWidget::Type::Help);

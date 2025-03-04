@@ -26,17 +26,11 @@ public:
             }
         }
 
-        selectFileButton = new QPushButton(QCoreApplication::translate("HashWidgetPrivate",
-                                                                       "Select File"),
-                                           q_ptr);
-        selectFileButton->setToolTip(
-            QCoreApplication::translate("HashWidgetPrivate", "Select file to calculate hash."));
+        selectFileButton = new QPushButton(HashWidget::tr("Select File"), q_ptr);
+        selectFileButton->setToolTip(HashWidget::tr("Select file to calculate hash."));
         selectFileButton->setObjectName("BlueButton");
-        calculateButton = new QPushButton(QCoreApplication::translate("HashWidgetPrivate",
-                                                                      "Calculate"),
-                                          q_ptr);
-        calculateButton->setToolTip(
-            QCoreApplication::translate("HashWidgetPrivate", "Calculate hash."));
+        calculateButton = new QPushButton(HashWidget::tr("Calculate"), q_ptr);
+        calculateButton->setToolTip(HashWidget::tr("Calculate hash."));
         calculateButton->setObjectName("BlueButton");
         inputEdit = new QTextEdit(q_ptr);
         outputEdit = new QTextEdit(q_ptr);
@@ -53,21 +47,17 @@ public:
         buttonLayout->addWidget(calculateButton);
 
         auto *descriptionLabel = new QLabel(
-            QCoreApplication::translate(
-                "HashWidgetPrivate",
-                "If Input String is file path and file exists, calculate hash of file. "
-                "Otherwise calculate hash of Input String."),
+            HashWidget::tr("If Input String is file path and file exists, calculate hash of file. "
+                           "Otherwise calculate hash of Input String."),
             q_ptr);
         descriptionLabel->setWordWrap(true);
 
         auto *layout = new QVBoxLayout(q_ptr);
         layout->addWidget(descriptionLabel);
-        layout->addWidget(
-            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Input:"), q_ptr));
+        layout->addWidget(new QLabel(HashWidget::tr("Input:"), q_ptr));
         layout->addWidget(inputEdit);
         layout->addLayout(buttonLayout);
-        layout->addWidget(
-            new QLabel(QCoreApplication::translate("HashWidgetPrivate", "Output:"), q_ptr));
+        layout->addWidget(new QLabel(HashWidget::tr("Output:"), q_ptr));
         layout->addWidget(outputEdit);
     }
 

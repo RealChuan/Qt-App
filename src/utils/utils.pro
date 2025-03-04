@@ -17,6 +17,7 @@ SOURCES += \
     hostosinfo.cpp \
     languageconfig.cc \
     logasync.cpp \
+    logfile.cc \
     qtcassert.cpp \
     qtcsettings.cpp \
     stringutils.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     indexedcontainerproxyconstiterator.h \
     languageconfig.hpp \
     logasync.h \
+    logfile.hpp \
     mimeutils.h \
     osspecificaspects.h \
     predicates.h \

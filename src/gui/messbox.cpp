@@ -17,11 +17,11 @@ public:
         messageLabel->setObjectName("MessageLabel");
         messageLabel->setWordWrap(true);
         messageLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-        closeButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "Close"), q_ptr);
+        closeButton = new QPushButton(MessBox::tr("Close"), q_ptr);
         closeButton->setObjectName("BlueButton");
-        yesButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "Yes"), q_ptr);
+        yesButton = new QPushButton(MessBox::tr("Yes"), q_ptr);
         yesButton->setObjectName("BlueButton");
-        noButton = new QPushButton(QCoreApplication::translate("MessBoxPrivate", "No"), q_ptr);
+        noButton = new QPushButton(MessBox::tr("No"), q_ptr);
         noButton->setObjectName("GrayButton");
     }
 

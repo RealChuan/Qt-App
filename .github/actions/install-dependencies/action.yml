@@ -18,7 +18,7 @@ inputs:
   qt_ver:
     description: 'qt version'
     required: false
-    default: '6.7.0'
+    default: '6.9.0'
     type: string
 
 runs:
@@ -46,7 +46,6 @@ runs:
           ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
           ${{ inputs.os_name }}-vcpkg-installed-
           ${{ inputs.os_name }}-
-        save-always: true
 
     - name: Cache macos or linux vcpkg
       if: startsWith(runner.os, 'macOS') || startsWith(runner.os, 'Linux')
@@ -58,7 +57,6 @@ runs:
           ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
           ${{ inputs.os_name }}-vcpkg-installed-
           ${{ inputs.os_name }}-
-        save-always: true
 
     - name: Install dependencies on windows
       if: startsWith(runner.os, 'Windows')
@@ -73,11 +71,10 @@ runs:
       if: startsWith(runner.os, 'macOS')
       shell: bash
       run: |
-        brew install ninja python-setuptools
+        brew install python-setuptools
         ninja --version
         cmake --version
         clang --version
-        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on linux
@@ -96,4 +93,4 @@ runs:
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
-        cache: 'true'
+        cache: true
