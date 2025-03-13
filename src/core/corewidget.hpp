@@ -13,7 +13,7 @@ class CORE_EXPORT CoreWidget : public QObject
 {
     Q_OBJECT
 public:
-    enum Type { Main, Help };
+    enum Type : int { Main, Help };
 
     explicit CoreWidget(QObject *parent = nullptr);
     ~CoreWidget() override;

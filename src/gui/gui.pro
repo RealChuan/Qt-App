@@ -19,7 +19,7 @@ HEADERS += \
     gui_global.hpp \
     historycompleter.h \
     itemviews.h \
-    messbox.h \
+    messagebox.h \
     multitextcursor.h \
     pushbutton.hpp \
     treemodel.h \
@@ -34,7 +34,7 @@ SOURCES += \
     fancylineedit.cpp \
     historycompleter.cpp \
     itemviews.cpp \
-    messbox.cpp \
+    messagebox.cpp \
     multitextcursor.cpp \
     pushbutton.cc \
     treemodel.cpp \
