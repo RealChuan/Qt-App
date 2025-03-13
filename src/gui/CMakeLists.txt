@@ -16,8 +16,8 @@ set(PROJECT_SOURCES
     historycompleter.h
     itemviews.cpp
     itemviews.h
-    messbox.cpp
-    messbox.h
+    messagebox.cpp
+    messagebox.h
     multitextcursor.cpp
     multitextcursor.h
     pushbutton.cc

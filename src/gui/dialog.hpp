@@ -12,7 +12,7 @@ class GUI_EXPORT Dialog : public CommonWidget
 {
     Q_OBJECT
 public:
-    enum ExecFlags { Accepted, Rejected, Close };
+    enum ExecFlag : int { Accepted, Rejected, Closed };
 
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog() override;
