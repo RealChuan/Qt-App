@@ -4,7 +4,7 @@
 
 #include <core/corewidget.hpp>
 #include <extensionsystem/pluginmanager.h>
-#include <gui/messbox.h>
+#include <gui/messagebox.h>
 #include <utils/utils.h>
 
 #include <QtWidgets>
@@ -64,7 +64,7 @@ private:
     void createSystemTray()
     {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-            GUI::MessBox::Info(q_ptr,
+            GUI::MessageBox::Info(q_ptr,
                                tr("Systray, I couldn't detect any system "
                                   "tray on this system."));
             return;

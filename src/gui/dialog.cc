@@ -17,7 +17,7 @@ public:
     Dialog *q_ptr;
 
     QEventLoop loop;
-    Dialog::ExecFlags flag = Dialog::ExecFlags::Close;
+    Dialog::ExecFlag flag = Dialog::ExecFlag::Closed;
 };
 
 Dialog::Dialog(QWidget *parent)
@@ -49,7 +49,7 @@ auto Dialog::exec() -> int
     raise();
     activateWindow();
 
-    d_ptr->flag = Close;
+    d_ptr->flag = Closed;
     d_ptr->loop.exec();
 
     hide();
@@ -71,7 +71,7 @@ void Dialog::reject()
 
 void Dialog::onClosed()
 {
-    d_ptr->flag = Close;
+    d_ptr->flag = Closed;
     d_ptr->loop.quit();
 }
 

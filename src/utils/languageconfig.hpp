@@ -14,7 +14,7 @@ class UTILS_EXPORT LanguageConfig : public QObject
 {
     Q_OBJECT
 public:
-    enum Language { Chinese, English };
+    enum Language : int { Chinese, English };
 
     auto currentLanguage() -> Language;
 

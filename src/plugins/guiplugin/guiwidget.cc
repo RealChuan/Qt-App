@@ -1,6 +1,6 @@
 #include "guiwidget.hpp"
 
-#include <gui/messbox.h>
+#include <gui/messagebox.h>
 
 #include <QtWidgets>
 
@@ -32,11 +32,13 @@ auto GuiWidget::createButtonGroup() -> QGroupBox *
     auto *checkBox = new QCheckBox(tr("Check"), this);
     checkBox->setChecked(true);
 
-    connect(button, &QPushButton::clicked, this, [&] {
-        GUI::MessBox::Info(this, tr("This is an info message."), GUI::MessBox::YesAndNoButton);
+    connect(button, &QPushButton::clicked, this, [this] {
+        GUI::MessageBox::Info(this,
+                              tr("This is an info message."),
+                              GUI::MessageBox::Yes | GUI::MessageBox::No);
     });
-    connect(blueButton, &QPushButton::clicked, this, [&] {
-        GUI::MessBox::Warning(this, tr("This is a warning message."), GUI::MessBox::CloseButton);
+    connect(blueButton, &QPushButton::clicked, this, [this] {
+        GUI::MessageBox::Warning(this, tr("This is a warning message."), GUI::MessageBox::Close);
     });
     grayButton->setMenu(createMenu());
 
