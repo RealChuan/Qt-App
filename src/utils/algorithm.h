@@ -22,7 +22,9 @@
 
 #include <memory>
 #include <optional>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 namespace Utils {
 
@@ -30,23 +32,23 @@ namespace Utils {
 // anyOf
 /////////////////////////
 template<typename T, typename F>
-auto anyOf(const T &container, F predicate) -> bool;
+bool anyOf(const T &container, F predicate);
 template<typename T, typename R, typename S>
-auto anyOf(const T &container, R (S::*predicate)() const) -> bool;
+bool anyOf(const T &container, R (S::*predicate)() const);
 template<typename T, typename R, typename S>
-auto anyOf(const T &container, R S::*member) -> bool;
+bool anyOf(const T &container, R S::*member);
 
 /////////////////////////
 // count
 /////////////////////////
 template<typename T, typename F>
-auto count(const T &container, F predicate) -> int;
+int count(const T &container, F predicate);
 
 /////////////////////////
 // allOf
 /////////////////////////
 template<typename T, typename F>
-auto allOf(const T &container, F predicate) -> bool;
+bool allOf(const T &container, F predicate);
 
 /////////////////////////
 // erase
@@ -54,33 +56,37 @@ auto allOf(const T &container, F predicate) -> bool;
 template<typename T, typename F>
 void erase(T &container, F predicate);
 template<typename T, typename F>
-auto eraseOne(T &container, F predicate) -> bool;
+bool eraseOne(T &container, F predicate);
 
 /////////////////////////
 // contains
 /////////////////////////
 template<typename T, typename F>
-auto contains(const T &container, F function) -> bool;
+bool contains(const T &container, F function);
 template<typename T, typename R, typename S>
-auto contains(const T &container, R (S::*function)() const) -> bool;
+bool contains(const T &container, R (S::*function)() const);
 template<typename C, typename R, typename S>
-auto contains(const C &container, R S::*member) -> bool;
+bool contains(const C &container, R S::*member);
 
 /////////////////////////
 // findOr
 /////////////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT auto findOr(const C &container,
+Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
                                                 typename C::value_type other,
-                                                F function) -> typename C::value_type;
+                                                F function);
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT auto findOr(const T &container,
+Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
                                                 typename T::value_type other,
-                                                R (S::*function)() const) -> typename T::value_type;
+                                                R (S::*function)() const);
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT auto findOr(const T &container,
+Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
                                                 typename T::value_type other,
-                                                R S::*member) -> typename T::value_type;
+                                                R S::*member);
+template<typename T, typename F>
+Q_REQUIRED_RESULT std::optional<typename T::value_type> findOr(const T &container,
+                                                               std::nullopt_t,
+                                                               F function);
 
 /////////////////////////
 // findOrDefault
@@ -102,21 +108,40 @@ findOrDefault(const C &container, R S::*member);
 // indexOf
 /////////////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT auto indexOf(const C &container, F function) -> int;
+Q_REQUIRED_RESULT int indexOf(const C &container, F function);
 
 /////////////////////////
-// maxElementOr
+// {min,max}ElementOr
 /////////////////////////
-template<typename T>
-auto maxElementOr(const T &container, typename T::value_type other) -> typename T::value_type;
+template<typename C>
+typename C::value_type maxElementOr(const C &container, typename C::value_type other);
+template<typename C>
+typename C::value_type maxElementOrDefault(const C &container);
+template<typename C, typename Cmp>
+typename C::value_type maxElementOr(const C &container,
+                                    const Cmp &cmp,
+                                    typename C::value_type other);
+template<typename C, typename Cmp>
+typename C::value_type maxElementOrDefault(const C &container, const Cmp &cmp);
+
+template<typename C>
+typename C::value_type minElementOr(const C &container, typename C::value_type other);
+template<typename C>
+typename C::value_type minElementOrDefault(const C &container);
+template<typename C, typename Cmp>
+typename C::value_type minElementOr(const C &container,
+                                    const Cmp &cmp,
+                                    typename C::value_type other);
+template<typename C, typename Cmp>
+typename C::value_type minElementOrDefault(const C &container, const Cmp &cmp);
 
 /////////////////////////
 // filtered
 /////////////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT auto filtered(const C &container, F predicate) -> C;
+Q_REQUIRED_RESULT C filtered(const C &container, F predicate);
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT auto filtered(const C &container, R (S::*predicate)() const) -> C;
+Q_REQUIRED_RESULT C filtered(const C &container, R (S::*predicate)() const);
 
 /////////////////////////
 // partition
@@ -134,19 +159,19 @@ Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, R (S::*predicat
 // filteredUnique
 /////////////////////////
 template<typename C>
-Q_REQUIRED_RESULT auto filteredUnique(const C &container) -> C;
+Q_REQUIRED_RESULT C filteredUnique(const C &container);
 
 /////////////////////////
 // qobject_container_cast
 /////////////////////////
 template<class T, template<typename> class Container, typename Base>
-auto qobject_container_cast(const Container<Base> &container) -> Container<T>;
+Container<T> qobject_container_cast(const Container<Base> &container);
 
 /////////////////////////
 // static_container_cast
 /////////////////////////
 template<class T, template<typename> class Container, typename Base>
-auto static_container_cast(const Container<Base> &container) -> Container<T>;
+Container<T> static_container_cast(const Container<Base> &container);
 
 /////////////////////////
 // sort
@@ -188,9 +213,9 @@ auto toConstReferences(const SourceContainer &sources);
 template<class C, typename P>
 Q_REQUIRED_RESULT std::optional<typename C::value_type> take(C &container, P predicate);
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT auto take(C &container, R S::*member) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) take(C &container, R S::*member);
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT auto take(C &container, R (S::*function)() const) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) take(C &container, R (S::*function)() const);
 
 /////////////////////////
 // setUnionMerge
@@ -199,48 +224,40 @@ Q_REQUIRED_RESULT auto take(C &container, R (S::*function)() const) -> decltype(
 // !(a > b) && !(b > a) which normally means that there is an "equal" match.
 // It uses iterators to support move_iterators.
 template<class InputIt1, class InputIt2, class OutputIt, class Merge, class Compare>
-auto setUnionMerge(InputIt1 first1,
+OutputIt setUnionMerge(InputIt1 first1,
                        InputIt1 last1,
                        InputIt2 first2,
                        InputIt2 last2,
                        OutputIt d_first,
                        Merge merge,
-                       Compare comp) -> OutputIt;
+                       Compare comp);
 template<class InputIt1, class InputIt2, class OutputIt, class Merge>
-auto setUnionMerge(
-    InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Merge merge) -> OutputIt;
+OutputIt setUnionMerge(
+    InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Merge merge);
 template<class OutputContainer, class InputContainer1, class InputContainer2, class Merge, class Compare>
-auto setUnionMerge(InputContainer1 &&input1,
+OutputContainer setUnionMerge(InputContainer1 &&input1,
                               InputContainer2 &&input2,
                               Merge merge,
-                              Compare comp) -> OutputContainer;
+                              Compare comp);
 template<class OutputContainer, class InputContainer1, class InputContainer2, class Merge>
-auto setUnionMerge(InputContainer1 &&input1, InputContainer2 &&input2, Merge merge) -> OutputContainer;
-
-/////////////////////////
-// usize / ssize
-/////////////////////////
-template<typename Container>
-std::make_unsigned_t<typename Container::size_type> usize(Container container);
-template<typename Container>
-std::make_signed_t<typename Container::size_type> ssize(Container container);
+OutputContainer setUnionMerge(InputContainer1 &&input1, InputContainer2 &&input2, Merge merge);
 
 /////////////////////////
 // setUnion
 /////////////////////////
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-auto set_union(InputIterator1 first1,
+OutputIterator set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
                          OutputIterator result,
-                         Compare comp) -> OutputIterator;
+                         Compare comp);
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
-auto set_union(InputIterator1 first1,
+OutputIterator set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
-                         OutputIterator result) -> OutputIterator;
+                         OutputIterator result);
 
 /////////////////////////
 // transform
@@ -249,17 +266,17 @@ auto set_union(InputIterator1 first1,
 template<typename ResultContainer, // complete result container type
          typename SC,              // input container type
          typename F>               // function type
-Q_REQUIRED_RESULT auto transform(SC &&container, F function) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function);
 
 // function with result type deduction:
 template<template<typename> class C, // result container type
          typename SC,                // input container type
          typename F,                 // function type
          typename Value = typename std::decay_t<SC>::value_type,
-         typename Result = std::decay_t<std::result_of_t<F(Value &)>>,
+         typename Result = std::decay_t<std::invoke_result_t<F, Value &>>,
          typename ResultContainer = C<Result>>
 Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function);
-#ifdef Q_CC_CLANG
+#if __cpp_template_template_args < 201611L
 // "Matching of template template-arguments excludes compatible templates"
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0522r0.html (P0522R0)
 // in C++17 makes the above match e.g. C=std::vector even though that takes two
@@ -273,7 +290,7 @@ template<template<typename, typename> class C, // result container type
          typename SC,                          // input container type
          typename F,                           // function type
          typename Value = typename std::decay_t<SC>::value_type,
-         typename Result = std::decay_t<std::result_of_t<F(Value &)>>,
+         typename Result = std::decay_t<std::invoke_result_t<F, Value &>>,
          typename ResultContainer = C<Result, std::allocator<Result>>>
 Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function);
 #endif
@@ -283,35 +300,35 @@ template<template<typename...> class C, // result container type
          typename SC,                   // input container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT auto transform(SC &&container, R (S::*p)() const) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R (S::*p)() const);
 
 // member function with result type deduction:
 template<typename ResultContainer, // complete result container type
          typename SC,              // input container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT auto transform(SC &&container, R (S::*p)() const) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R (S::*p)() const);
 
 // member without result type deduction:
 template<typename ResultContainer, // complete result container type
          typename SC,              // input container
          typename R,
          typename S>
-Q_REQUIRED_RESULT auto transform(SC &&container, R S::*p) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p);
 
 // member with result type deduction:
 template<template<typename...> class C, // result container
          typename SC,                   // input container
          typename R,
          typename S>
-Q_REQUIRED_RESULT auto transform(SC &&container, R S::*p) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p);
 
 // same container types for input and output, const input
 // function:
 template<template<typename...> class C, // container type
          typename F,                    // function type
          typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT auto transform(const C<CArgs...> &container, F function) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, F function);
 
 // same container types for input and output, const input
 // member function:
@@ -319,7 +336,7 @@ template<template<typename...> class C, // container type
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT auto transform(const C<CArgs...> &container, R (S::*p)() const) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R (S::*p)() const);
 
 // same container types for input and output, const input
 // members:
@@ -327,14 +344,14 @@ template<template<typename...> class C, // container
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT auto transform(const C<CArgs...> &container, R S::*p) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R S::*p);
 
 // same container types for input and output, non-const input
 // function:
 template<template<typename...> class C, // container type
          typename F,                    // function type
          typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, F function) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, F function);
 
 // same container types for input and output, non-const input
 // member function:
@@ -342,7 +359,7 @@ template<template<typename...> class C, // container type
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, R (S::*p)() const) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R (S::*p)() const);
 
 // same container types for input and output, non-const input
 // members:
@@ -350,7 +367,7 @@ template<template<typename...> class C, // container
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, R S::*p) -> decltype(auto);
+Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R S::*p);
 
 /////////////////////////////////////////////////////////////////////////////
 ////////    Implementations    //////////////////////////////////////////////
@@ -360,21 +377,21 @@ Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, R S::*p) -> decltype(au
 // anyOf
 /////////////////
 template<typename T, typename F>
-auto anyOf(const T &container, F predicate) -> bool
+bool anyOf(const T &container, F predicate)
 {
     return std::any_of(std::begin(container), std::end(container), predicate);
 }
 
 // anyOf taking a member function pointer
 template<typename T, typename R, typename S>
-auto anyOf(const T &container, R (S::*predicate)() const) -> bool
+bool anyOf(const T &container, R (S::*predicate)() const)
 {
     return std::any_of(std::begin(container), std::end(container), std::mem_fn(predicate));
 }
 
 // anyOf taking a member pointer
 template<typename T, typename R, typename S>
-auto anyOf(const T &container, R S::*member) -> bool
+bool anyOf(const T &container, R S::*member)
 {
     return std::any_of(std::begin(container), std::end(container), std::mem_fn(member));
 }
@@ -383,7 +400,7 @@ auto anyOf(const T &container, R S::*member) -> bool
 // count
 /////////////////
 template<typename T, typename F>
-auto count(const T &container, F predicate) -> int
+int count(const T &container, F predicate)
 {
     return std::count_if(std::begin(container), std::end(container), predicate);
 }
@@ -392,21 +409,27 @@ auto count(const T &container, F predicate) -> int
 // allOf
 /////////////////
 template<typename T, typename F>
-auto allOf(const T &container, F predicate) -> bool
+bool allOf(const T &container, F predicate)
 {
     return std::all_of(std::begin(container), std::end(container), predicate);
 }
 
+template<typename T, typename F>
+bool allOf(const std::initializer_list<T> &initializerList, F predicate)
+{
+    return std::all_of(std::begin(initializerList), std::end(initializerList), predicate);
+}
+
 // allOf taking a member function pointer
 template<typename T, typename R, typename S>
-auto allOf(const T &container, R (S::*predicate)() const) -> bool
+bool allOf(const T &container, R (S::*predicate)() const)
 {
     return std::all_of(std::begin(container), std::end(container), std::mem_fn(predicate));
 }
 
 // allOf taking a member pointer
 template<typename T, typename R, typename S>
-auto allOf(const T &container, R S::*member) -> bool
+bool allOf(const T &container, R S::*member)
 {
     return std::all_of(std::begin(container), std::end(container), std::mem_fn(member));
 }
@@ -421,7 +444,7 @@ void erase(T &container, F predicate)
                     std::end(container));
 }
 template<typename T, typename F>
-auto eraseOne(T &container, F predicate) -> bool
+bool eraseOne(T &container, F predicate)
 {
     const auto it = std::find_if(std::begin(container), std::end(container), predicate);
     if (it == std::end(container))
@@ -434,30 +457,71 @@ auto eraseOne(T &container, F predicate) -> bool
 // contains
 /////////////////
 template<typename T, typename F>
-auto contains(const T &container, F function) -> bool
+bool contains(const T &container, F function)
 {
     return anyOf(container, function);
 }
 
 template<typename T, typename R, typename S>
-auto contains(const T &container, R (S::*function)() const) -> bool
+bool contains(const T &container, R (S::*function)() const)
 {
     return anyOf(container, function);
 }
 
 template<typename C, typename R, typename S>
-auto contains(const C &container, R S::*member) -> bool
+bool contains(const C &container, R S::*member)
 {
     return anyOf(container, std::mem_fn(member));
+}
+
+template<std::indirectly_readable Iterator,
+         std::indirectly_regular_unary_invocable<Iterator> Projection>
+using projected_value_t
+    = std::remove_cvref_t<std::invoke_result_t<Projection &, std::iter_value_t<Iterator> &>>;
+
+template<std::ranges::input_range Range,
+         typename Projection = std::identity,
+         class Value = projected_value_t<std::ranges::iterator_t<Range>, Projection>>
+    requires std::indirect_binary_predicate<std::ranges::equal_to,
+                                            std::projected<std::ranges::iterator_t<Range>, Projection>,
+                                            const Value *>
+bool contains(Range &&range, const Value &value, Projection projection = {})
+{
+    return std::ranges::find(std::forward<Range>(range), value, projection)
+           != std::ranges::end(range);
+}
+
+template<typename T, std::size_t Size, typename V>
+[[nodiscard]] bool contains(const T (&array)[Size], const V &value)
+{
+    auto begin = std::begin(array);
+    auto end = std::end(array);
+
+    auto found = std::find(begin, end, value);
+
+    return found != end;
+}
+
+//////////////////
+// containsInSorted
+/////////////////
+
+template<typename C, typename V>
+[[nodiscard]] bool containsInSorted(const C &container, const V &value)
+{
+    auto begin = std::begin(container);
+    auto end = std::end(container);
+
+    return std::binary_search(begin, end, value);
 }
 
 //////////////////
 // findOr
 /////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT auto findOr(const C &container,
+Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
                                                 typename C::value_type other,
-                                                F function) -> typename C::value_type
+                                                F function)
 {
     typename C::const_iterator begin = std::begin(container);
     typename C::const_iterator end = std::end(container);
@@ -467,19 +531,34 @@ Q_REQUIRED_RESULT auto findOr(const C &container,
 }
 
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT auto findOr(const T &container,
+Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
                                                 typename T::value_type other,
-                                                R (S::*function)() const) -> typename T::value_type
+                                                R (S::*function)() const)
 {
     return findOr(container, other, std::mem_fn(function));
 }
 
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT auto findOr(const T &container,
+Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
                                                 typename T::value_type other,
-                                                R S::*member) -> typename T::value_type
+                                                R S::*member)
 {
     return findOr(container, other, std::mem_fn(member));
+}
+
+template<typename C, typename F>
+Q_REQUIRED_RESULT typename std::optional<typename C::value_type> findOr(const C &container,
+                                                                        std::nullopt_t,
+                                                                        F function)
+{
+    typename C::const_iterator begin = std::begin(container);
+    typename C::const_iterator end = std::end(container);
+
+    typename C::const_iterator it = std::find_if(begin, end, function);
+    if (it == end)
+        return std::nullopt;
+
+    return *it;
 }
 
 //////////////////
@@ -525,19 +604,71 @@ Q_REQUIRED_RESULT int indexOf(const C &container, F function)
 }
 
 //////////////////
-// max element
+// min/max element
 //////////////////
 
-template<typename T>
-typename T::value_type maxElementOr(const T &container, typename T::value_type other)
+template<typename C>
+typename C::value_type maxElementOr(const C &container, typename C::value_type other)
 {
-    typename T::const_iterator begin = std::begin(container);
-    typename T::const_iterator end = std::end(container);
+    const auto begin = std::begin(container);
+    const auto end = std::end(container);
+    if (const auto it = std::max_element(begin, end); it != end)
+        return *it;
+    return other;
+}
 
-    typename T::const_iterator it = std::max_element(begin, end);
-    if (it == end)
-        return other;
-    return *it;
+template<typename C>
+typename C::value_type maxElementOrDefault(const C &container)
+{
+    return maxElementOr(container, typename C::value_type());
+}
+
+template<typename C, typename Cmp>
+typename C::value_type maxElementOr(const C &container, const Cmp &cmp, typename C::value_type other)
+{
+    const auto begin = std::begin(container);
+    const auto end = std::end(container);
+    if (const auto it = std::max_element(begin, end, cmp); it != end)
+        return *it;
+    return other;
+}
+
+template<typename C, typename Cmp>
+typename C::value_type maxElementOrDefault(const C &container, const Cmp &cmp)
+{
+    return maxElementOr(container, cmp, typename C::value_type());
+}
+
+template<typename C>
+typename C::value_type minElementOr(const C &container, typename C::value_type other)
+{
+    const auto begin = std::begin(container);
+    const auto end = std::end(container);
+    if (const auto it = std::min_element(begin, end); it != end)
+        return *it;
+    return other;
+}
+
+template<typename C>
+typename C::value_type minElementOrDefault(const C &container)
+{
+    return minElementOr(container, typename C::value_type());
+}
+
+template<typename C, typename Cmp>
+typename C::value_type minElementOr(const C &container, const Cmp &cmp, typename C::value_type other)
+{
+    const auto begin = std::begin(container);
+    const auto end = std::end(container);
+    if (const auto it = std::min_element(begin, end, cmp); it != end)
+        return *it;
+    return other;
+}
+
+template<typename C, typename Cmp>
+typename C::value_type minElementOrDefault(const C &container, const Cmp &cmp)
+{
+    return minElementOr(container, cmp, typename C::value_type());
 }
 
 //////////////////
@@ -609,12 +740,91 @@ public:
     MapInsertIterator<Container> operator++(int) { return *this; }
 };
 
-// inserter helper function, returns a std::back_inserter for most containers
-// and is overloaded for QSet<> and other containers without push_back, returning custom inserters
-template<typename C>
-inline std::back_insert_iterator<C> inserter(C &container)
+// because Qt container are not implementing the standard interface we need
+// this helper functions for generic code
+template<typename Type>
+void append(QList<Type> *container, QList<Type> &&input)
 {
-    return std::back_inserter(container);
+    container->append(std::move(input));
+}
+
+template<typename Type>
+void append(QList<Type> *container, const QList<Type> &input)
+{
+    container->append(input);
+}
+
+template<typename Container>
+void append(Container *container, Container &&input)
+{
+    container->insert(container->end(),
+                      std::make_move_iterator(input.begin()),
+                      std::make_move_iterator(input.end()));
+}
+
+template<typename Container>
+void append(Container *container, const Container &input)
+{
+    container->insert(container->end(), input.begin(), input.end());
+}
+
+// BackInsertIterator behaves like std::back_insert_iterator except is adds the back insertion for
+// container of the same type
+template<typename Container>
+class BackInsertIterator
+{
+public:
+    using iterator_category = std::output_iterator_tag;
+    using value_type = void;
+    using difference_type = ptrdiff_t;
+    using pointer = void;
+    using reference = void;
+    using container_type = Container;
+
+    explicit constexpr BackInsertIterator(Container &container)
+        : m_container(std::addressof(container))
+    {}
+
+    constexpr BackInsertIterator &operator=(const typename Container::value_type &value)
+    {
+        m_container->push_back(value);
+        return *this;
+    }
+
+    constexpr BackInsertIterator &operator=(typename Container::value_type &&value)
+    {
+        m_container->push_back(std::move(value));
+        return *this;
+    }
+
+    constexpr BackInsertIterator &operator=(const Container &container)
+    {
+        append(m_container, container);
+        return *this;
+    }
+
+    constexpr BackInsertIterator &operator=(Container &&container)
+    {
+        append(m_container, container);
+        return *this;
+    }
+
+    [[nodiscard]] constexpr BackInsertIterator &operator*() { return *this; }
+
+    constexpr BackInsertIterator &operator++() { return *this; }
+
+    constexpr BackInsertIterator operator++(int) { return *this; }
+
+private:
+    Container *m_container;
+};
+
+// inserter helper function, returns a BackInsertIterator for most containers
+// and is overloaded for QSet<> and other containers without push_back, returning custom inserters
+template<typename Container>
+inline BackInsertIterator<Container> inserter(Container &container)
+{
+    return BackInsertIterator(container);
 }
 
 template<typename X>
@@ -709,7 +919,7 @@ Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function)
     return transform<ResultContainer>(std::forward<SC>(container), function);
 }
 
-#ifdef Q_CC_CLANG
+#if __cpp_template_template_args < 201611L
 template<template<typename, typename> class C, // result container type
          typename SC,                          // input container type
          typename F,                           // function type
@@ -799,7 +1009,7 @@ Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R S::*p
 template<template<typename...> class C, // container type
          typename F,                    // function type
          typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, F function)
+Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, F function) -> decltype(auto)
 {
     return transform<C, C<CArgs...> &>(container, function);
 }
@@ -828,7 +1038,7 @@ Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R S::*p)
 
 template<template<typename...> class C = QList, // result container
          typename F>                            // Arguments to C
-Q_REQUIRED_RESULT decltype(auto) transform(const QStringList &container, F function)
+Q_REQUIRED_RESULT auto transform(const QStringList &container, F function)
 {
     return transform<C, const QList<QString> &>(static_cast<QList<QString>>(container), function);
 }
@@ -872,6 +1082,14 @@ Q_REQUIRED_RESULT C filtered(const C &container, R (S::*predicate)() const)
     return out;
 }
 
+template<typename C, typename R, typename S>
+Q_REQUIRED_RESULT C filtered(const C &container, R S::*predicate)
+{
+    C out;
+    std::copy_if(std::begin(container), std::end(container), inserter(out), std::mem_fn(predicate));
+    return out;
+}
+
 //////////////////
 // filteredCast
 /////////////////
@@ -888,9 +1106,7 @@ Q_REQUIRED_RESULT R filteredCast(const C &container, F predicate)
 /////////////////
 
 // Recommended usage:
-// C hit;
-// C miss;
-// std::tie(hit, miss) = Utils::partition(container, predicate);
+// const auto [hit, miss] = Utils::partition(container, predicate);
 
 template<typename C, typename F>
 Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, F predicate)
@@ -1295,15 +1511,15 @@ OutputContainer setUnionMerge(InputContainer1 &&input1, InputContainer2 &&input2
 }
 
 template<typename Container>
-std::make_unsigned_t<typename Container::size_type> usize(Container container)
+constexpr auto usize(const Container &container)
 {
-    return static_cast<std::make_unsigned_t<typename Container::size_type>>(container.size());
+    return static_cast<std::make_unsigned_t<decltype(std::size(container))>>(std::size(container));
 }
 
 template<typename Container>
-std::make_signed_t<typename Container::size_type> ssize(Container container)
+constexpr auto ssize(const Container &container)
 {
-    return static_cast<std::make_signed_t<typename Container::size_type>>(container.size());
+    return static_cast<std::make_signed_t<decltype(std::size(container))>>(std::size(container));
 }
 
 template<typename Compare>
@@ -1323,12 +1539,12 @@ struct CompareIter
 };
 
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-auto set_union_impl(InputIterator1 first1,
+OutputIterator set_union_impl(InputIterator1 first1,
                               InputIterator1 last1,
                               InputIterator2 first2,
                               InputIterator2 last2,
                               OutputIterator result,
-                              Compare comp) -> OutputIterator
+                              Compare comp)
 {
     auto compare = CompareIter<Compare>(comp);
 
@@ -1351,22 +1567,22 @@ auto set_union_impl(InputIterator1 first1,
 }
 
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-auto set_union(InputIterator1 first1,
+OutputIterator set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
                          OutputIterator result,
-                         Compare comp) -> OutputIterator
+                         Compare comp)
 {
     return Utils::set_union_impl(first1, last1, first2, last2, result, comp);
 }
 
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
-auto set_union(InputIterator1 first1,
+OutputIterator set_union(InputIterator1 first1,
                          InputIterator1 last1,
                          InputIterator2 first2,
                          InputIterator2 last2,
-                         OutputIterator result) -> OutputIterator
+                         OutputIterator result)
 {
     return Utils::set_union_impl(first1,
                                  last1,
@@ -1379,13 +1595,13 @@ auto set_union(InputIterator1 first1,
 // Replacement for deprecated Qt functionality
 
 template<class T>
-auto toSet(const QList<T> &list) -> QSet<T>
+QSet<T> toSet(const QList<T> &list)
 {
     return QSet<T>(list.begin(), list.end());
 }
 
 template<class T>
-auto toList(const QSet<T> &set) -> QList<T>
+QList<T> toList(const QSet<T> &set)
 {
     return QList<T>(set.begin(), set.end());
 }
@@ -1394,6 +1610,28 @@ template<class Key, class T>
 void addToHash(QHash<Key, T> *result, const QHash<Key, T> &additionalContents)
 {
     result->insert(additionalContents);
+}
+
+template<typename Tuple, std::size_t... I>
+static std::size_t tupleHashHelper(uint seed, const Tuple &tuple, std::index_sequence<I...>)
+{
+    return qHashMulti(seed, (std::get<I>(tuple), ...));
+}
+
+template<typename... T>
+std::size_t qHash(const std::tuple<T...> &tuple, uint seed = 0)
+{
+    return tupleHashHelper(seed, tuple, std::make_index_sequence<sizeof...(T)>());
+}
+
+// Workaround for missing information from QSet::insert()
+// Return type could be a pair like for std::set, but we never use the iterator anyway.
+template<typename T, typename U>
+[[nodiscard]] bool insert(QSet<T> &s, const U &v)
+{
+    const int oldSize = s.size();
+    s.insert(v);
+    return s.size() > oldSize;
 }
 
 } // namespace Utils

@@ -55,8 +55,6 @@ jobs:
           fetch-depth: 1
           
       - uses: ./.github/actions/install-dependencies
-        with:
-          os_name: ${{ matrix.os }}
 
       - name: Configure and build windows
         if: startsWith(matrix.os, 'windows')
@@ -108,18 +106,18 @@ jobs:
           ls -al ./fonts
 
       - name: Packaging windows
-        if: startsWith(runner.os, 'Windows')
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           .\packaging\windows\package.ps1
       - name: Packaging macos
-        if: startsWith(runner.os, 'macOS')
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           sudo chmod +x ./packaging/macos/package.sh
           ./packaging/macos/package.sh
       - name: Packaging ubuntu
-        if: startsWith(runner.os, 'Linux')
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           sudo chmod 755 ./packaging/ubuntu/package.sh

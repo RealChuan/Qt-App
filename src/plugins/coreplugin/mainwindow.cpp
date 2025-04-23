@@ -65,14 +65,13 @@ private:
     {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
             GUI::MessageBox::Info(q_ptr,
-                               tr("Systray, I couldn't detect any system "
-                                  "tray on this system."));
+                                  tr("Systray, I couldn't detect any system "
+                                     "tray on this system."));
             return;
         }
 
         auto *menu = new QMenu(q_ptr);
-        menu->addAction(
-            tr("Quit"), q_ptr, [] { Utils::quitApplication(); }, Qt::QueuedConnection);
+        menu->addAction(tr("Quit"), q_ptr, [] { Utils::quitApplication(); }, Qt::QueuedConnection);
 
         auto *trayIcon = new QSystemTrayIcon(q_ptr);
         trayIcon->setToolTip(tr("This is an Qt-App."));
@@ -119,7 +118,7 @@ private:
 
         auto *configWidget = new ConfigWidget(q_ptr);
         stackedWidget->addWidget(configWidget);
-        q_ptr->connect(settingsButton, &QPushButton::clicked, q_ptr, [=] {
+        q_ptr->connect(settingsButton, &QPushButton::clicked, q_ptr, [this, configWidget] {
             stackedWidget->setCurrentWidget(configWidget);
         });
         q_ptr->connect(pluginButton, &QPushButton::clicked, q_ptr, &MainWindow::onAboutPlugins);
@@ -180,7 +179,7 @@ void MainWindow::extensionsInitialized()
         }
         d_ptr->menuBtnGroup->addButton(page->button());
         d_ptr->stackedWidget->addWidget(page->widget());
-        connect(page->button(), &QPushButton::clicked, this, [=] {
+        connect(page->button(), &QPushButton::clicked, this, [this, page] {
             d_ptr->stackedWidget->setCurrentWidget(page->widget());
         });
     }

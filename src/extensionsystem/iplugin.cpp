@@ -223,7 +223,7 @@ QVector<QObject *> IPlugin::createTestObjects() const
 void IPlugin::addObject(QObject *obj)
 {
     PluginManager::addObject(obj);
-    connect(this, &IPlugin::destroyed, this, [=] { PluginManager::removeObject(obj); });
+    connect(this, &IPlugin::destroyed, this, [obj] { PluginManager::removeObject(obj); });
 }
 
 } // namespace ExtensionSystem

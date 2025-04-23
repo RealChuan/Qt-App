@@ -39,7 +39,7 @@ auto Dialog::exec() -> int
     auto widget = parentWidget();
     if (widget) {
         QMetaObject::invokeMethod(
-            this, [=] { Utils::windowCenter(this, widget); }, Qt::QueuedConnection);
+            this, [this, widget] { Utils::windowCenter(this, widget); }, Qt::QueuedConnection);
     }
 #endif
     setWindowFlags(Qt::Dialog | Qt::Popup | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint

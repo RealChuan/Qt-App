@@ -29,7 +29,7 @@ void initResource()
 
 void setAppInfo()
 {
-    qApp->setApplicationVersion(Utils::version.toString());
+    qApp->setApplicationVersion(Utils::version);
     qApp->setApplicationDisplayName(Utils::appName);
     qApp->setApplicationName(Utils::appName);
     qApp->setDesktopFileName(Utils::appName);
@@ -90,7 +90,7 @@ auto main(int argc, char *argv[]) -> int
     log->setLogPath(Utils::logPath());
     log->setAutoDelFile(true);
     log->setAutoDelFileDays(7);
-    log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
+    log->setOrientation(Utils::LogAsync::Orientation::StandardAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
 
@@ -133,7 +133,7 @@ auto main(int argc, char *argv[]) -> int
     }
 
     if (coreSpec != nullptr) {
-        QObject::connect(&app, &SharedTools::QtSingleApplication::messageReceived, [=] {
+        QObject::connect(&app, &SharedTools::QtSingleApplication::messageReceived, [coreSpec] {
             coreSpec->plugin()->remoteCommand({}, {}, {});
         });
         waitWidgetPtr->fullProgressBar();

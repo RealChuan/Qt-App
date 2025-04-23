@@ -17,7 +17,7 @@ void AboutWidget::setupUI()
 {
     auto text = QString("<span style=\"font-size: 24px;\"><b>%1</b></span> <span "
                         "style=\"font-size: 24px;\">%2</span><br>")
-                    .arg(Utils::appName, Utils::version.toString());
+                    .arg(Utils::appName, Utils::version);
 
     auto *textLayout = new QVBoxLayout;
     textLayout->setSpacing(20);

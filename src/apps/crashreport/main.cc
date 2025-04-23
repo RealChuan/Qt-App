@@ -21,7 +21,7 @@ void initResource()
 
 void setAppInfo()
 {
-    qApp->setApplicationVersion(Utils::version.toString());
+    qApp->setApplicationVersion(Utils::version);
     qApp->setApplicationDisplayName(Utils::crashName);
     qApp->setApplicationName(Utils::crashName);
     qApp->setDesktopFileName(Utils::crashName);
@@ -78,7 +78,7 @@ auto main(int argc, char *argv[]) -> int
     log->setLogPath(Utils::logPath());
     log->setAutoDelFile(true);
     log->setAutoDelFileDays(7);
-    log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
+    log->setOrientation(Utils::LogAsync::Orientation::StandardAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
 
@@ -91,7 +91,7 @@ auto main(int argc, char *argv[]) -> int
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     Crash::CrashWidgets w;
-    app.setActiveWindow(&w);
+    app.setActivationWindow(&w);
     w.show();
 
     auto result = app.exec();

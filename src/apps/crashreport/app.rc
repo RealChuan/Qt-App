@@ -22,7 +22,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "CompanyName", "The Youth.\0"
 				VALUE "FileDescription", "Qt-App\0"
 				VALUE "FileVersion", "0.1.1.0\0"
-				VALUE "LegalCopyright", "Copyright (C) 2024 Youth.\0"
+				VALUE "LegalCopyright", "Copyright (C) 2025 Youth.\0"
 				VALUE "OriginalFilename", "Qt-App\0"
 				VALUE "ProductName", "Qt-App\0"
 				VALUE "ProductVersion", "0.1.1.0\0"
