@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <gui/commonwidget.hpp>
 
@@ -18,8 +17,10 @@ private slots:
     void onShowGroupButton(int id);
     void onAboutPlugins();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private:
-    void setupUI();
     void buildConnect();
     void initMenu();
 
@@ -28,5 +29,3 @@ private:
 };
 
 } // namespace Plugin
-
-#endif // MAINWINDOW_H

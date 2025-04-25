@@ -32,12 +32,14 @@ public:
         vLayoutGroup2->setSpacing(0);
         vLayoutGroup3->setContentsMargins(QMargins());
         vLayoutGroup3->setSpacing(0);
+
+        initMaskWidget();
     }
 
     void setupUI()
     {
         createSystemTray();
-        setInitWidget(tr("Hello World!"));
+        setInitWidget(MainWindow::tr("Hello World!"));
 
         auto *widget = new QWidget(q_ptr);
         auto *layout = new QHBoxLayout(widget);
@@ -60,6 +62,8 @@ public:
     QVBoxLayout *vLayoutGroup2;
     QVBoxLayout *vLayoutGroup3;
 
+    QWidget *maskWidget;
+
 private:
     void createSystemTray()
     {
@@ -71,14 +75,15 @@ private:
         }
 
         auto *menu = new QMenu(q_ptr);
-        menu->addAction(tr("Quit"), q_ptr, [] { Utils::quitApplication(); }, Qt::QueuedConnection);
+        menu->addAction(
+            MainWindow::tr("Quit"), q_ptr, [] { Utils::quitApplication(); }, Qt::QueuedConnection);
 
-        auto *trayIcon = new QSystemTrayIcon(q_ptr);
-        trayIcon->setToolTip(tr("This is an Qt-App."));
-        trayIcon->setIcon(QIcon(":/icon/icon/app.png"));
-        trayIcon->setContextMenu(menu);
-        trayIcon->show();
-        q_ptr->connect(trayIcon,
+        auto *systemTrayIcon = new QSystemTrayIcon(q_ptr);
+        systemTrayIcon->setToolTip(MainWindow::tr("This is an Qt-App."));
+        systemTrayIcon->setIcon(QIcon(":/icon/icon/app.png"));
+        systemTrayIcon->setContextMenu(menu);
+        systemTrayIcon->show();
+        q_ptr->connect(systemTrayIcon,
                        &QSystemTrayIcon::activated,
                        q_ptr,
                        [this](QSystemTrayIcon::ActivationReason reason) {
@@ -98,6 +103,15 @@ private:
                                q_ptr->show();
                            }
                        });
+
+        QMetaObject::invokeMethod(
+            q_ptr,
+            [systemTrayIcon] {
+                systemTrayIcon->showMessage(MainWindow::tr("Hello World!"),
+                                            MainWindow::tr("This is an Qt-App."),
+                                            QIcon(":/icon/icon/app.png"));
+            },
+            Qt::QueuedConnection);
     }
 
     void setInitWidget(const QString &text) const
@@ -152,14 +166,22 @@ private:
 
         return widget;
     }
+
+    void initMaskWidget()
+    {
+        maskWidget = new QWidget(q_ptr);
+        maskWidget->setStyleSheet("background:rgba(0, 0, 0, 128);");
+        maskWidget->hide();
+    }
 };
 
 MainWindow::MainWindow(QWidget *parent)
-    : CommonWidget(parent)
+    : GUI::CommonWidget(parent)
     , d_ptr(new MainWindowPrivate(this))
 {
     d_ptr->setupUI();
     buildConnect();
+    installEventFilter(this);
 }
 
 MainWindow::~MainWindow() = default;
@@ -204,6 +226,26 @@ void MainWindow::onAboutPlugins()
 {
     PluginDialog dialog(this);
     dialog.exec();
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == this) {
+        switch (event->type()) {
+        case QEvent::WindowBlocked: {
+            auto size = this->size();
+            auto padding = shadowPadding();
+            size -= QSize(padding, padding) * 2;
+            d_ptr->maskWidget->resize(size);
+            d_ptr->maskWidget->move(padding, padding);
+            d_ptr->maskWidget->show();
+            d_ptr->maskWidget->raise();
+        } break;
+        case QEvent::WindowUnblocked: d_ptr->maskWidget->hide(); break;
+        default: break;
+        }
+    }
+    return GUI::CommonWidget::eventFilter(watched, event);
 }
 
 void MainWindow::buildConnect()
