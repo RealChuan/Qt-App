@@ -377,18 +377,11 @@ auto Utils::calculateDirectoryStats(const QString &path) -> DirectoryStats
 
 QByteArray generateRandomData(int size)
 {
-    QByteArray data(size, 0);
-    quint32 *buffer = reinterpret_cast<quint32 *>(data.data());
-    int count = size / sizeof(quint32);
-    for (int i = 0; i < count; ++i) {
-        buffer[i] = QRandomGenerator::global()->generate();
-    }
-    // 处理剩余的字节
-    int remaining = size % sizeof(quint32);
-    if (remaining > 0) {
-        quint32 last = QRandomGenerator::global()->generate();
-        memcpy(data.data() + size - remaining, &last, remaining);
-    }
+    const int numWords = (size + sizeof(quint32) - 1) / sizeof(quint32);
+    QVector<quint32> buffer(numWords);
+    QRandomGenerator::global()->fillRange(buffer.data(), numWords);
+    QByteArray data(reinterpret_cast<const char *>(buffer.constData()), numWords * sizeof(quint32));
+    data.resize(size);
     return data;
 }
 
@@ -398,23 +391,32 @@ double cpuBenchOnce(int durationMs, QCryptographicHash::Algorithm algorithm, con
     timer.start();
 
     int totalBytes = 0;
+    volatile char dummy = 0; // 防止编译器优化
+
     while (timer.elapsed() < durationMs) {
-        QCryptographicHash::hash(data, algorithm);
+        QByteArray hashResult = QCryptographicHash::hash(data, algorithm);
+        if (!hashResult.isEmpty()) {
+            dummy = hashResult.constData()[0]; // 强制使用哈希结果
+        }
         totalBytes += data.size();
     }
 
     double elapsedSeconds = timer.elapsed() / 1000.0;
-    double speed = (totalBytes / elapsedSeconds) / (1024 * 1024); // MB/s
-    return speed;
+    if (elapsedSeconds <= 0.0) {
+        return 0.0;
+    }
+    return (totalBytes / elapsedSeconds) / (1024 * 1024); // MB/s
 }
 
-auto Utils::cpuBench(int iterations, int durationMs, QCryptographicHash::Algorithm algorithm)
-    -> double
+double Utils::cpuBench(int iterations,
+                       int durationMs,
+                       int dataSize,
+                       QCryptographicHash::Algorithm algorithm)
 {
-    QByteArray data = generateRandomData(16 * 1024); // 16 KB 数据块
     double maxSpeed = 0.0;
 
     for (int i = 0; i < iterations; ++i) {
+        auto data = generateRandomData(dataSize);
         double speed = cpuBenchOnce(durationMs, algorithm, data);
         if (speed > maxSpeed) {
             maxSpeed = speed;

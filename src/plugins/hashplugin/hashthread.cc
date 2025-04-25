@@ -15,6 +15,7 @@ public:
 
     QString input;
     QCryptographicHash::Algorithm algorithm;
+    std::atomic_bool running{false};
 };
 
 HashThread::HashThread(QObject *parent)
@@ -29,17 +30,19 @@ HashThread::~HashThread()
 
 auto HashThread::startHash(const QString &input, QCryptographicHash::Algorithm algorithm) -> bool
 {
-    d_ptr->input = input;
-    d_ptr->algorithm = algorithm;
     if (isRunning()) {
         return false;
     }
+    d_ptr->input = input;
+    d_ptr->algorithm = algorithm;
+    d_ptr->running.store(true);
     start();
     return true;
 }
 
 void HashThread::stop()
 {
+    d_ptr->running.store(false);
     if (isRunning()) {
         quit();
         wait();
@@ -51,13 +54,14 @@ void HashThread::run()
     QCryptographicHash hashObj{d_ptr->algorithm};
     QFile file{d_ptr->input};
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
-        hashObj.addData(&file);
-        file.close();
+        while (d_ptr->running.load() && !file.atEnd()) {
+            auto data = file.read(1024 * 1024); // 1MB
+            hashObj.addData(data);
+        }
     } else {
         hashObj.addData(d_ptr->input.toUtf8());
     }
-    auto result = hashObj.result();
-    emit hashFinished(result.toHex());
+    emit hashFinished(hashObj.result().toHex());
 }
 
 } // namespace Plugin

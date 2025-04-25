@@ -1,5 +1,4 @@
-#ifndef HASHTHREAD_HPP
-#define HASHTHREAD_HPP
+#pragma once
 
 #include <QCryptographicHash>
 #include <QThread>
@@ -28,5 +27,3 @@ private:
 };
 
 } // namespace Plugin
-
-#endif // HASHTHREAD_HPP

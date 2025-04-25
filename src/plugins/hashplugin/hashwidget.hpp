@@ -1,5 +1,4 @@
-#ifndef HASHWIDGET_HPP
-#define HASHWIDGET_HPP
+#pragma once
 
 #include <QWidget>
 
@@ -13,6 +12,8 @@ public:
     ~HashWidget() override;
 
 private slots:
+    void onTestHash();
+    void onTestBenchFinished(double result); // MB/s
     void onSelectFile();
     void onCalculate();
     void onHashFinished(const QString &result);
@@ -25,5 +26,3 @@ private:
 };
 
 } // namespace Plugin
-
-#endif // HASHWIDGET_HPP

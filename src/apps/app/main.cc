@@ -13,12 +13,6 @@
 #include <QNetworkProxyFactory>
 #include <QStyle>
 
-void md5Benchmark()
-{
-    auto perf = Utils::cpuBench(3, 150, QCryptographicHash::Md5);
-    qInfo() << QString("MD5 performance is %1 MB/s").arg(perf, 0, 'f', 2);
-}
-
 void initResource()
 {
     Resource r; // 这样才可以使用qrc
@@ -101,8 +95,6 @@ auto main(int argc, char *argv[]) -> int
 
     // Make sure we honor the system's proxy settings
     QNetworkProxyFactory::setUseSystemConfiguration(true);
-
-    QThreadPool::globalInstance()->start(md5Benchmark);
 
     // 等待界面
     QScopedPointer<GUI::WaitWidget> waitWidgetPtr(new GUI::WaitWidget);

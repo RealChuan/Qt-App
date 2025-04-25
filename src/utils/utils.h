@@ -48,6 +48,7 @@ UTILS_EXPORT auto getPidFromProcessName(const QString &processName) -> qint64;
 UTILS_EXPORT auto killProcess(qint64 pid) -> bool;
 UTILS_EXPORT auto cpuBench(int iterations,
                            int durationMs,
+                           int dataSize = 1024 * 1024,
                            QCryptographicHash::Algorithm algorithm = QCryptographicHash::Sha256)
     -> double;
 
