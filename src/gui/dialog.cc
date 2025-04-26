@@ -36,7 +36,7 @@ Dialog::~Dialog() = default;
 auto Dialog::exec() -> int
 {
 #ifdef Q_OS_LINUX
-    auto widget = parentWidget();
+    auto *widget = parentWidget();
     if (widget) {
         QMetaObject::invokeMethod(
             this, [this, widget] { Utils::windowCenter(this, widget); }, Qt::QueuedConnection);
@@ -85,8 +85,8 @@ void Dialog::buildConnect()
 #else
 void Dialog::setCentralWidget(QWidget *widget)
 {
-    auto layout = new QHBoxLayout(this);
-    layout->setContentsMargins(QMargins());
+    auto *layout = new QHBoxLayout(this);
+    layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(widget);
 }

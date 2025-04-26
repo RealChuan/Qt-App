@@ -209,7 +209,7 @@ void CommonWidget::setIcon(const QIcon &icon)
 void CommonWidget::setCentralWidget(QWidget *centralWidget)
 {
     auto *layout = new QHBoxLayout(d_ptr->centralWidget);
-    layout->setContentsMargins(QMargins());
+    layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(centralWidget);
 }
@@ -217,7 +217,7 @@ void CommonWidget::setCentralWidget(QWidget *centralWidget)
 void CommonWidget::setTitleBar(QWidget *titleBar)
 {
     auto *layout = new QHBoxLayout(d_ptr->titleBar);
-    layout->setContentsMargins(QMargins());
+    layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(titleBar);
 }
@@ -239,7 +239,7 @@ void CommonWidget::setSizeGripVisible(bool visible)
 
 void CommonWidget::onShowMaximized()
 {
-    d_ptr->layout->setContentsMargins(QMargins());
+    d_ptr->layout->setContentsMargins({});
     showMaximized();
     d_ptr->maxButton->hide();
     d_ptr->restoreButton->show();
@@ -332,9 +332,9 @@ void CommonWidget::setTr()
 #else
 void CommonWidget::setTitleBar(QWidget *widget)
 {
-    auto widgetAction = new QWidgetAction(this);
+    auto *widgetAction = new QWidgetAction(this);
     widgetAction->setDefaultWidget(widget);
-    auto menu = new QMenu(this);
+    auto *menu = new QMenu(this);
     menu->setTitle(tr("TitleBar"));
     menu->addAction(widgetAction);
     menuBar()->addMenu(menu);

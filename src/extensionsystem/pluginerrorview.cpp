@@ -36,8 +36,8 @@ public:
         errorString->setTabChangesFocus(true);
         errorString->setReadOnly(true);
 
-        auto layout = new QFormLayout(q);
-        layout->setContentsMargins(QMargins());
+        auto *layout = new QFormLayout(q);
+        layout->setContentsMargins({});
         layout->addRow(Tr::tr("State:"), state);
         layout->addRow(Tr::tr("Error message:"), errorString);
     }

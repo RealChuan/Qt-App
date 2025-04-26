@@ -26,11 +26,11 @@ public:
         vLayoutGroup1 = new QVBoxLayout;
         vLayoutGroup2 = new QVBoxLayout;
         vLayoutGroup3 = new QVBoxLayout;
-        vLayoutGroup1->setContentsMargins(QMargins());
+        vLayoutGroup1->setContentsMargins({});
         vLayoutGroup1->setSpacing(0);
-        vLayoutGroup2->setContentsMargins(QMargins());
+        vLayoutGroup2->setContentsMargins({});
         vLayoutGroup2->setSpacing(0);
-        vLayoutGroup3->setContentsMargins(QMargins());
+        vLayoutGroup3->setContentsMargins({});
         vLayoutGroup3->setSpacing(0);
 
         initMaskWidget();
@@ -43,7 +43,7 @@ public:
 
         auto *widget = new QWidget(q_ptr);
         auto *layout = new QHBoxLayout(widget);
-        layout->setContentsMargins(QMargins());
+        layout->setContentsMargins({});
         layout->setSpacing(0);
         layout->addWidget(createSidebar());
         layout->addWidget(stackedWidget);
@@ -125,10 +125,10 @@ private:
 
     auto createSidebar() -> QWidget *
     {
-        auto *toolsButton = new QPushButton(tr("Main"), q_ptr);
-        auto *helpButton = new QPushButton(tr("Help"), q_ptr);
-        auto *settingsButton = new QPushButton(tr("Settings"), q_ptr);
-        auto *pluginButton = new QPushButton(tr("Plugins"), q_ptr);
+        auto *toolsButton = new QPushButton(MainWindow::tr("Main"), q_ptr);
+        auto *helpButton = new QPushButton(MainWindow::tr("Help"), q_ptr);
+        auto *settingsButton = new QPushButton(MainWindow::tr("Settings"), q_ptr);
+        auto *pluginButton = new QPushButton(MainWindow::tr("Plugins"), q_ptr);
 
         auto *configWidget = new ConfigWidget(q_ptr);
         stackedWidget->addWidget(configWidget);
@@ -157,7 +157,7 @@ private:
         auto *widget = new QWidget(q_ptr);
         widget->setObjectName("MenuWidget");
         auto *layout = new QVBoxLayout(widget);
-        layout->setContentsMargins(QMargins());
+        layout->setContentsMargins({});
         layout->setSpacing(0);
         layout->addLayout(vLayoutGroup1);
         layout->addLayout(vLayoutGroup2);
@@ -213,7 +213,8 @@ void MainWindow::onShowGroupButton(int id)
 {
     auto *button = d_ptr->switchBtnGroup->button(id);
     auto type = button->property("Type");
-    for (auto *btn : d_ptr->menuBtnGroup->buttons()) {
+    auto buttons = d_ptr->menuBtnGroup->buttons();
+    for (auto *btn : buttons) {
         if (btn->property("Type") == type) {
             btn->show();
         } else {
@@ -260,11 +261,13 @@ void MainWindow::buildConnect()
 
 void MainWindow::initMenu()
 {
-    for (auto *btn : d_ptr->switchBtnGroup->buttons()) {
+    auto buttons = d_ptr->switchBtnGroup->buttons();
+    for (auto *btn : buttons) {
         btn->setLayoutDirection(Qt::LeftToRight);
         btn->setProperty("class", "GroupButton");
     }
-    for (auto *btn : d_ptr->menuBtnGroup->buttons()) {
+    buttons = d_ptr->menuBtnGroup->buttons();
+    for (auto *btn : buttons) {
         btn->setProperty("class", "GroupItemButton");
         btn->setCheckable(true);
     }

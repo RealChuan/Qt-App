@@ -1,5 +1,4 @@
-#ifndef COMMONWIDGET_HPP
-#define COMMONWIDGET_HPP
+#pragma once
 
 #include "gui_global.hpp"
 
@@ -71,5 +70,3 @@ signals:
 #endif
 
 } // namespace GUI
-
-#endif // COMMONWIDGET_HPP

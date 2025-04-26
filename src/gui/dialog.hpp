@@ -1,5 +1,4 @@
-#ifndef DIALOG_HPP
-#define DIALOG_HPP
+#pragma once
 
 #include "commonwidget.hpp"
 
@@ -58,5 +57,3 @@ public:
 #endif
 
 } // namespace GUI
-
-#endif // DIALOG_HPP

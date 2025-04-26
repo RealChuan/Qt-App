@@ -46,8 +46,8 @@ public:
         , license(createTextEdit())
         , dependencies(new QListWidget(q))
     {
-        auto layout = new QFormLayout(q);
-        layout->setContentsMargins(QMargins());
+        auto *layout = new QFormLayout(q);
+        layout->setContentsMargins({});
         layout->addRow(Tr::tr("Name:"), name);
         layout->addRow(Tr::tr("Version:"), version);
         layout->addRow(Tr::tr("Compatibility version:"), compatVersion);

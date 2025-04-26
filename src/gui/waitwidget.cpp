@@ -23,7 +23,7 @@ public:
     void setupUI()
     {
         auto *layout = new QHBoxLayout(q_ptr);
-        layout->setContentsMargins(QMargins());
+        layout->setContentsMargins({});
         layout->setSpacing(0);
         layout->addWidget(processBar);
     }
