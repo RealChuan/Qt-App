@@ -1,11 +1,11 @@
 #ifndef CRASHWIDGETS_HPP
 #define CRASHWIDGETS_HPP
 
-#include <gui/commonwidget.hpp>
+#include <gui/mainwidget.hpp>
 
 namespace Crash {
 
-class CrashWidgets : public GUI::CommonWidget
+class CrashWidgets : public GUI::MainWidget
 {
     Q_OBJECT
 public:

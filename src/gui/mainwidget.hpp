@@ -3,17 +3,16 @@
 #include "gui_global.hpp"
 
 #include <QMainWindow>
-#include <QWidget>
 
 namespace GUI {
 
 #ifndef Q_OS_MACOS
-class GUI_EXPORT CommonWidget : public QWidget
+class GUI_EXPORT MainWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CommonWidget(QWidget *parent = nullptr);
-    ~CommonWidget() override;
+    explicit MainWidget(QWidget *parent = nullptr);
+    ~MainWidget() override;
 
     void setRestoreMaxButtonVisible(bool visible);
     void setMinButtonVisible(bool visible);
@@ -47,15 +46,15 @@ private:
     void buildConnnect();
     void setTr();
 
-    class CommonWidgetPrivate;
-    QScopedPointer<CommonWidgetPrivate> d_ptr;
+    class MainWidgetPrivate;
+    QScopedPointer<MainWidgetPrivate> d_ptr;
 };
 #else
-class GUI_EXPORT CommonWidget : public QMainWindow
+class GUI_EXPORT MainWidget : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit CommonWidget(QWidget *parent = nullptr)
+    explicit MainWidget(QWidget *parent = nullptr)
         : QMainWindow(parent)
     {}
 

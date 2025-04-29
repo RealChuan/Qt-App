@@ -33,7 +33,7 @@ void setAppInfo()
 void setQss()
 {
     Utils::setQSS({":/qss/qss/common.css",
-                   ":/qss/qss/commonwidget.css",
+                   ":/qss/qss/mainwidget.css",
                    ":/qss/qss/sidebarbutton.css",
                    ":/qss/qss/specific.css"});
 }

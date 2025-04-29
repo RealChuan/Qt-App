@@ -38,7 +38,7 @@ public:
 };
 
 CrashWidgets::CrashWidgets(QWidget *parent)
-    : GUI::CommonWidget(parent)
+    : GUI::MainWidget(parent)
     , d_ptr(new CrashWidgetsPrivate(this))
 {
     setupUI();

@@ -67,6 +67,9 @@
 
 ## 问题和备注
 
+- > ubuntu wayland桌面下move函数无效；
+   1. 需要在main函数开始加上`qputenv("QT_QPA_PLATFORM", "xcb");`可以解决这个问题；
+
 - > MacOS，cmake生成的bundle，在.app/Contents/文件夹下没有生成`PkgInfo`文件；
    1. [app/CMakeLists](/apps/app/CMakeLists.txt)，使用这个CMakeLists.txt可以在MacOS上生成bundle，也可以正常显示图标，但是没有PkgInfo文件；
    2. cmake该怎么生成PkgInfo文件？

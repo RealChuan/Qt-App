@@ -176,7 +176,7 @@ private:
 };
 
 MainWindow::MainWindow(QWidget *parent)
-    : GUI::CommonWidget(parent)
+    : GUI::MainWidget(parent)
     , d_ptr(new MainWindowPrivate(this))
 {
     d_ptr->setupUI();
@@ -246,7 +246,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         default: break;
         }
     }
-    return GUI::CommonWidget::eventFilter(watched, event);
+    return GUI::MainWidget::eventFilter(watched, event);
 }
 
 void MainWindow::buildConnect()

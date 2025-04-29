@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gui/commonwidget.hpp>
+#include <gui/mainwidget.hpp>
 
 namespace Plugin {
 
-class MainWindow : public GUI::CommonWidget
+class MainWindow : public GUI::MainWidget
 {
     Q_OBJECT
 public:

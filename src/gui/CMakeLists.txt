@@ -3,8 +3,8 @@ set(PROJECT_SOURCES
     camelcasecursor.h
     categorysortfiltermodel.cpp
     categorysortfiltermodel.h
-    commonwidget.cc
-    commonwidget.hpp
+    mainwidget.cc
+    mainwidget.hpp
     completinglineedit.cpp
     completinglineedit.h
     dialog.cc

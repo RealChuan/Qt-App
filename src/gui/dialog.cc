@@ -21,7 +21,7 @@ public:
 };
 
 Dialog::Dialog(QWidget *parent)
-    : CommonWidget(parent)
+    : MainWidget(parent)
     , d_ptr(new DialogPrivate(this))
 {
     setMinButtonVisible(false);
@@ -36,11 +36,7 @@ Dialog::~Dialog() = default;
 auto Dialog::exec() -> int
 {
 #ifdef Q_OS_LINUX
-    auto *widget = parentWidget();
-    if (widget) {
-        QMetaObject::invokeMethod(
-            this, [this, widget] { Utils::windowCenter(this, widget); }, Qt::QueuedConnection);
-    }
+    QMetaObject::invokeMethod(this, &Dialog::onMoveParentCenter, Qt::QueuedConnection);
 #endif
     setWindowFlags(Qt::Dialog | Qt::Popup | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint
                    | Qt::MSWindowsFixedSizeDialogHint);
@@ -73,6 +69,20 @@ void Dialog::onClosed()
 {
     d_ptr->flag = Closed;
     d_ptr->loop.quit();
+}
+
+void Dialog::onMoveParentCenter()
+{
+    auto *parentWidget = this->parentWidget();
+    if (parentWidget) {
+        auto center = parentWidget->mapToGlobal(parentWidget->rect().center());
+        auto rect = this->rect();
+        auto x = center.x() - rect.width() / 2;
+        auto y = center.y() - rect.height() / 2;
+        move(x, y);
+    } else {
+        Utils::windowCenter(this);
+    }
 }
 
 void Dialog::buildConnect()

@@ -89,6 +89,7 @@ tags
 *.exe
 
 # Others
+.cache
 .vscode
 bin-*
 build

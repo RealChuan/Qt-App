@@ -1,13 +1,13 @@
 #pragma once
 
-#include "commonwidget.hpp"
+#include "mainwidget.hpp"
 
 #include <QDialog>
 
 namespace GUI {
 
 #ifndef Q_OS_MACOS
-class GUI_EXPORT Dialog : public CommonWidget
+class GUI_EXPORT Dialog : public MainWidget
 {
     Q_OBJECT
 public:
@@ -28,6 +28,7 @@ public slots:
 
 private slots:
     void onClosed();
+    void onMoveParentCenter();
 
 private:
     void buildConnect();

@@ -12,7 +12,7 @@ LIBS += \
 HEADERS += \
     camelcasecursor.h \
     categorysortfiltermodel.h \
-    commonwidget.hpp \
+    mainwidget.hpp \
     completinglineedit.h \
     dialog.hpp \
     fancylineedit.h \
@@ -28,7 +28,7 @@ HEADERS += \
 SOURCES += \
     camelcasecursor.cpp \
     categorysortfiltermodel.cpp \
-    commonwidget.cc \
+    mainwidget.cc \
     completinglineedit.cpp \
     dialog.cc \
     fancylineedit.cpp \

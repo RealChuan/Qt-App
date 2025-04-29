@@ -1,4 +1,4 @@
-#include "commonwidget.hpp"
+#include "mainwidget.hpp"
 #include "pushbutton.hpp"
 
 #include <QtWidgets>
@@ -6,17 +6,17 @@
 namespace GUI {
 
 #ifndef Q_OS_MACOS
-class CommonWidget::CommonWidgetPrivate
+class MainWidget::MainWidgetPrivate
 {
 public:
-    explicit CommonWidgetPrivate(CommonWidget *q)
+    explicit MainWidgetPrivate(MainWidget *q)
         : q_ptr(q)
     {
         titleButton = new QPushButton(qApp->windowIcon(), qAppName(), q_ptr);
 
         centralWidget = new QWidget(q_ptr);
         centralWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-        centralWidget->setObjectName("CommonCentralWidget");
+        centralWidget->setObjectName("CentralWidget");
         titleBar = new QWidget(q_ptr);
         sizeGrip = new QSizeGrip(q_ptr);
 
@@ -46,7 +46,7 @@ public:
         this->layout->addWidget(widget);
     }
 
-    CommonWidget *q_ptr;
+    MainWidget *q_ptr;
 
     QPushButton *titleButton;
     PushButton *minButton;
@@ -153,9 +153,9 @@ private:
     }
 };
 
-CommonWidget::CommonWidget(QWidget *parent)
+MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
-    , d_ptr(new CommonWidgetPrivate(this))
+    , d_ptr(new MainWidgetPrivate(this))
 {
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint
                    | Qt::MSWindowsFixedSizeDialogHint);
@@ -164,12 +164,12 @@ CommonWidget::CommonWidget(QWidget *parent)
     buildConnnect();
     resize(1000, 618);
     setTr();
-    QMetaObject::invokeMethod(this, &CommonWidget::onShowNormal, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &MainWidget::onShowNormal, Qt::QueuedConnection);
 }
 
-CommonWidget::~CommonWidget() = default;
+MainWidget::~MainWidget() = default;
 
-void CommonWidget::setRestoreMaxButtonVisible(bool visible)
+void MainWidget::setRestoreMaxButtonVisible(bool visible)
 {
     if (!visible) {
         d_ptr->maxButton->setVisible(visible);
@@ -185,18 +185,18 @@ void CommonWidget::setRestoreMaxButtonVisible(bool visible)
     }
 }
 
-void CommonWidget::setMinButtonVisible(bool visible)
+void MainWidget::setMinButtonVisible(bool visible)
 {
     d_ptr->minButton->setVisible(visible);
 }
 
-void CommonWidget::setTitle(const QString &title)
+void MainWidget::setTitle(const QString &title)
 {
     setWindowTitle(title);
     d_ptr->titleButton->setToolTip(title);
 }
 
-void CommonWidget::setIcon(const QIcon &icon)
+void MainWidget::setIcon(const QIcon &icon)
 {
     if (icon.isNull()) {
         d_ptr->titleButton->setIcon({});
@@ -206,7 +206,7 @@ void CommonWidget::setIcon(const QIcon &icon)
     setWindowIcon(icon);
 }
 
-void CommonWidget::setCentralWidget(QWidget *centralWidget)
+void MainWidget::setCentralWidget(QWidget *centralWidget)
 {
     auto *layout = new QHBoxLayout(d_ptr->centralWidget);
     layout->setContentsMargins({});
@@ -214,7 +214,7 @@ void CommonWidget::setCentralWidget(QWidget *centralWidget)
     layout->addWidget(centralWidget);
 }
 
-void CommonWidget::setTitleBar(QWidget *titleBar)
+void MainWidget::setTitleBar(QWidget *titleBar)
 {
     auto *layout = new QHBoxLayout(d_ptr->titleBar);
     layout->setContentsMargins({});
@@ -222,22 +222,22 @@ void CommonWidget::setTitleBar(QWidget *titleBar)
     layout->addWidget(titleBar);
 }
 
-void CommonWidget::setShadowPadding(int shadowPadding)
+void MainWidget::setShadowPadding(int shadowPadding)
 {
     d_ptr->shadowPadding = shadowPadding;
 }
 
-auto CommonWidget::shadowPadding() -> int
+auto MainWidget::shadowPadding() -> int
 {
-    return d_ptr->shadowPadding;
+    return d_ptr->layout->contentsMargins().left();
 }
 
-void CommonWidget::setSizeGripVisible(bool visible)
+void MainWidget::setSizeGripVisible(bool visible)
 {
     d_ptr->sizeGrip->setVisible(visible);
 }
 
-void CommonWidget::onShowMaximized()
+void MainWidget::onShowMaximized()
 {
     d_ptr->layout->setContentsMargins({});
     showMaximized();
@@ -245,7 +245,7 @@ void CommonWidget::onShowMaximized()
     d_ptr->restoreButton->show();
 }
 
-void CommonWidget::onShowNormal()
+void MainWidget::onShowNormal()
 {
     d_ptr->layout->setContentsMargins(d_ptr->shadowPadding,
                                       d_ptr->shadowPadding,
@@ -258,38 +258,38 @@ void CommonWidget::onShowNormal()
     }
 }
 
-void CommonWidget::mousePressEvent(QMouseEvent *event)
+void MainWidget::mousePressEvent(QMouseEvent *event)
 {
-    const QMargins margins(d_ptr->layout->contentsMargins());
-    const QRect rect(d_ptr->titleWidget->rect().adjusted(margins.left(),
-                                                         margins.top(),
-                                                         margins.right(),
-                                                         margins.bottom()));
+    const auto margins(d_ptr->layout->contentsMargins());
+    auto rect(d_ptr->titleWidget->rect());
+    rect = QRect(rect.x() + margins.left(), rect.y() + margins.top(), rect.width(), rect.height());
     if (rect.contains(event->pos())) {
-        d_ptr->lastPoint = event->pos();
+        d_ptr->lastPoint = event->globalPosition().toPoint() - pos();
     }
 
     QWidget::mousePressEvent(event);
 }
 
-void CommonWidget::mouseMoveEvent(QMouseEvent *event)
+void MainWidget::mouseMoveEvent(QMouseEvent *event)
 {
     if (isMaximized() || isFullScreen()) {
     } else if (!d_ptr->lastPoint.isNull()) {
-        move(QCursor::pos() - d_ptr->lastPoint);
+        // ubuntu24.04 not working
+        // 在main函数开始设置qputenv("QT_QPA_PLATFORM", "xcb");可以解决
+        move(event->globalPosition().toPoint() - d_ptr->lastPoint);
     }
 
     QWidget::mouseMoveEvent(event);
 }
 
-void CommonWidget::mouseReleaseEvent(QMouseEvent *event)
+void MainWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     d_ptr->lastPoint = QPoint();
 
     QWidget::mouseReleaseEvent(event);
 }
 
-void CommonWidget::mouseDoubleClickEvent(QMouseEvent *event)
+void MainWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (!d_ptr->titleWidget->rect().contains(event->pos())) {
     } else if (d_ptr->maxButton->isVisible()) {
@@ -301,7 +301,7 @@ void CommonWidget::mouseDoubleClickEvent(QMouseEvent *event)
     QWidget::mouseDoubleClickEvent(event);
 }
 
-void CommonWidget::changeEvent(QEvent *event)
+void MainWidget::changeEvent(QEvent *event)
 {
     QWidget::changeEvent(event);
     switch (event->type()) {
@@ -310,19 +310,19 @@ void CommonWidget::changeEvent(QEvent *event)
     }
 }
 
-void CommonWidget::buildConnnect()
+void MainWidget::buildConnnect()
 {
-    connect(d_ptr->minButton, &QToolButton::clicked, this, &CommonWidget::showMinimized);
-    connect(d_ptr->maxButton, &QToolButton::clicked, this, &CommonWidget::onShowMaximized);
-    connect(d_ptr->restoreButton, &QToolButton::clicked, this, &CommonWidget::onShowNormal);
-    connect(d_ptr->closeButton, &QToolButton::clicked, this, &CommonWidget::aboutToclose);
-    connect(this, &CommonWidget::aboutToclose, this, &CommonWidget::close, Qt::QueuedConnection);
-    connect(this, &CommonWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setText);
-    connect(this, &CommonWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setToolTip);
-    connect(this, &CommonWidget::windowIconChanged, d_ptr->titleButton, &QPushButton::setIcon);
+    connect(d_ptr->minButton, &QToolButton::clicked, this, &MainWidget::showMinimized);
+    connect(d_ptr->maxButton, &QToolButton::clicked, this, &MainWidget::onShowMaximized);
+    connect(d_ptr->restoreButton, &QToolButton::clicked, this, &MainWidget::onShowNormal);
+    connect(d_ptr->closeButton, &QToolButton::clicked, this, &MainWidget::aboutToclose);
+    connect(this, &MainWidget::aboutToclose, this, &MainWidget::close, Qt::QueuedConnection);
+    connect(this, &MainWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setText);
+    connect(this, &MainWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setToolTip);
+    connect(this, &MainWidget::windowIconChanged, d_ptr->titleButton, &QPushButton::setIcon);
 }
 
-void CommonWidget::setTr()
+void MainWidget::setTr()
 {
     d_ptr->minButton->setToolTip(tr("Minimize"));
     d_ptr->maxButton->setToolTip(tr("Maximize"));
@@ -330,7 +330,7 @@ void CommonWidget::setTr()
     d_ptr->closeButton->setToolTip(tr("Close"));
 }
 #else
-void CommonWidget::setTitleBar(QWidget *widget)
+void MainWidget::setTitleBar(QWidget *widget)
 {
     auto *widgetAction = new QWidgetAction(this);
     widgetAction->setDefaultWidget(widget);
