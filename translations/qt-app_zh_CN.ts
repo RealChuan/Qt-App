@@ -49,34 +49,6 @@ Contact Me - Email:
     </message>
 </context>
 <context>
-    <name>GUI::CommonWidget</name>
-    <message>
-        <location filename="../src/gui/commonwidget.cc" line="327"/>
-        <source>Minimize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/gui/commonwidget.cc" line="328"/>
-        <source>Maximize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/gui/commonwidget.cc" line="329"/>
-        <source>Restore</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/gui/commonwidget.cc" line="330"/>
-        <source>Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/gui/commonwidget.cc" line="338"/>
-        <source>TitleBar</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>GUI::FancyLineEdit</name>
     <message>
         <location filename="../src/gui/fancylineedit.cpp" line="421"/>
@@ -90,19 +62,47 @@ Contact Me - Email:
     </message>
 </context>
 <context>
-    <name>GUI::MessBox</name>
+    <name>GUI::MainWidget</name>
     <message>
-        <location filename="../src/gui/messbox.cpp" line="20"/>
+        <location filename="../src/gui/mainwidget.cc" line="327"/>
+        <source>Minimize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainwidget.cc" line="328"/>
+        <source>Maximize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainwidget.cc" line="329"/>
+        <source>Restore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainwidget.cc" line="330"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/messbox.cpp" line="22"/>
+        <location filename="../src/gui/mainwidget.cc" line="338"/>
+        <source>TitleBar</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GUI::MessageBox</name>
+    <message>
+        <location filename="../src/gui/messagebox.cpp" line="20"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/messagebox.cpp" line="22"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/messbox.cpp" line="24"/>
+        <location filename="../src/gui/messagebox.cpp" line="24"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -150,73 +150,73 @@ Contact Me - Email:
     </message>
     <message>
         <location filename="../src/plugins/guiplugin/guiwidget.cc" line="30"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="49"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="51"/>
         <source>Radio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/plugins/guiplugin/guiwidget.cc" line="32"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="51"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="53"/>
         <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="36"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="37"/>
         <source>This is an info message.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="39"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="41"/>
         <source>This is a warning message.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="43"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="45"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="78"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="80"/>
         <source>Inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="102"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="104"/>
         <source>Bars</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="114"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="125"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="116"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="127"/>
         <source>Action 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="115"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="126"/>
-        <source>Action 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/plugins/guiplugin/guiwidget.cc" line="117"/>
         <location filename="../src/plugins/guiplugin/guiwidget.cc" line="128"/>
+        <source>Action 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="119"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="130"/>
         <source>Action 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="121"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="132"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="123"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="134"/>
         <source>Action 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="122"/>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="133"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="124"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="135"/>
         <source>Action 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="124"/>
+        <location filename="../src/plugins/guiplugin/guiwidget.cc" line="126"/>
         <source>Submenu</source>
         <translation type="unfinished"></translation>
     </message>
@@ -232,54 +232,106 @@ Contact Me - Email:
 <context>
     <name>Plugin::HashWidget</name>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="29"/>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="89"/>
-        <source>Select File</source>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="48"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="152"/>
+        <source>Performance:--</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="30"/>
-        <source>Select file to calculate hash.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="32"/>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="115"/>
-        <source>Calculate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="33"/>
-        <source>Calculate hash.</source>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="49"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="169"/>
+        <source>Test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/plugins/hashplugin/hashwidget.cc" line="50"/>
-        <source>If Input String is file path and file exists, calculate hash of file. Otherwise calculate hash of Input String.</source>
+        <source>Test hash speed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="56"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="177"/>
+        <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/plugins/hashplugin/hashwidget.cc" line="57"/>
-        <source>Input:</source>
+        <source>Select file to calculate hash.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="59"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="203"/>
+        <source>Calculate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/plugins/hashplugin/hashwidget.cc" line="60"/>
+        <source>Calculate hash.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="77"/>
+        <source>If Input String is file path and file exists, calculate hash of file. Otherwise calculate hash of Input String.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="86"/>
+        <source>Input:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="89"/>
         <source>Output:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/plugins/hashplugin/hashwidget.cc" line="97"/>
+        <source>Iterations:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="99"/>
+        <source>Duration (ms):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="101"/>
+        <source>Data Size (bytes):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="106"/>
+        <source>Algorithm:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="112"/>
+        <source>Hash Test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="151"/>
+        <source>Testing...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="168"/>
+        <source>Performance: %1 MB/s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="185"/>
         <source>Input is empty!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="104"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="192"/>
         <source>Hash thread is running!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="108"/>
+        <location filename="../src/plugins/hashplugin/hashwidget.cc" line="196"/>
         <source>Calculating...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -328,42 +380,44 @@ Contact Me - Email:
 <context>
     <name>Plugin::MainWindow</name>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="40"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="42"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="110"/>
         <source>Hello World!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="68"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="72"/>
         <source>Systray, I couldn&apos;t detect any system tray on this system.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="75"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="79"/>
         <source>Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="78"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="82"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="111"/>
         <source>This is an Qt-App.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="115"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="128"/>
         <source>Main</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="116"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="129"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="117"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="130"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="118"/>
+        <location filename="../src/plugins/coreplugin/mainwindow.cpp" line="131"/>
         <source>Plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -922,17 +976,22 @@ will also disable the following plugins:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="177"/>
+        <location filename="../src/utils/utils.cpp" line="146"/>
         <source>Directory does not exist: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="200"/>
+        <location filename="../src/utils/utils.cpp" line="159"/>
+        <source>File does not exist: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/utils/utils.cpp" line="183"/>
         <source>Cannot open the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/utils.cpp" line="213"/>
+        <location filename="../src/utils/utils.cpp" line="196"/>
         <source>%1
 Offset: %2</source>
         <translation type="unfinished"></translation>
