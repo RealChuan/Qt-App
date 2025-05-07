@@ -23,9 +23,6 @@ runs:
   steps:
     - name: Install Custom VCPKG
       uses: RealChuan/install-vcpkg@main
-      with:
-        repo: 'https://github.com/RealChuan/vcpkg.git'
-        branch: 'dev'
         
     - name: Delete vcpkg.json
       shell: bash
