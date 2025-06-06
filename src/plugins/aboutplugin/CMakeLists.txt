@@ -3,4 +3,4 @@ set(PROJECT_SOURCES aboutplugin.cc aboutplugin.hpp aboutwidget.cc
 
 add_custom_plugin(aboutplugin ${PROJECT_SOURCES})
 target_link_libraries(aboutplugin PRIVATE core extensionsystem utils
-                                          Qt6::Widgets)
+                                          Qt::Widgets)

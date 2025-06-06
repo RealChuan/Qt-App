@@ -11,4 +11,4 @@ set(PROJECT_SOURCES
 
 add_custom_plugin(coreplugin ${PROJECT_SOURCES})
 target_link_libraries(coreplugin PRIVATE core extensionsystem gui resource
-                                         utils Qt6::Widgets)
+                                         utils Qt::Widgets)

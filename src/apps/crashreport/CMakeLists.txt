@@ -12,7 +12,7 @@ target_link_libraries(
           gui
           resource
           utils
-          Qt6::Network
-          Qt6::Core5Compat
-          Qt6::Widgets)
+          Qt::Network
+          Qt::Core5Compat
+          Qt::Widgets)
 qt_finalize_executable(CrashReport)

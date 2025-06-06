@@ -28,7 +28,7 @@ set(PROJECT_SOURCES
     waitwidget.h)
 
 add_custom_library(gui ${PROJECT_SOURCES})
-target_link_libraries(gui PRIVATE resource utils Qt6::Widgets)
+target_link_libraries(gui PRIVATE resource utils Qt::Widgets)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(gui PRIVATE "GUI_LIBRARY")
