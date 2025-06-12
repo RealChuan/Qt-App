@@ -46,10 +46,11 @@ target_link_libraries(
           gui
           resource
           utils
-          Qt6::Network
-          Qt6::Core5Compat
-          Qt6::Widgets
-          crashpad::crashpad)
+          Qt::Network
+          Qt::Core5Compat
+          Qt::Widgets
+          crashpad::crashpad
+          tl::expected)
 
 qt_finalize_executable(${PROJECT_NAME})
 

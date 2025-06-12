@@ -1,20 +1,35 @@
-#include "systeminfoplugin.hpp"
 #include "systeminfowidget.hpp"
+
+#include <core/corewidget.hpp>
+#include <extensionsystem/iplugin.h>
 
 #include <QPushButton>
 
 namespace Plugin {
 
-SystemInfoPluginWidget::SystemInfoPluginWidget(QObject *parent)
+class SystemInfoPluginWidget : public Core::CoreWidget
 {
-    setWidget(new SystemInfoWidget);
-    setButton(new QPushButton(tr("System Info")), Core::CoreWidget::Help);
-}
+    Q_OBJECT
+public:
+    explicit SystemInfoPluginWidget(QObject *parent = nullptr)
+    {
+        setWidget(new SystemInfoWidget);
+        setButton(new QPushButton(tr("System Info")), Core::CoreWidget::Help);
+    }
+};
 
-bool SystemInfoPlugin::initialize(const QStringList &arguments, QString *errorString)
+class SystemInfoPlugin : public ExtensionSystem::IPlugin
 {
-    addObject(new SystemInfoPluginWidget(this));
-    return true;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "systeminfoplugin.json")
+public:
+    Utils::Result<> initialize(const QStringList &arguments) override
+    {
+        addObject(new SystemInfoPluginWidget(this));
+        return Utils::ResultOk;
+    }
+};
 
 } // namespace Plugin
+
+#include "systeminfoplugin.moc"

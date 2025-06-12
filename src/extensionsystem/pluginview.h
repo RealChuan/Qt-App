@@ -4,26 +4,49 @@
 #pragma once
 
 #include "extensionsystem_global.h"
+#include "pluginspec.h"
 
-#include <gui/treemodel.h>
+#include <utils/treemodel.h>
 
+#include <QMetaType>
+#include <QSet>
 #include <QWidget>
 
 #include <unordered_map>
 
-namespace GUI {
+namespace Utils {
 class CategorySortFilterModel;
 class TreeView;
-} // namespace GUI
+} // Utils
 
 namespace ExtensionSystem {
 
 class PluginSpec;
+class PluginView;
 
 namespace Internal {
 class CollectionItem;
 class PluginItem;
 } // Internal
+
+class EXTENSIONSYSTEM_EXPORT PluginData
+{
+public:
+    explicit PluginData(QWidget *parent, PluginView *pluginView = nullptr);
+
+    bool setPluginsEnabled(const QSet<PluginSpec *> &plugins, bool enable);
+
+private:
+    QWidget *m_parent = nullptr;
+    PluginView *m_pluginView = nullptr;
+    Utils::TreeModel<Utils::TreeItem, Internal::CollectionItem, Internal::PluginItem> *m_model;
+    Utils::CategorySortFilterModel *m_sortModel;
+    std::unordered_map<PluginSpec *, bool> m_affectedPlugins;
+
+    friend class Internal::CollectionItem;
+    friend class Internal::PluginItem;
+    friend class PluginView;
+};
 
 class EXTENSIONSYSTEM_EXPORT PluginView : public QWidget
 {
@@ -33,27 +56,25 @@ public:
     explicit PluginView(QWidget *parent = nullptr);
     ~PluginView() override;
 
-    [[nodiscard]] auto currentPlugin() const -> PluginSpec *;
+    PluginSpec *currentPlugin() const;
     void setFilter(const QString &filter);
     void cancelChanges();
+
+    PluginData &data();
 
 signals:
     void currentPluginChanged(ExtensionSystem::PluginSpec *spec);
     void pluginActivated(ExtensionSystem::PluginSpec *spec);
-    void pluginSettingsChanged(ExtensionSystem::PluginSpec *spec);
+    void pluginsChanged(const QSet<ExtensionSystem::PluginSpec *> &spec, bool enabled);
 
 private:
-    [[nodiscard]] auto pluginForIndex(const QModelIndex &index) const -> PluginSpec *;
+    PluginSpec *pluginForIndex(const QModelIndex &index) const;
     void updatePlugins();
-    auto setPluginsEnabled(const QSet<PluginSpec *> &plugins, bool enable) -> bool;
 
-    GUI::TreeView *m_categoryView;
-    GUI::TreeModel<GUI::TreeItem, Internal::CollectionItem, Internal::PluginItem> *m_model;
-    GUI::CategorySortFilterModel *m_sortModel;
-    std::unordered_map<PluginSpec *, bool> m_affectedPlugins;
-
-    friend class Internal::CollectionItem;
-    friend class Internal::PluginItem;
+    PluginData m_data;
+    Utils::TreeView *m_categoryView;
 };
 
-} // namespae ExtensionSystem
+} // namespace ExtensionSystem
+
+Q_DECLARE_METATYPE(ExtensionSystem::PluginSpec *)

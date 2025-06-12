@@ -225,8 +225,7 @@ void MainWindow::onShowGroupButton(int id)
 
 void MainWindow::onAboutPlugins()
 {
-    PluginDialog dialog(this);
-    dialog.exec();
+    showAboutPlugins();
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)

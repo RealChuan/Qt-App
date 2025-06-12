@@ -42,7 +42,6 @@ UTILS_EXPORT auto removeFile(const QString &path) -> bool;
 UTILS_EXPORT auto formatBytes(qint64 bytes, int precision = 2) -> QString;
 UTILS_EXPORT auto jsonFromFile(const QString &filePath) -> QJsonObject;
 UTILS_EXPORT auto jsonFromBytes(const QByteArray &bytes) -> QJsonObject;
-UTILS_EXPORT auto execMenuAtWidget(QMenu *menu, QWidget *widget) -> QAction *;
 UTILS_EXPORT void setMacComboBoxStyle(QWidget *parent);
 UTILS_EXPORT auto getPidFromProcessName(const QString &processName) -> qint64;
 UTILS_EXPORT auto killProcess(qint64 pid) -> bool;

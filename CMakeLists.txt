@@ -18,8 +18,11 @@ include(cmake/common.cmake)
 
 find_package(
   Qt6 REQUIRED
-  COMPONENTS Widgets
+  COMPONENTS Core
+             CorePrivate
+             Widgets
              Network
+             Concurrent
              Core5Compat
              LinguistTools)
 
@@ -36,6 +39,10 @@ endif()
 find_package(crashpad CONFIG REQUIRED)
 if(crashpad_FOUND)
   message(STATUS "found crashpad")
+endif()
+find_package(tl-expected CONFIG REQUIRED)
+if(tl-expected_FOUND)
+  message(STATUS "found tl-expected")
 endif()
 
 include_directories(src)

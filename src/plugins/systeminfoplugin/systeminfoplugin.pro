@@ -1,6 +1,7 @@
 include(../plugins.pri)
+include(../../3rdparty/3rdparty.pri)
 
-QT += widgets
+QT += widgets network core5compat
 
 DEFINES += SYSTEMINFOPLUGIN_LIBRARY
 TARGET = $$replaceLibName(systeminfoplugin)
@@ -15,7 +16,6 @@ SOURCES += \
     systeminfowidget.cc
 
 HEADERS += \
-    systeminfoplugin.hpp \
     systeminfowidget.hpp
 
 DISTFILES += \

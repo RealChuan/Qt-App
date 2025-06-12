@@ -1,6 +1,7 @@
 include(../plugins.pri)
+include(../../3rdparty/3rdparty.pri)
 
-QT += widgets core5compat
+QT += widgets network core5compat
 
 DEFINES += ABOUTPLUGIN_LIBRARY
 TARGET = $$replaceLibName(aboutplugin)
@@ -15,7 +16,6 @@ SOURCES += \
     aboutwidget.cc
 
 HEADERS += \
-    aboutplugin.hpp \
     aboutwidget.hpp
 
 DISTFILES += \

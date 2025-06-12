@@ -83,6 +83,7 @@ Source: "..\packet\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignore
 Source: "..\packet\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\plugins\*"; DestDir: "{app}\plugins"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "..\packet\resources\*"; DestDir: "{app}\resources"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion createallsubdirs recursesubdirs
@@ -103,6 +104,8 @@ Source: "..\packet\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\resource.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\spinner.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\tasking.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\thirdparty.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\utils.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\vc_redist.x64.exe"; DestDir: "{app}"; Flags: ignoreversion

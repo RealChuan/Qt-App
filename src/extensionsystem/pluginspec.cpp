@@ -6,9 +6,9 @@
 #include "extensionsystemtr.h"
 #include "iplugin.h"
 #include "pluginmanager.h"
-#include "pluginspec_p.h"
 
 #include <utils/algorithm.h>
+#include <utils/appinfo.h>
 #include <utils/hostosinfo.h>
 #include <utils/qtcassert.h>
 #include <utils/stringutils.h>
@@ -24,7 +24,10 @@
 #include <QJsonValue>
 #include <QPluginLoader>
 
+Q_LOGGING_CATEGORY(pluginSpecLog, "qtc.extensionsystem.plugin", QtWarningMsg)
+
 using namespace ExtensionSystem::Internal;
+using namespace Utils;
 
 namespace ExtensionSystem {
 
@@ -33,12 +36,12 @@ namespace ExtensionSystem {
     \inheaderfile extensionsystem/pluginspec.h
     \inmodule QtCreator
 
-    \brief The PluginDependency class contains the name and required compatible
+    \brief The PluginDependency class contains the ID and required compatible
     version number of a plugin's dependency.
 
     This reflects the data of a dependency object in the plugin's meta data.
-    The name and version are used to resolve the dependency. That is,
-    a plugin with the given name and
+    The ID and version are used to resolve the dependency. That is,
+    a plugin with the given ID and
     plugin \c {compatibility version <= dependency version <= plugin version} is searched for.
 
     See also ExtensionSystem::IPlugin for more information about plugin dependencies and
@@ -46,7 +49,7 @@ namespace ExtensionSystem {
 */
 
 /*!
-    \variable ExtensionSystem::PluginDependency::name
+    \variable ExtensionSystem::PluginDependency::id
     String identifier of the plugin.
 */
 
@@ -136,7 +139,7 @@ namespace ExtensionSystem {
 */
 size_t qHash(const PluginDependency &value)
 {
-    return qHash(value.name);
+    return qHash(value.id);
 }
 
 /*!
@@ -144,10 +147,10 @@ size_t qHash(const PluginDependency &value)
 */
 bool PluginDependency::operator==(const PluginDependency &other) const
 {
-    return name == other.name && version == other.version && type == other.type;
+    return id == other.id && version == other.version && type == other.type;
 }
 
-static auto typeString(PluginDependency::Type type) -> QString
+static QString typeString(PluginDependency::Type type)
 {
     switch (type) {
     case PluginDependency::Optional:
@@ -165,25 +168,88 @@ static auto typeString(PluginDependency::Type type) -> QString
 */
 QString PluginDependency::toString() const
 {
-    return name + " (" + version + typeString(type) + ")";
+    return id + " (" + version + typeString(type) + ")";
 }
+
+namespace Internal {
+class PluginSpecImplPrivate
+{
+public:
+    std::optional<QPluginLoader> loader;
+    std::optional<QStaticPlugin> staticPlugin;
+
+    IPlugin *plugin = nullptr;
+};
+
+class PluginSpecPrivate
+{
+public:
+    ExtensionSystem::PerformanceData performanceData;
+
+    QString id;
+    QString displayName;
+    QString name;
+    QString version;
+    QString compatVersion;
+    QString vendorId;
+    QString vendor;
+    QString category;
+    QString description;
+    QString longDescription;
+    QString url;
+    QString documentationUrl;
+    QString license;
+    QString revision;
+    QString copyright;
+    QStringList recommends;
+    QStringList arguments;
+    QRegularExpression platformSpecification;
+    std::optional<TermsAndConditions> termsAndConditions;
+    QList<ExtensionSystem::PluginDependency> dependencies;
+
+    PluginSpec::PluginArgumentDescriptions argumentDescriptions;
+    FilePath location;
+    FilePath filePath;
+
+    bool experimental{false};
+    bool deprecated{false};
+    bool required{false};
+
+    bool enabledByDefault{false};
+    bool enabledBySettings{true};
+    bool enabledIndirectly{false};
+    bool forceEnabled{false};
+    bool forceDisabled{false};
+    bool softLoadable{false};
+
+    std::optional<QString> errorString;
+
+    PluginSpec::State state;
+    QHash<PluginDependency, PluginSpec *> dependencySpecs;
+    QSet<PluginSpec *> recommendsSpecs;
+
+    QJsonObject metaData;
+
+    Utils::Result<> readMetaData(const QJsonObject &metaData);
+    Utils::Result<> reportError(const QString &error)
+    {
+        errorString = error;
+        return {};
+    };
+};
+} // namespace Internal
 
 /*!
     \internal
 */
-PluginSpec::PluginSpec()
-    : d(new PluginSpecPrivate(this))
-{
-}
+CppPluginSpec::CppPluginSpec()
+    : d(new PluginSpecImplPrivate)
+{}
 
 /*!
     \internal
 */
-PluginSpec::~PluginSpec()
-{
-    delete d;
-    d = nullptr;
-}
+CppPluginSpec::~CppPluginSpec() = default;
 
 /*!
     Returns the plugin name. This is valid after the PluginSpec::Read state is
@@ -192,6 +258,27 @@ PluginSpec::~PluginSpec()
 QString PluginSpec::name() const
 {
     return d->name;
+}
+
+/*!
+    Returns the plugin display name. This is valid after the PluginSpec::Read
+    state is reached.
+*/
+QString PluginSpec::id() const
+{
+    return d->id;
+}
+
+/*!
+    Returns either DisplayName, name(), or id() if name() is empty. If all are empty,
+    returns "<unknown>".
+*/
+QString PluginSpec::displayName() const
+{
+    return Utils::findOr(
+        QStringList{d->displayName, name(), id(), filePath().fileName()},
+        "<Unknown>",
+        std::not_fn(&QString::isEmpty));
 }
 
 /*!
@@ -219,6 +306,15 @@ QString PluginSpec::compatVersion() const
 QString PluginSpec::vendor() const
 {
     return d->vendor;
+}
+
+/*!
+    Returns the display name of the plugins vendor. This is valid after the PluginSpec::Read
+    state is reached.
+*/
+QString PluginSpec::vendorId() const
+{
+    return d->vendorId;
 }
 
 /*!
@@ -267,6 +363,24 @@ QString PluginSpec::url() const
 }
 
 /*!
+    Returns the documentation URL where you can find the online manual about the plugin.
+    This is valid after the PluginSpec::Read state is reached.
+*/
+QString PluginSpec::documentationUrl() const
+{
+    return d->documentationUrl;
+}
+
+/*!
+    Returns the list of IDs of plugins that a user is recommended to enable if this one is enabled.
+    This is valid after the PluginSpec::Read state is reached.
+*/
+QStringList PluginSpec::recommends() const
+{
+    return d->recommends;
+}
+
+/*!
     Returns the category that the plugin belongs to. Categories are used to
     group plugins together in the UI.
     Returns an empty string if the plugin does not belong to a category.
@@ -278,10 +392,7 @@ QString PluginSpec::category() const
 
 QString PluginSpec::revision() const
 {
-    const QJsonValue revision = metaData().value("Revision");
-    if (revision.isString())
-        return revision.toString();
-    return QString();
+    return d->revision;
 }
 
 /*!
@@ -293,6 +404,11 @@ QString PluginSpec::revision() const
 QRegularExpression PluginSpec::platformSpecification() const
 {
     return d->platformSpecification;
+}
+
+std::optional<TermsAndConditions> PluginSpec::termsAndConditions() const
+{
+    return d->termsAndConditions;
 }
 
 /*!
@@ -321,8 +437,16 @@ bool PluginSpec::isExperimental() const
 }
 
 /*!
+    Returns whether the plugin has its deprecated flag set.
+*/
+bool PluginSpec::isDeprecated() const
+{
+    return d->deprecated;
+}
+
+/*!
     Returns whether the plugin is enabled by default.
-    A plugin might be disabled because the plugin is experimental, or because
+    A plugin might be disabled because the plugin is experimental or deprecated, or because
     the installation settings define it as disabled by default.
 */
 bool PluginSpec::isEnabledByDefault() const
@@ -386,10 +510,35 @@ bool PluginSpec::isForceDisabled() const
     return d->forceDisabled;
 }
 
+bool PluginSpec::isEffectivelySoftloadable() const
+{
+    if (state() == Running)
+        return true;
+
+    if (!d->softLoadable)
+        return false;
+
+    if (state() < PluginSpec::Resolved)
+        return false; // We won't know yet.
+
+    return !Utils::anyOf(dependencySpecs(), [](PluginSpec *dependency) {
+        return !dependency->isEffectivelySoftloadable();
+    });
+}
+
+/*!
+    Returns whether the plugin is allowed to be loaded during runtime
+    without a restart.
+*/
+bool PluginSpec::isSoftLoadable() const
+{
+    return d->softLoadable;
+}
+
 /*!
     The plugin dependencies. This is valid after the PluginSpec::Read state is reached.
 */
-QVector<PluginDependency> PluginSpec::dependencies() const
+QList<PluginDependency> PluginSpec::dependencies() const
 {
     return d->dependencies;
 }
@@ -400,6 +549,11 @@ QVector<PluginDependency> PluginSpec::dependencies() const
 QJsonObject PluginSpec::metaData() const
 {
     return d->metaData;
+}
+
+PerformanceData &PluginSpec::performanceData() const
+{
+    return d->performanceData;
 }
 
 /*!
@@ -414,7 +568,7 @@ PluginSpec::PluginArgumentDescriptions PluginSpec::argumentDescriptions() const
 /*!
     Returns the absolute path to the directory containing the plugin.
 */
-QString PluginSpec::location() const
+FilePath PluginSpec::location() const
 {
     return d->location;
 }
@@ -422,7 +576,7 @@ QString PluginSpec::location() const
 /*!
     Returns the absolute path to the plugin.
 */
-QString PluginSpec::filePath() const
+FilePath PluginSpec::filePath() const
 {
     return d->filePath;
 }
@@ -469,7 +623,7 @@ PluginSpec::State PluginSpec::state() const
 */
 bool PluginSpec::hasError() const
 {
-    return d->hasError;
+    return d->errorString.has_value();
 }
 
 /*!
@@ -478,18 +632,51 @@ bool PluginSpec::hasError() const
 */
 QString PluginSpec::errorString() const
 {
-    return d->errorString;
+    return d->errorString.value_or(QString());
 }
 
 /*!
-    Returns whether this plugin can be used to fill in a dependency of the given
-    \a pluginName and \a version.
+    Returns whether the plugin \a spec can be used to fill the \a dependency of this plugin.
 
-        \sa PluginSpec::dependencies()
+    \sa PluginSpec::dependencies()
 */
-bool PluginSpec::provides(const QString &pluginName, const QString &version) const
+bool PluginSpec::provides(PluginSpec *spec, const PluginDependency &dependency) const
 {
-    return d->provides(pluginName, version);
+    if (QString::compare(dependency.id, spec->id(), Qt::CaseInsensitive) != 0)
+        return false;
+
+    if (metaData().value("Type").toString().toLower() == "script") {
+        QString scriptCompatibleVersion
+            = spec->metaData().value("ScriptCompatibleVersion").toString();
+        if (scriptCompatibleVersion.isEmpty())
+            scriptCompatibleVersion = spec->metaData().value("LuaCompatibleVersion").toString();
+
+        if (scriptCompatibleVersion.isEmpty()) {
+            qCWarning(pluginLog)
+                << "The plugin" << spec->id()
+                << "does not specify a \"ScriptCompatibleVersion\", but the script plugin" << name()
+                << "requires it.";
+            return false;
+        }
+
+        // If ScriptCompatibleVersion is greater than the dependency version, we cannot provide it.
+        if (versionCompare(scriptCompatibleVersion, dependency.version) > 0)
+            return false;
+
+        // If the ScriptCompatibleVersion is greater than the spec version, we can provide it.
+        // Normally, a plugin that has a higher compatibility version than version is in an invalid state.
+        // This check is used when raising the compatibility version of the Lua plugin during development,
+        // where temporarily Lua's version is `(X-1).0.8y`, and the compatibility version has already
+        // been raised to the final release `X.0.0`.
+        if (versionCompare(scriptCompatibleVersion, spec->version()) > 0)
+            return true;
+
+        // If the spec version is greater than the dependency version, we can provide it.
+        return (versionCompare(spec->version(), dependency.version) >= 0);
+    }
+
+    return (versionCompare(spec->version(), dependency.version) >= 0)
+           && (versionCompare(spec->compatVersion(), dependency.version) <= 0);
 }
 
 /*!
@@ -497,7 +684,7 @@ bool PluginSpec::provides(const QString &pluginName, const QString &version) con
     already been successfully loaded. That is, the PluginSpec::Loaded state
     is reached.
 */
-IPlugin *PluginSpec::plugin() const
+IPlugin *CppPluginSpec::plugin() const
 {
     return d->plugin;
 }
@@ -514,15 +701,32 @@ QHash<PluginDependency, PluginSpec *> PluginSpec::dependencySpecs() const
 }
 
 /*!
+    Returns the list of recommended plugins, already resolved to existing plugin specs.
+    Valid if PluginSpec::Resolved state is reached.
+
+    \sa PluginSpec::recommends()
+*/
+QSet<PluginSpec *> PluginSpec::recommendsSpecs() const
+{
+    return d->recommendsSpecs;
+}
+
+/*!
     Returns whether the plugin requires any of the plugins specified by
     \a plugins.
 */
 bool PluginSpec::requiresAny(const QSet<PluginSpec *> &plugins) const
 {
-    return Utils::anyOf(d->dependencySpecs.keys(), [this, &plugins](const PluginDependency &dep) {
-        return dep.type == PluginDependency::Required
-               && plugins.contains(d->dependencySpecs.value(dep));
-    });
+    for (auto it = d->dependencySpecs.cbegin(); it != d->dependencySpecs.cend(); ++it) {
+        if (it.key().type == PluginDependency::Required && plugins.contains(*it))
+            return true;
+    }
+    return false;
+}
+
+void PluginSpec::setEnabledByDefault(bool value)
+{
+    d->enabledByDefault = value;
 }
 
 /*!
@@ -532,27 +736,44 @@ bool PluginSpec::requiresAny(const QSet<PluginSpec *> &plugins) const
 */
 void PluginSpec::setEnabledBySettings(bool value)
 {
-    d->setEnabledBySettings(value);
+    d->enabledBySettings = value;
+}
+void PluginSpec::setEnabledIndirectly(bool value)
+{
+    d->enabledIndirectly = value;
+}
+void PluginSpec::setForceDisabled(bool value)
+{
+    if (value)
+        d->forceEnabled = false;
+    d->forceDisabled = value;
+}
+void PluginSpec::setForceEnabled(bool value)
+{
+    if (value)
+        d->forceDisabled = false;
+    d->forceEnabled = value;
 }
 
-PluginSpec *PluginSpec::read(const QString &filePath)
+// returns the plugins that it actually indirectly enabled
+PluginSpecs PluginSpec::enableDependenciesIndirectly(bool enableTestDependencies)
 {
-    auto spec = new PluginSpec;
-    if (!spec->d->read(filePath)) { // not a Qt Creator plugin
-        delete spec;
-        return nullptr;
-    }
-    return spec;
-}
+    if (!isEffectivelyEnabled()) // plugin not enabled, nothing to do
+        return {};
 
-PluginSpec *PluginSpec::read(const QStaticPlugin &plugin)
-{
-    auto spec = new PluginSpec;
-    if (!spec->d->read(plugin)) { // not a Qt Creator plugin
-        delete spec;
-        return nullptr;
+    PluginSpecs enabled;
+    for (auto it = d->dependencySpecs.cbegin(), end = d->dependencySpecs.cend(); it != end; ++it) {
+        if (it.key().type != PluginDependency::Required
+            && (!enableTestDependencies || it.key().type != PluginDependency::Test))
+            continue;
+
+        PluginSpec *dependencySpec = it.value();
+        if (!dependencySpec->isEffectivelyEnabled()) {
+            dependencySpec->setEnabledIndirectly(true);
+            enabled << dependencySpec;
+        }
     }
-    return spec;
+    return enabled;
 }
 
 //==========PluginSpecPrivate==================
@@ -560,21 +781,28 @@ PluginSpec *PluginSpec::read(const QStaticPlugin &plugin)
 namespace {
     const char PLUGIN_METADATA[] = "MetaData";
     const char PLUGIN_NAME[] = "Name";
+    const char PLUGIN_DISPLAYNAME[] = "DisplayName";
+    const char PLUGIN_ID[] = "Id";
     const char PLUGIN_VERSION[] = "Version";
     const char PLUGIN_COMPATVERSION[] = "CompatVersion";
     const char PLUGIN_REQUIRED[] = "Required";
     const char PLUGIN_EXPERIMENTAL[] = "Experimental";
     const char PLUGIN_DISABLED_BY_DEFAULT[] = "DisabledByDefault";
+    const char PLUGIN_DEPRECATED[] = "Deprecated";
+    const char PLUGIN_SOFTLOADABLE[] = "SoftLoadable";
     const char VENDOR[] = "Vendor";
+    const char VENDOR_ID[] = "VendorId";
     const char COPYRIGHT[] = "Copyright";
     const char LICENSE[] = "License";
     const char DESCRIPTION[] = "Description";
     const char LONGDESCRIPTION[] = "LongDescription";
     const char URL[] = "Url";
+    const char DOCUMENTATIONURL[] = "DocumentationUrl";
+    const char RECOMMENDS[] = "Recommends";
     const char CATEGORY[] = "Category";
     const char PLATFORM[] = "Platform";
     const char DEPENDENCIES[] = "Dependencies";
-    const char DEPENDENCY_NAME[] = "Name";
+    const char DEPENDENCY_ID[] = "Id";
     const char DEPENDENCY_VERSION[] = "Version";
     const char DEPENDENCY_TYPE[] = "Type";
     const char DEPENDENCY_TYPE_SOFT[] = "optional";
@@ -584,246 +812,292 @@ namespace {
     const char ARGUMENT_NAME[] = "Name";
     const char ARGUMENT_PARAMETER[] = "Parameter";
     const char ARGUMENT_DESCRIPTION[] = "Description";
-}
-/*!
-    \internal
-*/
-PluginSpecPrivate::PluginSpecPrivate(PluginSpec *spec)
-    : q(spec)
-{}
-
-void PluginSpecPrivate::reset()
-{
-    name.clear();
-    version.clear();
-    compatVersion.clear();
-    vendor.clear();
-    copyright.clear();
-    license.clear();
-    description.clear();
-    longDescription.clear();
-    url.clear();
-    category.clear();
-    location.clear();
-    filePath.clear();
-    state = PluginSpec::Invalid;
-    hasError = false;
-    errorString.clear();
-    dependencies.clear();
-    metaData = QJsonObject();
-    loader.reset();
-    staticPlugin.reset();
+    const char TERMSANDCONDITIONS[] = "TermsAndConditions";
 }
 
 /*!
     \internal
     Returns false if the file does not represent a Qt Creator plugin.
 */
-bool PluginSpecPrivate::read(const QString &fileName)
+Result<std::unique_ptr<PluginSpec>> readCppPluginSpec(const FilePath &fileName)
 {
-    qCDebug(pluginLog) << "\nReading meta data of" << fileName;
-    reset();
-    QFileInfo fileInfo(fileName);
-    location = fileInfo.absolutePath();
-    filePath = fileInfo.absoluteFilePath();
-    loader.emplace();
+    auto spec = std::unique_ptr<CppPluginSpec>(new CppPluginSpec());
+
+    const FilePath absPath = fileName.absoluteFilePath();
+
+    spec->setLocation(absPath.parentDir());
+    spec->setFilePath(absPath);
+    spec->d->loader.emplace();
+
     if (Utils::HostOsInfo::isMacHost())
-        loader->setLoadHints(QLibrary::ExportExternalSymbolsHint);
-    loader->setFileName(filePath);
-    if (loader->fileName().isEmpty()) {
-        qCDebug(pluginLog) << "Cannot open file";
-        return false;
-    }
+        spec->d->loader->setLoadHints(QLibrary::ExportExternalSymbolsHint);
 
-    if (!readMetaData(loader->metaData()))
-        return false;
+    spec->d->loader->setFileName(absPath.toFSPathString());
+    if (spec->d->loader->fileName().isEmpty())
+        return ResultError(::ExtensionSystem::Tr::tr("Cannot open file"));
 
-    state = PluginSpec::Read;
-    return true;
+    Result<> r = spec->readMetaData(spec->d->loader->metaData());
+    if (!r)
+        return ResultError(r.error());
+
+    return spec;
 }
 
-bool PluginSpecPrivate::read(const QStaticPlugin &plugin)
+Result<std::unique_ptr<PluginSpec>> readCppPluginSpec(const QStaticPlugin &plugin)
 {
+    auto spec = std::unique_ptr<CppPluginSpec>(new CppPluginSpec());
+
     qCDebug(pluginLog) << "\nReading meta data of static plugin";
-    reset();
-    staticPlugin = plugin;
-    if (!readMetaData(plugin.metaData()))
-        return false;
+    spec->d->staticPlugin = plugin;
+    Result<> r = spec->readMetaData(plugin.metaData());
+    if (!r)
+        return ResultError(r.error());
 
-    state = PluginSpec::Read;
-    return true;
+    return spec;
 }
 
-void PluginSpecPrivate::setEnabledBySettings(bool value)
-{
-    enabledBySettings = value;
-}
-
-void PluginSpecPrivate::setEnabledByDefault(bool value)
-{
-    enabledByDefault = value;
-}
-
-void PluginSpecPrivate::setForceEnabled(bool value)
-{
-    forceEnabled = value;
-    if (value)
-        forceDisabled = false;
-}
-
-void PluginSpecPrivate::setForceDisabled(bool value)
-{
-    if (value)
-        forceEnabled = false;
-    forceDisabled = value;
-}
-
-/*!
-    \internal
-*/
-bool PluginSpecPrivate::reportError(const QString &err)
-{
-    errorString = err;
-    hasError = true;
-    return true;
-}
-
-static inline auto msgValueMissing(const char *key) -> QString
+static inline QString msgValueMissing(const char *key)
 {
     return Tr::tr("\"%1\" is missing").arg(QLatin1String(key));
 }
 
-static inline auto msgValueIsNotAString(const char *key) -> QString
+static inline QString msgValueIsNotAString(const char *key)
 {
-    return Tr::tr("Value for key \"%1\" is not a string")
-            .arg(QLatin1String(key));
+    return Tr::tr("Value for key \"%1\" is not a string").arg(QLatin1String(key));
 }
 
-static inline auto msgValueIsNotABool(const char *key) -> QString
+static inline QString msgValueIsNotABool(const char *key)
 {
-    return Tr::tr("Value for key \"%1\" is not a bool")
-            .arg(QLatin1String(key));
+    return Tr::tr("Value for key \"%1\" is not a bool").arg(QLatin1String(key));
 }
 
-static inline auto msgValueIsNotAObjectArray(const char *key) -> QString
+static inline QString msgValueIsNotAObjectArray(const char *key)
 {
-    return Tr::tr("Value for key \"%1\" is not an array of objects")
-            .arg(QLatin1String(key));
+    return Tr::tr("Value for key \"%1\" is not an array of objects").arg(QLatin1String(key));
 }
 
-static inline auto msgValueIsNotAMultilineString(const char *key) -> QString
+static inline QString msgValueIsNotAMultilineString(const char *key)
 {
     return Tr::tr("Value for key \"%1\" is not a string and not an array of strings")
-            .arg(QLatin1String(key));
+        .arg(QLatin1String(key));
 }
 
-static inline auto msgInvalidFormat(const char *key, const QString &content) -> QString
+static inline QString msgInvalidFormat(const char *key, const QString &content)
 {
-    return Tr::tr("Value \"%2\" for key \"%1\" has invalid format")
-            .arg(QLatin1String(key), content);
+    return Tr::tr("Value \"%2\" for key \"%1\" has invalid format").arg(QLatin1String(key), content);
+}
+
+Utils::Result<> PluginSpec::readMetaData(const QJsonObject &metaData)
+{
+    return d->readMetaData(metaData);
+}
+Utils::Result<> PluginSpec::reportError(const QString &error)
+{
+    return d->reportError(error);
 }
 
 /*!
     \internal
 */
-bool PluginSpecPrivate::readMetaData(const QJsonObject &pluginMetaData)
+Result<> CppPluginSpec::readMetaData(const QJsonObject &pluginMetaData)
 {
-    qCDebug(pluginLog) << "MetaData:" << QJsonDocument(pluginMetaData).toJson();
+    qCDebug(pluginLog).noquote() << "MetaData:" << QJsonDocument(pluginMetaData).toJson();
     QJsonValue value;
     value = pluginMetaData.value(QLatin1String("IID"));
-    if (!value.isString()) {
-        qCDebug(pluginLog) << "Not a plugin (no string IID found)";
-        return false;
-    }
-    if (value.toString() != PluginManager::pluginIID()) {
-        qCDebug(pluginLog) << "Plugin ignored (IID does not match)";
-        return false;
-    }
+    if (!value.isString())
+        return ResultError(::ExtensionSystem::Tr::tr("No IID found"));
+
+    if (value.toString() != PluginManager::pluginIID())
+        return ResultError(::ExtensionSystem::Tr::tr("Expected IID \"%1\", but found \"%2\"")
+                                   .arg(PluginManager::pluginIID())
+                                   .arg(value.toString()));
 
     value = pluginMetaData.value(QLatin1String(PLUGIN_METADATA));
-    if (!value.isObject()) {
+    if (!value.isObject())
         return reportError(::ExtensionSystem::Tr::tr("Plugin meta data not found"));
+
+    return PluginSpec::readMetaData(value.toObject());
+}
+
+template<typename T>
+struct Invert
+{
+    T &value;
+    Invert(T &value)
+        : value(value)
+    {}
+    Invert &operator=(const T &other)
+    {
+        value = !other;
+        return *this;
     }
-    metaData = value.toObject();
+};
 
-    value = metaData.value(QLatin1String(PLUGIN_NAME));
-    if (value.isUndefined())
-        return reportError(msgValueMissing(PLUGIN_NAME));
-    if (!value.isString())
-        return reportError(msgValueIsNotAString(PLUGIN_NAME));
-    name = value.toString();
+template<class T>
+using copy_assign_t = decltype(std::declval<T &>() = std::declval<const T &>());
 
-    value = metaData.value(QLatin1String(PLUGIN_VERSION));
-    if (value.isUndefined())
-        return reportError(msgValueMissing(PLUGIN_VERSION));
-    if (!value.isString())
-        return reportError(msgValueIsNotAString(PLUGIN_VERSION));
-    version = value.toString();
-    if (!isValidVersion(version))
+Utils::Result<> PluginSpecPrivate::readMetaData(const QJsonObject &data)
+{
+    metaData = data;
+
+    auto assign = [&data](QString &member, const char *fieldName) -> Result<> {
+        QJsonValue value = data.value(QLatin1String(fieldName));
+        if (value.isUndefined())
+            return ResultError(msgValueMissing(fieldName));
+        if (!value.isString())
+            return ResultError(msgValueIsNotAString(fieldName));
+        member = value.toString();
+        return {};
+    };
+
+    auto assignOr =
+        [&data](auto &&member, const char *fieldName, auto &&defaultValue) -> Result<> {
+        QJsonValue value = data.value(QLatin1String(fieldName));
+        if (value.isUndefined())
+            member = defaultValue;
+        else {
+            constexpr bool isBool = std::is_assignable<decltype(member), bool>::value;
+            constexpr bool isString = std::is_assignable<decltype(member), QString>::value;
+            constexpr bool isStringList = std::is_assignable<decltype(member), QStringList>::value;
+
+            static_assert(isString || isBool || isStringList, "Unsupported type");
+
+            if constexpr (isString) {
+                if (!value.isString())
+                    return ResultError(msgValueIsNotAString(fieldName));
+                member = value.toString();
+            } else if constexpr (isBool) {
+                if (!value.isBool())
+                    return ResultError(msgValueIsNotABool(fieldName));
+                member = value.toBool();
+            } else if constexpr (isStringList) {
+                if (value.isString())
+                    member = QStringList(value.toString());
+                else if (!value.isArray())
+                    return ResultError(msgValueIsNotAMultilineString(fieldName));
+                else {
+                    const QJsonArray array = value.toArray();
+                    QStringList result;
+                    for (const QJsonValue &v : array) {
+                        if (!v.isString())
+                            return ResultError(msgValueIsNotAMultilineString(fieldName));
+                        result.append(v.toString());
+                    }
+                    member = result;
+                }
+            }
+        }
+        return {};
+    };
+
+    auto assignMultiLine = [&data](QString &member, const char *fieldName) -> Result<> {
+        QJsonValue value = data.value(QLatin1String(fieldName));
+        if (value.isUndefined())
+            return {};
+        if (!readMultiLineString(value, &member))
+            return ResultError(msgValueIsNotAMultilineString(fieldName));
+        return {};
+    };
+
+    if (auto r = assign(id, PLUGIN_ID); !r.has_value())
+        return reportError(r.error());
+
+    if (!id.isLower())
+        return reportError(::ExtensionSystem::Tr::tr("Plugin id \"%1\" must be lowercase").arg(id));
+
+    if (auto r = assignOr(name, PLUGIN_NAME, id); !r.has_value())
+        return reportError(r.error());
+
+    if (auto r = assignOr(displayName, PLUGIN_DISPLAYNAME, name); !r.has_value())
+        return reportError(r.error());
+
+    if (auto r = assign(version, PLUGIN_VERSION); !r.has_value())
+        return reportError(r.error());
+
+    if (!PluginSpec::isValidVersion(version))
         return reportError(msgInvalidFormat(PLUGIN_VERSION, version));
 
-    value = metaData.value(QLatin1String(PLUGIN_COMPATVERSION));
-    if (!value.isUndefined() && !value.isString())
-        return reportError(msgValueIsNotAString(PLUGIN_COMPATVERSION));
-    compatVersion = value.toString(version);
-    if (!value.isUndefined() && !isValidVersion(compatVersion))
+    if (auto r = assignOr(compatVersion, PLUGIN_COMPATVERSION, version); !r.has_value())
+        return reportError(r.error());
+    if (!PluginSpec::isValidVersion(compatVersion))
         return reportError(msgInvalidFormat(PLUGIN_COMPATVERSION, compatVersion));
 
-    value = metaData.value(QLatin1String(PLUGIN_REQUIRED));
-    if (!value.isUndefined() && !value.isBool())
-        return reportError(msgValueIsNotABool(PLUGIN_REQUIRED));
-    required = value.toBool(false);
+    if (auto r = assignOr(required, PLUGIN_REQUIRED, false); !r.has_value())
+        return reportError(r.error());
     qCDebug(pluginLog) << "required =" << required;
 
-    value = metaData.value(QLatin1String(PLUGIN_EXPERIMENTAL));
-    if (!value.isUndefined() && !value.isBool())
-        return reportError(msgValueIsNotABool(PLUGIN_EXPERIMENTAL));
-    experimental = value.toBool(false);
+    if (auto r = assignOr(experimental, PLUGIN_EXPERIMENTAL, false); !r.has_value())
+        return reportError(r.error());
     qCDebug(pluginLog) << "experimental =" << experimental;
 
-    value = metaData.value(QLatin1String(PLUGIN_DISABLED_BY_DEFAULT));
-    if (!value.isUndefined() && !value.isBool())
-        return reportError(msgValueIsNotABool(PLUGIN_DISABLED_BY_DEFAULT));
-    enabledByDefault = !value.toBool(false);
-    qCDebug(pluginLog) << "enabledByDefault =" << enabledByDefault;
+    if (auto r = assignOr(deprecated, PLUGIN_DEPRECATED, false); !r.has_value())
+        return reportError(r.error());
+    qCDebug(pluginLog) << "deprecated =" << deprecated;
 
-    if (experimental)
-        enabledByDefault = false;
+    if (auto r
+        = assignOr(Invert(enabledByDefault), PLUGIN_DISABLED_BY_DEFAULT, experimental || deprecated);
+        !r.has_value())
+        return reportError(r.error());
+
+    qCDebug(pluginLog) << "enabledByDefault =" << enabledByDefault;
     enabledBySettings = enabledByDefault;
 
-    value = metaData.value(QLatin1String(VENDOR));
-    if (!value.isUndefined() && !value.isString())
-        return reportError(msgValueIsNotAString(VENDOR));
-    vendor = value.toString();
+    if (auto r = assignOr(softLoadable, PLUGIN_SOFTLOADABLE, false); !r.has_value())
+        return reportError(r.error());
+    qCDebug(pluginLog) << "softLoadable =" << softLoadable;
 
-    value = metaData.value(QLatin1String(COPYRIGHT));
-    if (!value.isUndefined() && !value.isString())
-        return reportError(msgValueIsNotAString(COPYRIGHT));
-    copyright = value.toString();
+    if (auto r = assign(vendorId, VENDOR_ID); !r.has_value())
+        return reportError(r.error());
 
-    value = metaData.value(QLatin1String(DESCRIPTION));
-    if (!value.isUndefined() && !Utils::readMultiLineString(value, &description))
-        return reportError(msgValueIsNotAString(DESCRIPTION));
+    if (auto r = assignOr(vendor, VENDOR, vendorId); !r.has_value())
+        return reportError(r.error());
 
-    value = metaData.value(QLatin1String(LONGDESCRIPTION));
-    if (!value.isUndefined() && !Utils::readMultiLineString(value, &longDescription))
-        return reportError(msgValueIsNotAString(LONGDESCRIPTION));
+    if (auto r = assignOr(copyright, COPYRIGHT, QString{}); !r.has_value())
+        return reportError(r.error());
 
-    value = metaData.value(QLatin1String(URL));
-    if (!value.isUndefined() && !value.isString())
-        return reportError(msgValueIsNotAString(URL));
-    url = value.toString();
+    if (auto r = assignMultiLine(description, DESCRIPTION); !r.has_value())
+        return reportError(r.error());
 
-    value = metaData.value(QLatin1String(CATEGORY));
-    if (!value.isUndefined() && !value.isString())
-        return reportError(msgValueIsNotAString(CATEGORY));
-    category = value.toString();
+    if (auto r = assignMultiLine(longDescription, LONGDESCRIPTION); !r.has_value())
+        return reportError(r.error());
 
-    value = metaData.value(QLatin1String(LICENSE));
-    if (!value.isUndefined() && !Utils::readMultiLineString(value, &license))
-        return reportError(msgValueIsNotAMultilineString(LICENSE));
+    if (auto r = assignOr(url, URL, QString{}); !r.has_value())
+        return reportError(r.error());
 
-    value = metaData.value(QLatin1String(PLATFORM));
+    if (auto r = assignOr(documentationUrl, DOCUMENTATIONURL, QString{}); !r.has_value())
+        return reportError(r.error());
+
+    if (auto r = assignOr(recommends, RECOMMENDS, QStringList()); !r.has_value())
+        return reportError(r.error());
+
+    if (auto r = assignOr(category, CATEGORY, QString{}); !r.has_value())
+        return reportError(r.error());
+
+    if (auto r = assignMultiLine(license, LICENSE); !r.has_value())
+        return reportError(r.error());
+
+    if (auto r = assignOr(revision, "Revision", QString{}); !r.has_value())
+        return reportError(r.error());
+
+    QJsonObject tAndC = metaData.value(QLatin1String(TERMSANDCONDITIONS)).toObject();
+    if (!tAndC.isEmpty()) {
+        QJsonValue version = tAndC.value(QLatin1String("version"));
+        QJsonValue text = tAndC.value(QLatin1String("text"));
+
+        if (!version.isDouble()) {
+            return reportError(::ExtensionSystem::Tr::tr("Terms and conditions: %1")
+                                   .arg(msgValueMissing("version")));
+        }
+        QString tAndCText;
+        if (!readMultiLineString(text, &tAndCText)) {
+            return reportError(::ExtensionSystem::Tr::tr("Terms and conditions: %1")
+                                   .arg(msgValueIsNotAMultilineString("text")));
+        }
+
+        termsAndConditions.emplace(TermsAndConditions{version.toInt(), tAndCText});
+    }
+
+    QJsonValue value = metaData.value(QLatin1String(PLATFORM));
     if (!value.isUndefined() && !value.isString())
         return reportError(msgValueIsNotAString(PLATFORM));
     const QString platformSpec = value.toString().trimmed();
@@ -845,18 +1119,16 @@ bool PluginSpecPrivate::readMetaData(const QJsonObject &pluginMetaData)
                 return reportError(msgValueIsNotAObjectArray(DEPENDENCIES));
             QJsonObject dependencyObject = v.toObject();
             PluginDependency dep;
-            value = dependencyObject.value(QLatin1String(DEPENDENCY_NAME));
+            value = dependencyObject.value(QLatin1String(DEPENDENCY_ID));
             if (value.isUndefined()) {
                 return reportError(
-                    ::ExtensionSystem::Tr::tr("Dependency: %1")
-                        .arg(msgValueMissing(DEPENDENCY_NAME)));
+                    ::ExtensionSystem::Tr::tr("Dependency: %1").arg(msgValueMissing(DEPENDENCY_ID)));
             }
             if (!value.isString()) {
-                return reportError(
-                    ::ExtensionSystem::Tr::tr("Dependency: %1")
-                        .arg(msgValueIsNotAString(DEPENDENCY_NAME)));
+                return reportError(::ExtensionSystem::Tr::tr("Dependency: %1")
+                                       .arg(msgValueIsNotAString(DEPENDENCY_ID)));
             }
-            dep.name = value.toString();
+            dep.id = value.toString();
             value = dependencyObject.value(QLatin1String(DEPENDENCY_VERSION));
             if (!value.isUndefined() && !value.isString()) {
                 return reportError(
@@ -864,7 +1136,7 @@ bool PluginSpecPrivate::readMetaData(const QJsonObject &pluginMetaData)
                         .arg(msgValueIsNotAString(DEPENDENCY_VERSION)));
             }
             dep.version = value.toString();
-            if (!isValidVersion(dep.version)) {
+            if (!PluginSpec::isValidVersion(dep.version)) {
                 return reportError(
                     ::ExtensionSystem::Tr::tr("Dependency: %1")
                         .arg(msgInvalidFormat(DEPENDENCY_VERSION, dep.version)));
@@ -945,23 +1217,15 @@ bool PluginSpecPrivate::readMetaData(const QJsonObject &pluginMetaData)
         }
     }
 
-    return true;
+    state = PluginSpec::Read;
+
+    return {};
 }
 
 /*!
     \internal
 */
-bool PluginSpecPrivate::provides(const QString &pluginName, const QString &pluginVersion) const
-{
-    if (QString::compare(pluginName, name, Qt::CaseInsensitive) != 0)
-        return false;
-    return (versionCompare(version, pluginVersion) >= 0) && (versionCompare(compatVersion, pluginVersion) <= 0);
-}
-
-/*!
-    \internal
-*/
-const QRegularExpression &PluginSpecPrivate::versionRegExp()
+static const QRegularExpression &versionRegExp()
 {
     static const QRegularExpression reg("^([0-9]+)(?:[.]([0-9]+))?(?:[.]([0-9]+))?(?:_([0-9]+))?$");
     return reg;
@@ -969,7 +1233,7 @@ const QRegularExpression &PluginSpecPrivate::versionRegExp()
 /*!
     \internal
 */
-bool PluginSpecPrivate::isValidVersion(const QString &version)
+bool PluginSpec::isValidVersion(const QString &version)
 {
     return versionRegExp().match(version).hasMatch();
 }
@@ -977,7 +1241,7 @@ bool PluginSpecPrivate::isValidVersion(const QString &version)
 /*!
     \internal
 */
-int PluginSpecPrivate::versionCompare(const QString &version1, const QString &version2)
+int PluginSpec::versionCompare(const QString &version1, const QString &version2)
 {
     const QRegularExpressionMatch match1 = versionRegExp().match(version1);
     const QRegularExpressionMatch match2 = versionRegExp().match(version2);
@@ -999,195 +1263,314 @@ int PluginSpecPrivate::versionCompare(const QString &version1, const QString &ve
 /*!
     \internal
 */
-bool PluginSpecPrivate::resolveDependencies(const QVector<PluginSpec *> &specs)
+bool PluginSpec::resolveDependencies(const PluginSpecs &specs)
 {
-    if (hasError)
+    if (hasError())
         return false;
-    if (state == PluginSpec::Resolved)
-        state = PluginSpec::Read; // Go back, so we just re-resolve the dependencies.
-    if (state != PluginSpec::Read) {
-        errorString = ::ExtensionSystem::Tr::tr("Resolving dependencies failed because state != Read");
-        hasError = true;
+    if (state() > PluginSpec::Resolved)
+        return true; // We are resolved already.
+    if (state() == PluginSpec::Resolved)
+        setState(PluginSpec::Read); // Go back, so we just re-resolve the dependencies.
+    if (state() != PluginSpec::Read) {
+        setError(::ExtensionSystem::Tr::tr("Resolving dependencies failed because state != Read"));
         return false;
     }
+
     QHash<PluginDependency, PluginSpec *> resolvedDependencies;
-    for (const PluginDependency &dependency : std::as_const(dependencies)) {
-        PluginSpec * const found = Utils::findOrDefault(specs, [&dependency](PluginSpec *spec) {
-            return spec->provides(dependency.name, dependency.version);
+    for (const PluginDependency &dependency : std::as_const(d->dependencies)) {
+        PluginSpec *const found = findOrDefault(specs, [this, &dependency](PluginSpec *spec) {
+            return provides(spec, dependency);
         });
         if (!found) {
             if (dependency.type == PluginDependency::Required) {
-                hasError = true;
-                if (!errorString.isEmpty())
-                    errorString.append(QLatin1Char('\n'));
-                errorString.append(::ExtensionSystem::Tr::tr("Could not resolve dependency '%1(%2)'")
-                    .arg(dependency.name, dependency.version));
+                const QString error = ::ExtensionSystem::Tr::tr(
+                                          "Could not resolve dependency '%1(%2)'")
+                                          .arg(dependency.id, dependency.version);
+                if (hasError())
+                    setError(errorString() + '\n' + error);
+                else
+                    setError(error);
             }
             continue;
         }
         resolvedDependencies.insert(dependency, found);
     }
-    if (hasError)
+    QSet<PluginSpec *> resolvedRecommends;
+    for (const QString &recommendedId : std::as_const(d->recommends)) {
+        PluginSpec *found = findOrDefault(specs, [this, recommendedId](PluginSpec *spec) {
+            if (spec->id() != recommendedId)
+                return false;
+            // check if this plugin is a dependency and if actually provides it
+            const QList<PluginDependency> dependencies = spec->dependencies();
+            for (const PluginDependency &dependency : dependencies) {
+                if (dependency.id == d->id) {
+                    // this plugin is a dependency of spec, check if it would work
+                    // (e.g. wrt required version)
+                    if (!spec->provides(this, dependency))
+                        return false;
+                }
+            }
+            return true;
+        });
+        if (found)
+            resolvedRecommends.insert(found);
+    }
+
+    if (hasError())
         return false;
 
-    dependencySpecs = resolvedDependencies;
+    d->dependencySpecs = resolvedDependencies;
+    d->recommendsSpecs = resolvedRecommends;
 
-    state = PluginSpec::Resolved;
+    d->state = PluginSpec::Resolved;
 
     return true;
 }
 
-// returns the plugins that it actually indirectly enabled
-QVector<PluginSpec *> PluginSpecPrivate::enableDependenciesIndirectly(bool enableTestDependencies)
+PluginSpec::PluginSpec()
+    : d(new PluginSpecPrivate())
+{}
+
+PluginSpec::~PluginSpec() = default;
+
+void PluginSpec::setState(State state)
 {
-    if (!q->isEffectivelyEnabled()) // plugin not enabled, nothing to do
-        return {};
-    QVector<PluginSpec *> enabled;
-    for (auto it = dependencySpecs.cbegin(), end = dependencySpecs.cend(); it != end; ++it) {
-        if (it.key().type != PluginDependency::Required
-                && (!enableTestDependencies || it.key().type != PluginDependency::Test))
-            continue;
-        PluginSpec *dependencySpec = it.value();
-        if (!dependencySpec->isEffectivelyEnabled()) {
-            dependencySpec->d->enabledIndirectly = true;
-            enabled << dependencySpec;
+    d->state = state;
+}
+
+void PluginSpec::setLocation(const FilePath &location)
+{
+    d->location = location;
+}
+
+void PluginSpec::setFilePath(const FilePath &filePath)
+{
+    d->filePath = filePath;
+}
+
+void PluginSpec::setError(const QString &errorString)
+{
+    qCWarning(pluginSpecLog).noquote() << "[" << name() << "]"
+                                       << "Plugin error:" << errorString;
+    d->errorString = errorString;
+}
+
+/*!
+    \internal
+*/
+bool CppPluginSpec::loadLibrary()
+{
+    if (hasError())
+        return false;
+
+    if (state() != PluginSpec::Resolved) {
+        if (state() == PluginSpec::Loaded)
+            return true;
+        setError(::ExtensionSystem::Tr::tr("Loading the library failed because state != Resolved"));
+        return false;
+    }
+    if (d->loader && !d->loader->load()) {
+        setError(filePath().toUserOutput() + QString::fromLatin1(": ") + d->loader->errorString());
+        return false;
+    }
+    auto *pluginObject = d->loader ? qobject_cast<IPlugin *>(d->loader->instance())
+                                   : qobject_cast<IPlugin *>(d->staticPlugin->instance());
+    if (!pluginObject) {
+        setError(::ExtensionSystem::Tr::tr("Plugin is not valid (does not derive from IPlugin)"));
+        if (d->loader)
+            d->loader->unload();
+        return false;
+    }
+    setState(PluginSpec::Loaded);
+    d->plugin = pluginObject;
+    return true;
+}
+
+/*!
+    \internal
+*/
+bool CppPluginSpec::initializePlugin()
+{
+    if (hasError())
+        return false;
+
+    if (state() != PluginSpec::Loaded) {
+        if (state() == PluginSpec::Initialized)
+            return true;
+        setError(
+            ::ExtensionSystem::Tr::tr("Initializing the plugin failed because state != Loaded"));
+        return false;
+    }
+    if (!d->plugin) {
+        setError(
+            ::ExtensionSystem::Tr::tr("Internal error: have no plugin instance to initialize"));
+        return false;
+    }
+    if (Result<> res = d->plugin->initialize(arguments()); !res) {
+        setError(::ExtensionSystem::Tr::tr("Plugin initialization failed: %1").arg(res.error()));
+        return false;
+    }
+    setState(PluginSpec::Initialized);
+    return true;
+}
+
+/*!
+    \internal
+*/
+bool CppPluginSpec::initializeExtensions()
+{
+    if (hasError())
+        return false;
+
+    if (state() != PluginSpec::Initialized) {
+        if (state() == PluginSpec::Running)
+            return true;
+        setError(::ExtensionSystem::Tr::tr(
+            "Cannot perform extensionsInitialized because state != Initialized"));
+        return false;
+    }
+    if (!d->plugin) {
+        setError(::ExtensionSystem::Tr::tr(
+            "Internal error: have no plugin instance to perform extensionsInitialized"));
+        return false;
+    }
+    d->plugin->extensionsInitialized();
+    setState(PluginSpec::Running);
+    return true;
+}
+
+/*!
+    \internal
+*/
+bool CppPluginSpec::delayedInitialize()
+{
+    if (hasError())
+        return true;
+
+    if (state() != PluginSpec::Running)
+        return false;
+    if (!d->plugin) {
+        setError(::ExtensionSystem::Tr::tr(
+            "Internal error: have no plugin instance to perform delayedInitialize"));
+        return false;
+    }
+    const bool res = d->plugin->delayedInitialize();
+    return res;
+}
+
+/*!
+    \internal
+*/
+IPlugin::ShutdownFlag CppPluginSpec::stop()
+{
+    if (hasError())
+        return IPlugin::ShutdownFlag::SynchronousShutdown;
+
+    if (!d->plugin)
+        return IPlugin::SynchronousShutdown;
+    setState(PluginSpec::Stopped);
+    return d->plugin->aboutToShutdown();
+}
+
+/*!
+    \internal
+*/
+void CppPluginSpec::kill()
+{
+    if (!d->plugin)
+        return;
+    delete d->plugin;
+    d->plugin = nullptr;
+    setState(PluginSpec::Deleted);
+}
+
+Utils::FilePath CppPluginSpec::installLocation(bool inUserFolder) const
+{
+    return inUserFolder ? appInfo().userPluginsRoot : appInfo().plugins;
+}
+
+static QStringList libraryNameFilter()
+{
+    if (HostOsInfo::isWindowsHost())
+        return {"*.dll"};
+    if (HostOsInfo::isLinuxHost())
+        return {"*.so"};
+    return {"*.dylib"};
+}
+
+static QList<PluginSpec *> createCppPluginsFromArchive(const FilePath &path)
+{
+    QList<PluginSpec *> results;
+
+    if (path.isFile()) {
+        if (QLibrary::isLibrary(path.toFSPathString())) {
+            Result<std::unique_ptr<PluginSpec>> spec = readCppPluginSpec(path);
+            QTC_CHECK_RESULT(spec);
+            if (spec)
+                results.push_back(spec->release());
+        }
+        return results;
+    }
+
+    // look for plugin
+    QDirIterator
+        it(path.path(),
+           libraryNameFilter(),
+           QDir::Files | QDir::NoSymLinks,
+           QDirIterator::Subdirectories);
+
+    while (it.hasNext()) {
+        it.next();
+        Result<std::unique_ptr<PluginSpec>> spec = readCppPluginSpec(
+            FilePath::fromUserInput(it.filePath()));
+        if (spec)
+            results.push_back(spec->release());
+    }
+    return results;
+}
+
+QList<PluginFromArchiveFactory> &pluginSpecsFromArchiveFactories()
+{
+    static QList<PluginFromArchiveFactory> factories = {&createCppPluginsFromArchive};
+    return factories;
+}
+
+QList<PluginSpec *> pluginSpecsFromArchive(const Utils::FilePath &path)
+{
+    QList<PluginSpec *> results;
+    for (const PluginFromArchiveFactory &factory : pluginSpecsFromArchiveFactories()) {
+        results += factory(path);
+    }
+    return results;
+}
+
+Result<FilePaths> PluginSpec::filesToUninstall() const
+{
+    if (isSystemPlugin())
+        return ResultError(Tr::tr("Cannot remove system plugins."));
+
+    // Try to figure out where we are ...
+    const FilePaths pluginPaths = PluginManager::pluginPaths();
+
+    for (const FilePath &pluginPath : pluginPaths) {
+        if (location().isChildOf(pluginPath)) {
+            const FilePath rootFolder = location().relativeChildPath(pluginPath);
+            if (rootFolder.isEmpty())
+                return ResultError(Tr::tr("Could not determine root folder."));
+
+            const FilePath pathToDelete = pluginPath
+                                          / rootFolder.pathComponents().first().toString();
+            return FilePaths{pathToDelete};
         }
     }
-    return enabled;
+
+    return FilePaths{filePath()};
 }
 
-/*!
-    \internal
-*/
-bool PluginSpecPrivate::loadLibrary()
+bool PluginSpec::isSystemPlugin() const
 {
-    if (hasError)
-        return false;
-    if (state != PluginSpec::Resolved) {
-        if (state == PluginSpec::Loaded)
-            return true;
-        errorString =
-            ::ExtensionSystem::Tr::tr("Loading the library failed because state != Resolved");
-        hasError = true;
-        return false;
-    }
-    if (loader && !loader->load()) {
-        hasError = true;
-        errorString = QDir::toNativeSeparators(filePath) + QString::fromLatin1(": ")
-                      + loader->errorString();
-        return false;
-    }
-    auto *pluginObject = loader ? qobject_cast<IPlugin *>(loader->instance())
-                                : qobject_cast<IPlugin *>(staticPlugin->instance());
-    if (!pluginObject) {
-        hasError = true;
-        errorString =
-            ::ExtensionSystem::Tr::tr("Plugin is not valid (does not derive from IPlugin)");
-        if (loader)
-            loader->unload();
-        return false;
-    }
-    state = PluginSpec::Loaded;
-    plugin = pluginObject;
-    return true;
+    return !filePath().isChildOf(appInfo().userPluginsRoot)
+           && !filePath().isChildOf(appInfo().userLuaPlugins);
 }
 
-/*!
-    \internal
-*/
-bool PluginSpecPrivate::initializePlugin()
-{
-    if (hasError)
-        return false;
-    if (state != PluginSpec::Loaded) {
-        if (state == PluginSpec::Initialized)
-            return true;
-        errorString = ::ExtensionSystem::Tr::tr(
-            "Initializing the plugin failed because state != Loaded");
-        hasError = true;
-        return false;
-    }
-    if (!plugin) {
-        errorString = ::ExtensionSystem::Tr::tr(
-            "Internal error: have no plugin instance to initialize");
-        hasError = true;
-        return false;
-    }
-    QString err;
-    if (!plugin->initialize(arguments, &err)) {
-        errorString = ::ExtensionSystem::Tr::tr("Plugin initialization failed: %1").arg(err);
-        hasError = true;
-        return false;
-    }
-    state = PluginSpec::Initialized;
-    return true;
-}
-
-/*!
-    \internal
-*/
-bool PluginSpecPrivate::initializeExtensions()
-{
-    if (hasError)
-        return false;
-    if (state != PluginSpec::Initialized) {
-        if (state == PluginSpec::Running)
-            return true;
-        errorString = ::ExtensionSystem::Tr::tr(
-            "Cannot perform extensionsInitialized because state != Initialized");
-        hasError = true;
-        return false;
-    }
-    if (!plugin) {
-        errorString = ::ExtensionSystem::Tr::tr(
-            "Internal error: have no plugin instance to perform extensionsInitialized");
-        hasError = true;
-        return false;
-    }
-    plugin->extensionsInitialized();
-    state = PluginSpec::Running;
-    return true;
-}
-
-/*!
-    \internal
-*/
-bool PluginSpecPrivate::delayedInitialize()
-{
-    if (hasError)
-        return false;
-    if (state != PluginSpec::Running)
-        return false;
-    if (!plugin) {
-        errorString = ::ExtensionSystem::Tr::tr(
-            "Internal error: have no plugin instance to perform delayedInitialize");
-        hasError = true;
-        return false;
-    }
-    return plugin->delayedInitialize();
-}
-
-/*!
-    \internal
-*/
-IPlugin::ShutdownFlag PluginSpecPrivate::stop()
-{
-    if (!plugin)
-        return IPlugin::SynchronousShutdown;
-    state = PluginSpec::Stopped;
-    return plugin->aboutToShutdown();
-}
-
-/*!
-    \internal
-*/
-void PluginSpecPrivate::kill()
-{
-    if (!plugin)
-        return;
-    delete plugin;
-    plugin = nullptr;
-    state = PluginSpec::Deleted;
-}
-
-} // ExtensionSystem
+} // namespace ExtensionSystem

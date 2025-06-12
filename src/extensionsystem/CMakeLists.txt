@@ -18,7 +18,6 @@ set(PROJECT_SOURCES
     pluginmanager_p.h
     pluginspec.cpp
     pluginspec.h
-    pluginspec_p.h
     pluginview.cpp
     pluginview.h)
 
@@ -27,9 +26,12 @@ include_directories(${PROJECT_SOURCE_DIR}/utils)
 set_property(SOURCE pluginmanager.cpp PROPERTY SKIP_AUTOMOC ON)
 
 add_share_library(extensionsystem ${PROJECT_SOURCES} ${SOURCE})
-target_link_libraries(extensionsystem PRIVATE aggregation gui resource utils
-                                              Qt6::Core5Compat Qt6::Widgets)
+target_link_libraries(extensionsystem PRIVATE aggregation utils Qt::Core5Compat
+                                              Qt::Widgets tl::expected)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(extensionsystem PRIVATE "EXTENSIONSYSTEM_LIBRARY")
+else()
+  target_compile_definitions(extensionsystem
+                             PRIVATE "EXTENSIONSYSTEM_STATIC_LIBRARY")
 endif()

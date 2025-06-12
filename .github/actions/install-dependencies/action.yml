@@ -4,7 +4,7 @@ inputs:
   vcpkg_libs:
     description: 'vcpkg libraries'
     required: false
-    default: 'breakpad crashpad'
+    default: 'breakpad crashpad tl-expected'
     type: string
   qt_modules:
     description: 'qt modules'
@@ -14,7 +14,7 @@ inputs:
   qt_ver:
     description: 'qt version'
     required: false
-    default: '6.9.0'
+    default: '6.9.1'
     type: string
 
 runs:
@@ -23,9 +23,6 @@ runs:
   steps:
     - name: Install Custom VCPKG
       uses: RealChuan/install-vcpkg@main
-      with:
-        repo: 'https://github.com/RealChuan/vcpkg.git'
-        branch: 'dev'
         
     - name: Delete vcpkg.json
       shell: bash

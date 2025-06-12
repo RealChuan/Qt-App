@@ -1,6 +1,6 @@
 include(../../../common.pri)
 
-QT       += core gui network widgets core5compat
+QT       += core gui network widgets core5compat concurrent core-private
 
 macx {
 CONFIG -= app_bundle

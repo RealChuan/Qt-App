@@ -1,22 +1,37 @@
-#include "aboutplugin.hpp"
 #include "aboutwidget.hpp"
+
+#include <core/corewidget.hpp>
+#include <extensionsystem/iplugin.h>
 
 #include <QPushButton>
 
 namespace Plugin {
 
-AboutPluginWidget::AboutPluginWidget(QObject *parent)
+class AboutPluginWidget : public Core::CoreWidget
 {
-    auto *aboutWidget = new AboutWidget;
-    aboutWidget->setObjectName("AboutWidget");
-    setWidget(aboutWidget);
-    setButton(new QPushButton(tr("About")), Core::CoreWidget::Help);
-}
+    Q_OBJECT
+public:
+    explicit AboutPluginWidget(QObject *parent = nullptr)
+    {
+        auto *aboutWidget = new AboutWidget;
+        aboutWidget->setObjectName("AboutWidget");
+        setWidget(aboutWidget);
+        setButton(new QPushButton(tr("About")), Core::CoreWidget::Help);
+    }
+};
 
-bool AboutPlugin::initialize(const QStringList &arguments, QString *errorString)
+class AboutPlugin : public ExtensionSystem::IPlugin
 {
-    addObject(new AboutPluginWidget(this));
-    return true;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "aboutplugin.json")
+public:
+    Utils::Result<> initialize(const QStringList &arguments) override
+    {
+        addObject(new AboutPluginWidget(this));
+        return Utils::ResultOk;
+    }
+};
 
 } // namespace Plugin
+
+#include "aboutplugin.moc"

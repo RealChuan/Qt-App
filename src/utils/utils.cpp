@@ -214,32 +214,6 @@ auto Utils::configLocation() -> QString
     return path;
 }
 
-auto Utils::execMenuAtWidget(QMenu *menu, QWidget *widget) -> QAction *
-{
-    QPoint p;
-    QRect screen = widget->screen()->availableGeometry();
-    QSize sh = menu->sizeHint();
-    QRect rect = widget->rect();
-    if (widget->isRightToLeft()) {
-        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
-            p = widget->mapToGlobal(rect.bottomRight());
-        } else {
-            p = widget->mapToGlobal(rect.topRight() - QPoint(0, sh.height()));
-        }
-        p.rx() -= sh.width();
-    } else {
-        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
-            p = widget->mapToGlobal(rect.bottomLeft());
-        } else {
-            p = widget->mapToGlobal(rect.topLeft() - QPoint(0, sh.height()));
-        }
-    }
-    p.rx() = qMax(screen.left(), qMin(p.x(), screen.right() - sh.width()));
-    p.ry() += 1;
-
-    return menu->exec(p);
-}
-
 auto Utils::getPidFromProcessName(const QString &processName) -> qint64
 {
 #if defined(Q_OS_WIN)

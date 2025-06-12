@@ -6,6 +6,7 @@
 #include "extensionsystem_global.h"
 
 #include <aggregation/aggregate.h>
+#include <utils/filepath.h>
 #include <utils/qtcsettings.h>
 
 #include <QObject>
@@ -28,7 +29,7 @@ class EXTENSIONSYSTEM_EXPORT PluginManager : public QObject
     Q_OBJECT
 
 public:
-    static auto instance() -> PluginManager *;
+    static PluginManager *instance();
 
     PluginManager();
     ~PluginManager() override;
@@ -36,15 +37,15 @@ public:
     // Object pool operations
     static void addObject(QObject *obj);
     static void removeObject(QObject *obj);
-    static auto allObjects() -> QVector<QObject *>;
-    static auto listLock() -> QReadWriteLock *;
+    static QObjectList allObjects();
+    static QReadWriteLock *listLock();
 
     // This is useful for soft dependencies using pure interfaces.
     template<typename T>
-    static auto getObject() -> T *
+    static T *getObject()
     {
         QReadLocker lock(listLock());
-        const QVector<QObject *> all = allObjects();
+        const QObjectList all = allObjects();
         for (QObject *obj : all) {
             if (T *result = qobject_cast<T *>(obj))
                 return result;
@@ -52,10 +53,10 @@ public:
         return nullptr;
     }
     template<typename T, typename Predicate>
-    static auto getObject(Predicate predicate) -> T *
+    static T *getObject(Predicate predicate)
     {
         QReadLocker lock(listLock());
-        const QVector<QObject *> all = allObjects();
+        const QObjectList all = allObjects();
         for (QObject *obj : all) {
             if (T *result = qobject_cast<T *>(obj))
                 if (predicate(result))
@@ -92,49 +93,69 @@ public:
         return results;
     }
 
-    static auto getObjectByName(const QString &name) -> QObject *;
+    static QObject *getObjectByName(const QString &name);
 
+    static void startProfiling();
     // Plugin operations
-    static auto loadQueue() -> QVector<PluginSpec *>;
+    static QList<PluginSpec *> loadQueue();
     static void loadPlugins();
-    static auto pluginPaths() -> QStringList;
-    static void setPluginPaths(const QStringList &paths);
-    static auto pluginIID() -> QString;
+    static void loadPluginsAtRuntime(const QSet<PluginSpec *> &plugins);
+    static Utils::FilePaths pluginPaths();
+    static void setPluginPaths(const Utils::FilePaths &paths);
+    static QString pluginIID();
     static void setPluginIID(const QString &iid);
-    static auto plugins() -> const QVector<PluginSpec *>;
-    static auto pluginCollections() -> QHash<QString, QVector<PluginSpec *>>;
-    static auto hasError() -> bool;
-    static auto allErrors() -> const QStringList;
-    static auto pluginsRequiringPlugin(PluginSpec *spec) -> const QSet<PluginSpec *>;
-    static auto pluginsRequiredByPlugin(PluginSpec *spec) -> const QSet<PluginSpec *>;
+    static const QList<PluginSpec *> plugins();
+    static QHash<QString, QList<PluginSpec *>> pluginCollections();
+    static bool hasError();
+    static const QStringList allErrors();
+    static const QSet<PluginSpec *> pluginsRequiringPlugin(PluginSpec *spec);
+    static const QSet<PluginSpec *> pluginsToEnableForPlugin(PluginSpec *spec);
     static void checkForProblematicPlugins();
-    static auto specForPlugin(IPlugin *plugin) -> PluginSpec *;
+    static PluginSpec *specForPlugin(IPlugin *plugin);
+    static PluginSpec *specById(const QString &id);
+    static bool specExists(const QString &id);
+    static bool specExistsAndIsEnabled(const QString &id);
+
+    static void addPlugins(const QList<PluginSpec *> &specs);
+
+    static void reInstallPlugins();
+
+    static Utils::Result<> removePluginOnRestart(const QString &id);
+    static void installPluginOnRestart(const Utils::FilePath &source,
+                                       const Utils::FilePath &destination);
+
+    static void removePluginsAfterRestart();
+    static void installPluginsAfterRestart();
+
+    // UI
+    static std::optional<QSet<PluginSpec *>> askForEnablingPlugins(QWidget *dialogParent,
+                                                                   const QSet<PluginSpec *> &plugins,
+                                                                   bool enable);
 
     // Settings
     static void setSettings(Utils::QtcSettings *settings);
-    static auto settings() -> Utils::QtcSettings *;
-    static void setGlobalSettings(Utils::QtcSettings *settings);
-    static auto globalSettings() -> Utils::QtcSettings *;
+    static Utils::QtcSettings *settings();
+    static void setInstallSettings(Utils::QtcSettings *settings);
+    static Utils::QtcSettings *globalSettings();
     static void writeSettings();
 
     // command line arguments
-    static auto arguments() -> QStringList;
-    static auto argumentsForRestart() -> QStringList;
-    static auto parseOptions(const QStringList &args,
-                             const QMap<QString, bool> &appOptions,
-                             QMap<QString, QString> *foundAppOptions,
-                             QString *errorString) -> bool;
+    static QStringList arguments();
+    static QStringList argumentsForRestart();
+    static Utils::Result<> parseOptions(const QStringList &args,
+                                        const QMap<QString, bool> &appOptions,
+                                        QMap<QString, QString> *foundAppOptions);
     static void formatOptions(QTextStream &str, int optionIndentation, int descriptionIndentation);
     static void formatPluginOptions(QTextStream &str,
                                     int optionIndentation,
                                     int descriptionIndentation);
     static void formatPluginVersions(QTextStream &str);
 
-    static auto serializedArguments() -> QString;
+    static QString serializedArguments();
 
-    static auto testRunRequested() -> bool;
+    static bool testRunRequested();
 
-#ifdef WITH_TESTS
+#ifdef EXTENSIONSYSTEM_WITH_TESTOPTION
     static bool registerScenario(const QString &scenarioId, std::function<bool()> scenarioStarter);
     static bool isScenarioRequested();
     static bool runScenario();
@@ -155,18 +176,20 @@ public:
     };
 
     static void setCreatorProcessData(const ProcessData &data);
-    static auto creatorProcessData() -> ProcessData;
+    static ProcessData creatorProcessData();
 
-    static void profilingReport(const char *what, const PluginSpec *spec = nullptr);
+    static QString platformName();
 
-    static auto platformName() -> QString;
-
-    static auto isInitializationDone() -> bool;
+    static bool isInitializationDone();
+    static bool isShuttingDown();
 
     static void remoteArguments(const QString &serializedArguments, QObject *socket);
     static void shutdown();
 
-    //static QString systemInformation();
+    static QString systemInformation();
+
+    void setAcceptTermsAndConditionsCallback(const std::function<bool(PluginSpec *)> &callback);
+    void setTermsAndConditionsAccepted(PluginSpec *spec);
 
 signals:
     void objectAdded(QObject *obj);

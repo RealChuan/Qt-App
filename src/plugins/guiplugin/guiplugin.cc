@@ -1,20 +1,35 @@
-#include "guiplugin.hpp"
 #include "guiwidget.hpp"
+
+#include <core/corewidget.hpp>
+#include <extensionsystem/iplugin.h>
 
 #include <QPushButton>
 
 namespace Plugin {
 
-GuiPluginWidget::GuiPluginWidget(QObject *parent)
+class GuiPluginWidget : public Core::CoreWidget
 {
-    setWidget(new GuiWidget);
-    setButton(new QPushButton(tr("Gui")), Core::CoreWidget::Main);
-}
+    Q_OBJECT
+public:
+    explicit GuiPluginWidget(QObject *parent = nullptr)
+    {
+        setWidget(new GuiWidget);
+        setButton(new QPushButton(tr("Gui")), Core::CoreWidget::Main);
+    }
+};
 
-bool GuiPlugin::initialize(const QStringList &arguments, QString *errorString)
+class GuiPlugin : public ExtensionSystem::IPlugin
 {
-    addObject(new GuiPluginWidget(this));
-    return true;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "guiplugin.json")
+public:
+    Utils::Result<> initialize(const QStringList &argument) override
+    {
+        addObject(new GuiPluginWidget(this));
+        return Utils::ResultOk;
+    }
+};
 
 } // namespace Plugin
+
+#include "guiplugin.moc"

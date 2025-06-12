@@ -1,11 +1,17 @@
 {
+    "Id": "aboutplugin",
+    "DisplayName": "About",
     "Name": "AboutPlugin",
     "Version": "0.1.1",
     "CompatVersion": "0.1.1",
     "Required": false,
+    "VendorId": "Youth",
     "Vendor": "Youth",
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Help",
-    "Description": "About"
+    "Description": "About Widget Plugin",
+    "LongDescription": "About Widget Plugin",
+    "Url": "",
+    "DocumentationUrl": ""
 }

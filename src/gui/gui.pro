@@ -10,32 +10,16 @@ LIBS += \
     -l$$replaceLibName(utils)
 
 HEADERS += \
-    camelcasecursor.h \
-    categorysortfiltermodel.h \
-    mainwidget.hpp \
-    completinglineedit.h \
     dialog.hpp \
-    fancylineedit.h \
     gui_global.hpp \
-    historycompleter.h \
-    itemviews.h \
+    mainwidget.hpp \
     messagebox.h \
-    multitextcursor.h \
     pushbutton.hpp \
-    treemodel.h \
     waitwidget.h
 
 SOURCES += \
-    camelcasecursor.cpp \
-    categorysortfiltermodel.cpp \
-    mainwidget.cc \
-    completinglineedit.cpp \
     dialog.cc \
-    fancylineedit.cpp \
-    historycompleter.cpp \
-    itemviews.cpp \
+    mainwidget.cc \
     messagebox.cpp \
-    multitextcursor.cpp \
     pushbutton.cc \
-    treemodel.cpp \
     waitwidget.cpp

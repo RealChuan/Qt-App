@@ -1,20 +1,21 @@
 include(../plugins.pri)
+include(../../3rdparty/3rdparty.pri)
 
-QT += widgets
+QT += widgets network core5compat
 
 DEFINES += HELLOPLUGIN_LIBRARY
 TARGET = $$replaceLibName(helloplugin)
 
 LIBS += \
     -l$$replaceLibName(core) \
-    -l$$replaceLibName(extensionsystem)
+    -l$$replaceLibName(extensionsystem) \
+    -l$$replaceLibName(utils)
 
 SOURCES += \
     helloplugin.cc \
     hellowidget.cc
 
 HEADERS += \
-    helloplugin.hpp \
     hellowidget.hpp
 
 DISTFILES += \

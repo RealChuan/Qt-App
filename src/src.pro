@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
+    solutions \
     utils \
     dump \
     resource \

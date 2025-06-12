@@ -18,10 +18,12 @@ class EXTENSIONSYSTEM_EXPORT PluginDetailsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit PluginDetailsView(QWidget *parent = nullptr);
+    PluginDetailsView(QWidget *parent = nullptr);
     ~PluginDetailsView() override;
 
     void update(PluginSpec *spec);
+
+    static void showModal(QWidget *parent, PluginSpec *spec);
 
 private:
     Internal::PluginDetailsViewPrivate *d = nullptr;

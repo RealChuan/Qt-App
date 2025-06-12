@@ -15,17 +15,18 @@
 #include <QScopedPointer>
 #include <QSet>
 #include <QStringList>
+#include <QTimer>
 #include <QWaitCondition>
 
 #include <queue>
 
 QT_BEGIN_NAMESPACE
 class QTime;
-class QTimer;
 class QEventLoop;
 QT_END_NAMESPACE
 
 namespace Utils {
+class FutureSynchronizer;
 class QtcSettings;
 }
 
@@ -35,13 +36,10 @@ class PluginManager;
 
 namespace Internal {
 
-class PluginSpecPrivate;
-
-class EXTENSIONSYSTEM_EXPORT PluginManagerPrivate : public QObject
+class EXTENSIONSYSTEM_TEST_EXPORT PluginManagerPrivate : public QObject
 {
-    Q_OBJECT
 public:
-    explicit PluginManagerPrivate(PluginManager *pluginManager);
+    PluginManagerPrivate(PluginManager *pluginManager);
     ~PluginManagerPrivate() override;
 
     // Object pool operations
@@ -51,23 +49,38 @@ public:
     // Plugin operations
     void checkForProblematicPlugins();
     void loadPlugins();
+    void loadPluginsAtRuntime(const QSet<PluginSpec *> &plugins);
+    void addPlugins(const QList<PluginSpec *> &specs);
+
     void shutdown();
-    void setPluginPaths(const QStringList &paths);
-    const QVector<ExtensionSystem::PluginSpec *> loadQueue();
+    void setPluginPaths(const Utils::FilePaths &paths);
+    const QList<ExtensionSystem::PluginSpec *> loadQueue();
     void loadPlugin(PluginSpec *spec, PluginSpec::State destState);
     void resolveDependencies();
     void enableDependenciesIndirectly();
-    void initProfiling();
-    void profilingSummary() const;
-    void profilingReport(const char *what, const PluginSpec *spec = nullptr);
+    void increaseProfilingVerbosity();
+    void enableTracing(const QString &filePath);
+    QString profilingSummary(qint64 *totalOut = nullptr) const;
+    void printProfilingSummary() const;
+    void profilingReport(const char *what, const PluginSpec *spec, qint64 *target = nullptr);
     void setSettings(Utils::QtcSettings *settings);
     void setGlobalSettings(Utils::QtcSettings *settings);
     void readSettings();
     void writeSettings();
 
+    bool acceptTermsAndConditions(PluginSpec *spec);
+    void setAcceptTermsAndConditionsCallback(const std::function<bool(PluginSpec *)> &callback);
+    void readPluginPaths();
+
+    void removePluginsAfterRestart();
+    void installPluginsAfterRestart();
+
+    Utils::Result<> removePluginOnRestart(const QString &pluginId);
+    void installPluginOnRestart(const Utils::FilePath &src, const Utils::FilePath &dest);
+
     class TestSpec {
     public:
-        explicit TestSpec(PluginSpec *pluginSpec, const QStringList &testFunctionsOrObjects = QStringList())
+        TestSpec(PluginSpec *pluginSpec, const QStringList &testFunctionsOrObjects = QStringList())
             : pluginSpec(pluginSpec)
             , testFunctionsOrObjects(testFunctionsOrObjects)
         {}
@@ -75,7 +88,7 @@ public:
         QStringList testFunctionsOrObjects;
     };
 
-    auto containsTestSpec(PluginSpec *pluginSpec) const -> bool
+    bool containsTestSpec(PluginSpec *pluginSpec) const
     {
         return Utils::contains(testSpecs, [pluginSpec](const TestSpec &s) { return s.pluginSpec == pluginSpec; });
     }
@@ -85,18 +98,19 @@ public:
         testSpecs = Utils::filtered(testSpecs, [pluginSpec](const TestSpec &s) { return s.pluginSpec != pluginSpec; });
     }
 
-    QHash<QString, QVector<PluginSpec *>> pluginCategories;
-    QVector<PluginSpec *> pluginSpecs;
+    QHash<QString, QList<PluginSpec *>> pluginCategories;
+    QList<PluginSpec *> pluginSpecs;
     std::vector<TestSpec> testSpecs;
-    QStringList pluginPaths;
+    Utils::FilePaths pluginPaths;
     QString pluginIID;
-    QVector<QObject *> allObjects;      // ### make this a QVector<QPointer<QObject> > > ?
+    QObjectList allObjects;      // ### make this a QList<QPointer<QObject> > > ?
     QStringList defaultDisabledPlugins; // Plugins/Ignored from install settings
     QStringList defaultEnabledPlugins; // Plugins/ForceEnabled from install settings
     QStringList disabledPlugins;
     QStringList forceEnabledPlugins;
+    QStringList pluginsWithAcceptedTermsAndConditions;
     // delayed initialization
-    QTimer *delayedInitializeTimer = nullptr;
+    QTimer delayedInitializeTimer;
     std::queue<PluginSpec *> delayedInitializeQueue;
     // ansynchronous shutdown
     QSet<PluginSpec *> asynchronousPlugins;  // plugins that have requested async shutdown
@@ -105,24 +119,26 @@ public:
     QStringList arguments;
     QStringList argumentsForRestart;
     QScopedPointer<QElapsedTimer> m_profileTimer;
-    QHash<const PluginSpec *, int> m_profileTotal;
-    int m_profileElapsedMS = 0;
+    qint64 m_profileElapsedMS = 0;
+    qint64 m_totalUntilDelayedInitialize = 0;
+    qint64 m_totalStartupMS = 0;
     unsigned m_profilingVerbosity = 0;
     Utils::QtcSettings *settings = nullptr;
     Utils::QtcSettings *globalSettings = nullptr;
 
+    std::function<bool(PluginSpec *)> acceptTermsAndConditionsCallback;
+
     // Look in argument descriptions of the specs for the option.
     PluginSpec *pluginForOption(const QString &option, bool *requiresArgument) const;
-    [[nodiscard]] PluginSpec *pluginByName(const QString &name) const;
+    PluginSpec *pluginById(const QString &id) const;
 
-    // used by tests
-    static PluginSpec *createSpec();
-    static auto privateSpec(PluginSpec *spec) -> PluginSpecPrivate *;
+    static void addTestCreator(IPlugin *plugin, const std::function<QObject *()> &testCreator);
 
     mutable QReadWriteLock m_lock;
 
     bool m_isInitializationDone = false;
     bool enableCrashCheck = true;
+    bool m_isShuttingDown = false;
 
     QHash<QString, std::function<bool()>> m_scenarios;
     QString m_requestedScenario;
@@ -137,16 +153,16 @@ public:
 private:
     PluginManager *q;
 
-    void nextDelayedInitialize();
+    void startDelayedInitialize();
 
-    void readPluginPaths();
-    auto loadQueue(PluginSpec *spec,
-                   QVector<ExtensionSystem::PluginSpec *> &queue,
-                   QVector<ExtensionSystem::PluginSpec *> &circularityCheckQueue) -> bool;
+    bool loadQueue(PluginSpec *spec,
+                   QList<ExtensionSystem::PluginSpec *> &queue,
+                   QList<ExtensionSystem::PluginSpec *> &circularityCheckQueue);
     void stopAll();
     void deleteAll();
+    void checkForDuplicatePlugins();
 
-#ifdef WITH_TESTS
+#ifdef EXTENSIONSYSTEM_WITH_TESTOPTION
     void startTests();
 #endif
 };

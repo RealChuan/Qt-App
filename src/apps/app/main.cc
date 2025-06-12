@@ -5,7 +5,9 @@
 #include <extensionsystem/pluginspec.h>
 #include <gui/waitwidget.h>
 #include <resource/resource.hpp>
-#include <utils/appinfo.hpp>
+#include <utils/algorithm.h>
+#include <utils/appdata.hpp>
+#include <utils/appinfo.h>
 #include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
 #include <utils/utils.h>
@@ -18,6 +20,7 @@ void initResource()
     Resource r; // 这样才可以使用qrc
 #ifndef Q_OS_WIN
     Q_INIT_RESOURCE(resource);
+    Q_INIT_RESOURCE(utils);
 #endif
 }
 
@@ -30,6 +33,22 @@ void setAppInfo()
     qApp->setOrganizationDomain(Utils::organizationDomain);
     qApp->setOrganizationName(Utils::organzationName);
     qApp->setWindowIcon(QIcon(":/icon/icon/app.png"));
+
+    const Utils::FilePath appDirPath = Utils::FilePath::fromUserInput(qApp->applicationDirPath());
+    Utils::AppInfo info;
+    info.author = Utils::author;
+    info.copyright = Utils::copyright;
+    info.displayVersion = Utils::displayVersion;
+    info.id = Utils::id;
+    info.plugins = (appDirPath / "plugins").cleanPath();
+#ifndef Q_OS_MACOS
+    info.resources = (appDirPath / "resources").cleanPath();
+#else
+    info.resources = (appDirPath / "../Resources").cleanPath();
+#endif
+    // sync with src\tools\qmlpuppet\qmlpuppet\qmlpuppet.cpp -> QString crashReportsPath()
+    info.crashReports = Utils::FilePath::fromString(Utils::crashPath());
+    Utils::Internal::setAppInfo(info);
 }
 
 void setQss()
@@ -40,8 +59,42 @@ void setQss()
                    ":/qss/qss/specific.css"});
 }
 
+class Restarter
+{
+public:
+    Restarter(int argc, char *argv[])
+    {
+        Q_UNUSED(argc)
+        m_executable = QString::fromLocal8Bit(argv[0]);
+        m_workingPath = QDir::currentPath();
+    }
+
+    void setArguments(const QStringList &args) { m_args = args; }
+
+    QString executable() const { return m_executable; }
+    QStringList arguments() const { return m_args; }
+    QString workingPath() const { return m_workingPath; }
+
+    int restartOrExit(int exitCode)
+    {
+        return qApp->property("restart").toBool() ? restart(exitCode) : exitCode;
+    }
+
+    int restart(int exitCode)
+    {
+        QProcess::startDetached(m_executable, m_args, m_workingPath);
+        return exitCode;
+    }
+
+private:
+    QString m_executable;
+    QStringList m_args;
+    QString m_workingPath;
+};
+
 auto main(int argc, char *argv[]) -> int
 {
+    Restarter restarter(argc, argv);
 #if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (!qEnvironmentVariableIsSet("QT_OPENGL")) {
         QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
@@ -106,7 +159,8 @@ auto main(int argc, char *argv[]) -> int
     ExtensionSystem::PluginManager::setSettings(setting);
     ExtensionSystem::PluginManager::setPluginIID(QLatin1String("Youth.Qt.plugin"));
     const QStringList pluginPaths{app.applicationDirPath() + "/plugins"};
-    ExtensionSystem::PluginManager::setPluginPaths(pluginPaths);
+    ExtensionSystem::PluginManager::setPluginPaths(
+        Utils::transform(pluginPaths, &Utils::FilePath::fromUserInput));
     ExtensionSystem::PluginManager::loadPlugins();
 
     // Shutdown plugin manager on the exit
@@ -137,7 +191,5 @@ auto main(int argc, char *argv[]) -> int
         return -1;
     }
 
-    auto result = app.exec();
-    log->stop();
-    return result;
+    return restarter.restartOrExit(app.exec());
 }

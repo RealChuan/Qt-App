@@ -1,6 +1,7 @@
 include(../plugins.pri)
+include(../../3rdparty/3rdparty.pri)
 
-QT += widgets core5compat
+QT += widgets network core5compat
 
 DEFINES += HASHPLUGIN_LIBRARY
 TARGET = $$replaceLibName(hashplugin)
@@ -14,7 +15,6 @@ LIBS += \
 
 HEADERS += \
     cpubenchthread.hpp \
-    hashplugin.hpp \
     hashthread.hpp \
     hashwidget.hpp
 

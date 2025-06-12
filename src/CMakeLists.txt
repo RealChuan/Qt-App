@@ -1,3 +1,4 @@
+add_subdirectory(solutions)
 add_subdirectory(utils)
 add_subdirectory(dump)
 add_subdirectory(resource)

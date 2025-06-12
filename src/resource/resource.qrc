@@ -1,8 +1,5 @@
 <RCC>
     <qresource prefix="/icon">
-        <file>icon/broken.png</file>
-        <file>icon/notLoad.png</file>
-        <file>icon/ok.png</file>
         <file>icon/mactitle/titlebutton-close.png</file>
         <file>icon/mactitle/titlebutton-close@2.png</file>
         <file>icon/mactitle/titlebutton-close-active.png</file>
@@ -83,7 +80,6 @@
         <file>icon/mactitle/titlebutton-restore-hover@2.png</file>
         <file>icon/mactitle/titlebutton-restore-hover-alt.png</file>
         <file>icon/mactitle/titlebutton-restore-hover-alt@2.png</file>
-        <file>icon/crash.png</file>
         <file>icon/app.png</file>
     </qresource>
     <qresource prefix="/qss">

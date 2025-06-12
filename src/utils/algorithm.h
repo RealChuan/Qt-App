@@ -26,7 +26,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace Utils {
+namespace Utils
+{
 
 /////////////////////////
 // anyOf
@@ -118,9 +119,7 @@ typename C::value_type maxElementOr(const C &container, typename C::value_type o
 template<typename C>
 typename C::value_type maxElementOrDefault(const C &container);
 template<typename C, typename Cmp>
-typename C::value_type maxElementOr(const C &container,
-                                    const Cmp &cmp,
-                                    typename C::value_type other);
+typename C::value_type maxElementOr(const C &container, const Cmp &cmp, typename C::value_type other);
 template<typename C, typename Cmp>
 typename C::value_type maxElementOrDefault(const C &container, const Cmp &cmp);
 
@@ -129,9 +128,7 @@ typename C::value_type minElementOr(const C &container, typename C::value_type o
 template<typename C>
 typename C::value_type minElementOrDefault(const C &container);
 template<typename C, typename Cmp>
-typename C::value_type minElementOr(const C &container,
-                                    const Cmp &cmp,
-                                    typename C::value_type other);
+typename C::value_type minElementOr(const C &container, const Cmp &cmp, typename C::value_type other);
 template<typename C, typename Cmp>
 typename C::value_type minElementOrDefault(const C &container, const Cmp &cmp);
 
@@ -273,7 +270,7 @@ template<template<typename> class C, // result container type
          typename SC,                // input container type
          typename F,                 // function type
          typename Value = typename std::decay_t<SC>::value_type,
-         typename Result = std::decay_t<std::invoke_result_t<F, Value &>>,
+         typename Result = std::decay_t<std::invoke_result_t<F, Value&>>,
          typename ResultContainer = C<Result>>
 Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function);
 #if __cpp_template_template_args < 201611L
@@ -290,7 +287,7 @@ template<template<typename, typename> class C, // result container type
          typename SC,                          // input container type
          typename F,                           // function type
          typename Value = typename std::decay_t<SC>::value_type,
-         typename Result = std::decay_t<std::invoke_result_t<F, Value &>>,
+         typename Result = std::decay_t<std::invoke_result_t<F, Value&>>,
          typename ResultContainer = C<Result, std::allocator<Result>>>
 Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function);
 #endif
@@ -396,6 +393,7 @@ bool anyOf(const T &container, R S::*member)
     return std::any_of(std::begin(container), std::end(container), std::mem_fn(member));
 }
 
+
 //////////////////
 // count
 /////////////////
@@ -474,10 +472,9 @@ bool contains(const C &container, R S::*member)
     return anyOf(container, std::mem_fn(member));
 }
 
-template<std::indirectly_readable Iterator,
-         std::indirectly_regular_unary_invocable<Iterator> Projection>
-using projected_value_t
-    = std::remove_cvref_t<std::invoke_result_t<Projection &, std::iter_value_t<Iterator> &>>;
+template<std::indirectly_readable Iterator, std::indirectly_regular_unary_invocable<Iterator> Projection>
+using projected_value_t = std::remove_cvref_t<
+    std::invoke_result_t<Projection &, std::iter_value_t<Iterator> &>>;
 
 template<std::ranges::input_range Range,
          typename Projection = std::identity,
@@ -487,8 +484,7 @@ template<std::ranges::input_range Range,
                                             const Value *>
 bool contains(Range &&range, const Value &value, Projection projection = {})
 {
-    return std::ranges::find(std::forward<Range>(range), value, projection)
-           != std::ranges::end(range);
+    return std::ranges::find(std::forward<Range>(range), value, projection) != std::ranges::end(range);
 }
 
 template<typename T, std::size_t Size, typename V>
@@ -519,9 +515,8 @@ template<typename C, typename V>
 // findOr
 /////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
-                                                typename C::value_type other,
-                                                F function)
+Q_REQUIRED_RESULT
+typename C::value_type findOr(const C &container, typename C::value_type other, F function)
 {
     typename C::const_iterator begin = std::begin(container);
     typename C::const_iterator end = std::end(container);
@@ -531,17 +526,15 @@ Q_REQUIRED_RESULT typename C::value_type findOr(const C &container,
 }
 
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
-                                                typename T::value_type other,
-                                                R (S::*function)() const)
+Q_REQUIRED_RESULT
+typename T::value_type findOr(const T &container, typename T::value_type other, R (S::*function)() const)
 {
     return findOr(container, other, std::mem_fn(function));
 }
 
 template<typename T, typename R, typename S>
-Q_REQUIRED_RESULT typename T::value_type findOr(const T &container,
-                                                typename T::value_type other,
-                                                R S::*member)
+Q_REQUIRED_RESULT
+typename T::value_type findOr(const T &container, typename T::value_type other, R S::*member)
 {
     return findOr(container, other, std::mem_fn(member));
 }
@@ -566,24 +559,24 @@ Q_REQUIRED_RESULT typename std::optional<typename C::value_type> findOr(const C 
 //////////////////
 // Default implementation:
 template<typename C, typename F>
-Q_REQUIRED_RESULT typename std::enable_if_t<std::is_copy_assignable<typename C::value_type>::value,
-                                            typename C::value_type>
+Q_REQUIRED_RESULT
+typename std::enable_if_t<std::is_copy_assignable<typename C::value_type>::value, typename C::value_type>
 findOrDefault(const C &container, F function)
 {
     return findOr(container, typename C::value_type(), function);
 }
 
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT typename std::enable_if_t<std::is_copy_assignable<typename C::value_type>::value,
-                                            typename C::value_type>
+Q_REQUIRED_RESULT
+typename std::enable_if_t<std::is_copy_assignable<typename C::value_type>::value, typename C::value_type>
 findOrDefault(const C &container, R (S::*function)() const)
 {
     return findOr(container, typename C::value_type(), std::mem_fn(function));
 }
 
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT typename std::enable_if_t<std::is_copy_assignable<typename C::value_type>::value,
-                                            typename C::value_type>
+Q_REQUIRED_RESULT
+typename std::enable_if_t<std::is_copy_assignable<typename C::value_type>::value, typename C::value_type>
 findOrDefault(const C &container, R S::*member)
 {
     return findOr(container, typename C::value_type(), std::mem_fn(member));
@@ -594,7 +587,8 @@ findOrDefault(const C &container, R S::*member)
 //////////////////
 
 template<typename C, typename F>
-Q_REQUIRED_RESULT int indexOf(const C &container, F function)
+Q_REQUIRED_RESULT
+int indexOf(const C& container, F function)
 {
     typename C::const_iterator begin = std::begin(container);
     typename C::const_iterator end = std::end(container);
@@ -602,6 +596,7 @@ Q_REQUIRED_RESULT int indexOf(const C &container, F function)
     typename C::const_iterator it = std::find_if(begin, end, function);
     return it == end ? -1 : std::distance(begin, it);
 }
+
 
 //////////////////
 // min/max element
@@ -687,7 +682,7 @@ template<class Container>
 class SetInsertIterator
 {
 protected:
-    Container *container;
+  Container *container;
 
 public:
     using iterator_category = std::output_iterator_tag;
@@ -725,16 +720,10 @@ public:
     {}
     MapInsertIterator<Container> &operator=(
         const std::pair<const typename Container::key_type, typename Container::mapped_type> &value)
-    {
-        container->insert(value.first, value.second);
-        return *this;
-    }
+    { container->insert(value.first, value.second); return *this; }
     MapInsertIterator<Container> &operator=(
         const QPair<typename Container::key_type, typename Container::mapped_type> &value)
-    {
-        container->insert(value.first, value.second);
-        return *this;
-    }
+    { container->insert(value.first, value.second); return *this; }
     MapInsertIterator<Container> &operator*() { return *this; }
     MapInsertIterator<Container> &operator++() { return *this; }
     MapInsertIterator<Container> operator++(int) { return *this; }
@@ -828,45 +817,50 @@ inline BackInsertIterator<Container> inserter(Container &container)
 }
 
 template<typename X>
-inline SetInsertIterator<QSet<X>> inserter(QSet<X> &container)
+inline SetInsertIterator<QSet<X>>
+inserter(QSet<X> &container)
 {
     return SetInsertIterator<QSet<X>>(container);
 }
 
 template<typename K, typename C, typename A>
-inline SetInsertIterator<std::set<K, C, A>> inserter(std::set<K, C, A> &container)
+inline SetInsertIterator<std::set<K, C, A>>
+inserter(std::set<K, C, A> &container)
 {
     return SetInsertIterator<std::set<K, C, A>>(container);
 }
 
 template<typename K, typename H, typename C, typename A>
-inline SetInsertIterator<std::unordered_set<K, H, C, A>> inserter(
-    std::unordered_set<K, H, C, A> &container)
+inline SetInsertIterator<std::unordered_set<K, H, C, A>>
+inserter(std::unordered_set<K, H, C, A> &container)
 {
     return SetInsertIterator<std::unordered_set<K, H, C, A>>(container);
 }
 
 template<typename K, typename V, typename C, typename A>
-inline SetInsertIterator<std::map<K, V, C, A>> inserter(std::map<K, V, C, A> &container)
+inline SetInsertIterator<std::map<K, V, C, A>>
+inserter(std::map<K, V, C, A> &container)
 {
     return SetInsertIterator<std::map<K, V, C, A>>(container);
 }
 
 template<typename K, typename V, typename H, typename C, typename A>
-inline SetInsertIterator<std::unordered_map<K, V, H, C, A>> inserter(
-    std::unordered_map<K, V, H, C, A> &container)
+inline SetInsertIterator<std::unordered_map<K, V, H, C, A>>
+inserter(std::unordered_map<K, V, H, C, A> &container)
 {
     return SetInsertIterator<std::unordered_map<K, V, H, C, A>>(container);
 }
 
 template<typename K, typename V>
-inline MapInsertIterator<QMap<K, V>> inserter(QMap<K, V> &container)
+inline MapInsertIterator<QMap<K, V>>
+inserter(QMap<K, V> &container)
 {
     return MapInsertIterator<QMap<K, V>>(container);
 }
 
 template<typename K, typename V>
-inline MapInsertIterator<QHash<K, V>> inserter(QHash<K, V> &container)
+inline MapInsertIterator<QHash<K, V>>
+inserter(QHash<K, V> &container)
 {
     return MapInsertIterator<QHash<K, V>>(container);
 }
@@ -876,7 +870,8 @@ inline MapInsertIterator<QHash<K, V>> inserter(QHash<K, V> &container)
 
 // default: do reserve
 // Template arguments are more specific than the second version below, so this is tried first
-template<template<typename...> class C, typename... CArgs, typename = decltype(&C<CArgs...>::reserve)>
+template<template<typename...> class C, typename... CArgs,
+         typename = decltype(&C<CArgs...>::reserve)>
 void reserve(C<CArgs...> &c, typename C<CArgs...>::size_type s)
 {
     c.reserve(s);
@@ -884,10 +879,9 @@ void reserve(C<CArgs...> &c, typename C<CArgs...>::size_type s)
 
 // containers that don't have reserve()
 template<typename C>
-void reserve(C &, typename C::size_type)
-{}
+void reserve(C &, typename C::size_type) { }
 
-} // namespace
+} // anonymous
 
 // --------------------------------------------------------------------
 // Different containers for input and output:
@@ -897,9 +891,10 @@ void reserve(C &, typename C::size_type)
 
 // function without result type deduction:
 template<typename ResultContainer, // complete result container type
-         typename SC,              // input container type
-         typename F>               // function type
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function)
+         typename SC, // input container type
+         typename F> // function type
+Q_REQUIRED_RESULT
+decltype(auto) transform(SC &&container, F function)
 {
     ResultContainer result;
     reserve(result, typename ResultContainer::size_type(container.size()));
@@ -934,40 +929,44 @@ Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, F function)
 
 // member function without result type deduction:
 template<template<typename...> class C, // result container type
-         typename SC,                   // input container type
+         typename SC, // input container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R (S::*p)() const)
+Q_REQUIRED_RESULT
+decltype(auto) transform(SC &&container, R (S::*p)() const)
 {
     return transform<C>(std::forward<SC>(container), std::mem_fn(p));
 }
 
 // member function with result type deduction:
 template<typename ResultContainer, // complete result container type
-         typename SC,              // input container type
+         typename SC, // input container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R (S::*p)() const)
+Q_REQUIRED_RESULT
+decltype(auto) transform(SC &&container, R (S::*p)() const)
 {
     return transform<ResultContainer>(std::forward<SC>(container), std::mem_fn(p));
 }
 
 // member without result type deduction:
 template<typename ResultContainer, // complete result container type
-         typename SC,              // input container
+         typename SC, // input container
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p)
+Q_REQUIRED_RESULT
+decltype(auto) transform(SC &&container, R S::*p)
 {
     return transform<ResultContainer>(std::forward<SC>(container), std::mem_fn(p));
 }
 
 // member with result type deduction:
 template<template<typename...> class C, // result container
-         typename SC,                   // input container
+         typename SC, // input container
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p)
+Q_REQUIRED_RESULT
+decltype(auto) transform(SC &&container, R S::*p)
 {
     return transform<C>(std::forward<SC>(container), std::mem_fn(p));
 }
@@ -976,9 +975,10 @@ Q_REQUIRED_RESULT decltype(auto) transform(SC &&container, R S::*p)
 
 // function:
 template<template<typename...> class C, // container type
-         typename F,                    // function type
-         typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, F function)
+         typename F, // function type
+         typename... CArgs> // Arguments to SC
+Q_REQUIRED_RESULT
+decltype(auto) transform(const C<CArgs...> &container, F function)
 {
     return transform<C, const C<CArgs...> &>(container, function);
 }
@@ -988,7 +988,8 @@ template<template<typename...> class C, // container type
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R (S::*p)() const)
+Q_REQUIRED_RESULT
+decltype(auto) transform(const C<CArgs...> &container, R (S::*p)() const)
 {
     return transform<C, const C<CArgs...> &>(container, std::mem_fn(p));
 }
@@ -998,7 +999,8 @@ template<template<typename...> class C, // container
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R S::*p)
+Q_REQUIRED_RESULT
+decltype(auto) transform(const C<CArgs...> &container, R S::*p)
 {
     return transform<C, const C<CArgs...> &>(container, std::mem_fn(p));
 }
@@ -1007,9 +1009,10 @@ Q_REQUIRED_RESULT decltype(auto) transform(const C<CArgs...> &container, R S::*p
 
 // function:
 template<template<typename...> class C, // container type
-         typename F,                    // function type
-         typename... CArgs>             // Arguments to SC
-Q_REQUIRED_RESULT auto transform(C<CArgs...> &container, F function) -> decltype(auto)
+         typename F, // function type
+         typename... CArgs> // Arguments to SC
+Q_REQUIRED_RESULT
+auto transform(C<CArgs...> &container, F function) -> decltype(auto)
 {
     return transform<C, C<CArgs...> &>(container, function);
 }
@@ -1019,7 +1022,8 @@ template<template<typename...> class C, // container type
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R (S::*p)() const)
+Q_REQUIRED_RESULT
+decltype(auto) transform(C<CArgs...> &container, R (S::*p)() const)
 {
     return transform<C, C<CArgs...> &>(container, std::mem_fn(p));
 }
@@ -1029,7 +1033,8 @@ template<template<typename...> class C, // container
          typename R,
          typename S,
          typename... CArgs> // Arguments to SC
-Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R S::*p)
+Q_REQUIRED_RESULT
+decltype(auto) transform(C<CArgs...> &container, R S::*p)
 {
     return transform<C, C<CArgs...> &>(container, std::mem_fn(p));
 }
@@ -1037,8 +1042,9 @@ Q_REQUIRED_RESULT decltype(auto) transform(C<CArgs...> &container, R S::*p)
 // Specialization for QStringList:
 
 template<template<typename...> class C = QList, // result container
-         typename F>                            // Arguments to C
-Q_REQUIRED_RESULT auto transform(const QStringList &container, F function)
+         typename F> // Arguments to C
+Q_REQUIRED_RESULT
+auto transform(const QStringList &container, F function)
 {
     return transform<C, const QList<QString> &>(static_cast<QList<QString>>(container), function);
 }
@@ -1047,38 +1053,42 @@ Q_REQUIRED_RESULT auto transform(const QStringList &container, F function)
 template<template<typename...> class C = QList, // result container type
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(const QStringList &container, R (S::*p)() const)
+Q_REQUIRED_RESULT
+decltype(auto) transform(const QStringList &container, R (S::*p)() const)
 {
-    return transform<C, const QList<QString> &>(static_cast<QList<QString>>(container),
-                                                std::mem_fn(p));
+    return transform<C, const QList<QString> &>(static_cast<QList<QString>>(container), std::mem_fn(p));
 }
 
 // members:
 template<template<typename...> class C = QList, // result container
          typename R,
          typename S>
-Q_REQUIRED_RESULT decltype(auto) transform(const QStringList &container, R S::*p)
+Q_REQUIRED_RESULT
+decltype(auto) transform(const QStringList &container, R S::*p)
 {
-    return transform<C, const QList<QString> &>(static_cast<QList<QString>>(container),
-                                                std::mem_fn(p));
+    return transform<C, const QList<QString> &>(static_cast<QList<QString>>(container), std::mem_fn(p));
 }
 
 //////////////////
 // filtered
 /////////////////
 template<typename C, typename F>
-Q_REQUIRED_RESULT C filtered(const C &container, F predicate)
+Q_REQUIRED_RESULT
+C filtered(const C &container, F predicate)
 {
     C out;
-    std::copy_if(std::begin(container), std::end(container), inserter(out), predicate);
+    std::copy_if(std::begin(container), std::end(container),
+                 inserter(out), predicate);
     return out;
 }
 
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT C filtered(const C &container, R (S::*predicate)() const)
+Q_REQUIRED_RESULT
+C filtered(const C &container, R (S::*predicate)() const)
 {
     C out;
-    std::copy_if(std::begin(container), std::end(container), inserter(out), std::mem_fn(predicate));
+    std::copy_if(std::begin(container), std::end(container),
+                 inserter(out), std::mem_fn(predicate));
     return out;
 }
 
@@ -1109,7 +1119,8 @@ Q_REQUIRED_RESULT R filteredCast(const C &container, F predicate)
 // const auto [hit, miss] = Utils::partition(container, predicate);
 
 template<typename C, typename F>
-Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, F predicate)
+Q_REQUIRED_RESULT
+std::tuple<C, C> partition(const C &container, F predicate)
 {
     C hit;
     C miss;
@@ -1127,7 +1138,8 @@ Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, F predicate)
 }
 
 template<typename C, typename R, typename S>
-Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, R (S::*predicate)() const)
+Q_REQUIRED_RESULT
+std::tuple<C, C> partition(const C &container, R (S::*predicate)() const)
 {
     return partition(container, std::mem_fn(predicate));
 }
@@ -1137,7 +1149,8 @@ Q_REQUIRED_RESULT std::tuple<C, C> partition(const C &container, R (S::*predicat
 /////////////////
 
 template<typename C>
-Q_REQUIRED_RESULT C filteredUnique(const C &container)
+Q_REQUIRED_RESULT
+C filteredUnique(const C &container)
 {
     C result;
     auto ins = inserter(result);
@@ -1159,7 +1172,7 @@ Q_REQUIRED_RESULT C filteredUnique(const C &container)
 //////////////////
 // qobject_container_cast
 /////////////////
-template<class T, template<typename> class Container, typename Base>
+template <class T, template<typename> class Container, typename Base>
 Container<T> qobject_container_cast(const Container<Base> &container)
 {
     Container<T> result;
@@ -1174,7 +1187,7 @@ Container<T> qobject_container_cast(const Container<Base> &container)
 //////////////////
 // static_container_cast
 /////////////////
-template<class T, template<typename> class Container, typename Base>
+template <class T, template<typename> class Container, typename Base>
 Container<T> static_container_cast(const Container<Base> &container)
 {
     Container<T> result;
@@ -1188,13 +1201,13 @@ Container<T> static_container_cast(const Container<Base> &container)
 //////////////////
 // sort
 /////////////////
-template<typename Container>
+template <typename Container>
 inline void sort(Container &container)
 {
     std::stable_sort(std::begin(container), std::end(container));
 }
 
-template<typename Container, typename Predicate>
+template <typename Container, typename Predicate>
 inline void sort(Container &container, Predicate p)
 {
     std::stable_sort(std::begin(container), std::end(container), p);
@@ -1276,7 +1289,8 @@ inline void sort(Container &container, R S::*member)
 {
     auto f = std::mem_fn(member);
     using const_ref = typename Container::const_reference;
-    std::stable_sort(std::begin(container), std::end(container), [&f](const_ref a, const_ref b) {
+    std::stable_sort(std::begin(container), std::end(container),
+              [&f](const_ref a, const_ref b) {
         return f(a) < f(b);
     });
 }
@@ -1322,7 +1336,8 @@ inline void sort(Container &container, R (S::*function)() const)
 {
     auto f = std::mem_fn(function);
     using const_ref = typename Container::const_reference;
-    std::stable_sort(std::begin(container), std::end(container), [&f](const_ref a, const_ref b) {
+    std::stable_sort(std::begin(container), std::end(container),
+              [&f](const_ref a, const_ref b) {
         return f(a) < f(b);
     });
 }
@@ -1365,7 +1380,7 @@ inline Container sorted(const Container &&container, R (S::*function)() const)
 //////////////////
 // reverseForeach
 /////////////////
-template<typename Container, typename Op>
+template <typename Container, typename Op>
 inline void reverseForeach(const Container &c, const Op &operation)
 {
     auto rend = c.rend();
@@ -1376,31 +1391,33 @@ inline void reverseForeach(const Container &c, const Op &operation)
 //////////////////
 // toReferences
 /////////////////
-template<template<typename...> class ResultContainer, typename SourceContainer>
+template <template<typename...> class ResultContainer,
+          typename SourceContainer>
 auto toReferences(SourceContainer &sources)
 {
-    return transform<ResultContainer>(sources, [](auto &value) { return std::ref(value); });
+    return transform<ResultContainer>(sources, [] (auto &value) { return std::ref(value); });
 }
 
-template<typename SourceContainer>
+template <typename SourceContainer>
 auto toReferences(SourceContainer &sources)
 {
-    return transform(sources, [](auto &value) { return std::ref(value); });
+    return transform(sources, [] (auto &value) { return std::ref(value); });
 }
 
 //////////////////
 // toConstReferences
 /////////////////
-template<template<typename...> class ResultContainer, typename SourceContainer>
+template <template<typename...> class ResultContainer,
+          typename SourceContainer>
 auto toConstReferences(const SourceContainer &sources)
 {
-    return transform<ResultContainer>(sources, [](const auto &value) { return std::cref(value); });
+    return transform<ResultContainer>(sources, [] (const auto &value) { return std::cref(value); });
 }
 
-template<typename SourceContainer>
+template <typename SourceContainer>
 auto toConstReferences(const SourceContainer &sources)
 {
-    return transform(sources, [](const auto &value) { return std::cref(value); });
+    return transform(sources, [] (const auto &value) { return std::cref(value); });
 }
 
 //////////////////
@@ -1422,14 +1439,14 @@ Q_REQUIRED_RESULT std::optional<typename C::value_type> take(C &container, P pre
 }
 
 // pointer to member
-template<typename C, typename R, typename S>
+template <typename C, typename R, typename S>
 Q_REQUIRED_RESULT decltype(auto) take(C &container, R S::*member)
 {
     return take(container, std::mem_fn(member));
 }
 
 // pointer to member function
-template<typename C, typename R, typename S>
+template <typename C, typename R, typename S>
 Q_REQUIRED_RESULT decltype(auto) take(C &container, R (S::*function)() const)
 {
     return take(container, std::mem_fn(function));
@@ -1441,7 +1458,11 @@ Q_REQUIRED_RESULT decltype(auto) take(C &container, R (S::*function)() const)
 //                It uses iterators to support move_iterators.
 /////////////////
 
-template<class InputIt1, class InputIt2, class OutputIt, class Merge, class Compare>
+template<class InputIt1,
+         class InputIt2,
+         class OutputIt,
+         class Merge,
+         class Compare>
 OutputIt setUnionMerge(InputIt1 first1,
                        InputIt1 last1,
                        InputIt2 first2,
@@ -1468,9 +1489,16 @@ OutputIt setUnionMerge(InputIt1 first1,
     return std::copy(first2, last2, d_first);
 }
 
-template<class InputIt1, class InputIt2, class OutputIt, class Merge>
-OutputIt setUnionMerge(
-    InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Merge merge)
+template<class InputIt1,
+         class InputIt2,
+         class OutputIt,
+         class Merge>
+OutputIt setUnionMerge(InputIt1 first1,
+                       InputIt1 last1,
+                       InputIt2 first2,
+                       InputIt2 last2,
+                       OutputIt d_first,
+                       Merge merge)
 {
     return setUnionMerge(first1,
                          last1,
@@ -1481,7 +1509,11 @@ OutputIt setUnionMerge(
                          std::less<std::decay_t<decltype(*first1)>>{});
 }
 
-template<class OutputContainer, class InputContainer1, class InputContainer2, class Merge, class Compare>
+template<class OutputContainer,
+         class InputContainer1,
+         class InputContainer2,
+         class Merge,
+         class Compare>
 OutputContainer setUnionMerge(InputContainer1 &&input1,
                               InputContainer2 &&input2,
                               Merge merge,
@@ -1501,8 +1533,13 @@ OutputContainer setUnionMerge(InputContainer1 &&input1,
     return results;
 }
 
-template<class OutputContainer, class InputContainer1, class InputContainer2, class Merge>
-OutputContainer setUnionMerge(InputContainer1 &&input1, InputContainer2 &&input2, Merge merge)
+template<class OutputContainer,
+         class InputContainer1,
+         class InputContainer2,
+         class Merge>
+OutputContainer setUnionMerge(InputContainer1 &&input1,
+                              InputContainer2 &&input2,
+                              Merge merge)
 {
     return setUnionMerge<OutputContainer>(std::forward<InputContainer1>(input1),
                                           std::forward<InputContainer2>(input2),
@@ -1584,17 +1621,13 @@ OutputIterator set_union(InputIterator1 first1,
                          InputIterator2 last2,
                          OutputIterator result)
 {
-    return Utils::set_union_impl(first1,
-                                 last1,
-                                 first2,
-                                 last2,
-                                 result,
-                                 std::less<typename InputIterator1::value_type>{});
+    return Utils::set_union_impl(
+        first1, last1, first2, last2, result, std::less<typename InputIterator1::value_type>{});
 }
 
 // Replacement for deprecated Qt functionality
 
-template<class T>
+template <class T>
 QSet<T> toSet(const QList<T> &list)
 {
     return QSet<T>(list.begin(), list.end());
@@ -1606,28 +1639,26 @@ QList<T> toList(const QSet<T> &set)
     return QList<T>(set.begin(), set.end());
 }
 
-template<class Key, class T>
+template <class Key, class T>
 void addToHash(QHash<Key, T> *result, const QHash<Key, T> &additionalContents)
 {
     result->insert(additionalContents);
 }
 
-template<typename Tuple, std::size_t... I>
+template <typename Tuple, std::size_t... I>
 static std::size_t tupleHashHelper(uint seed, const Tuple &tuple, std::index_sequence<I...>)
 {
     return qHashMulti(seed, (std::get<I>(tuple), ...));
 }
 
-template<typename... T>
-std::size_t qHash(const std::tuple<T...> &tuple, uint seed = 0)
+template<typename... T> std::size_t qHash(const std::tuple<T...> &tuple, uint seed = 0)
 {
     return tupleHashHelper(seed, tuple, std::make_index_sequence<sizeof...(T)>());
 }
 
 // Workaround for missing information from QSet::insert()
 // Return type could be a pair like for std::set, but we never use the iterator anyway.
-template<typename T, typename U>
-[[nodiscard]] bool insert(QSet<T> &s, const U &v)
+template<typename T, typename U> [[nodiscard]] bool insert(QSet<T> &s, const U &v)
 {
     const int oldSize = s.size();
     s.insert(v);
