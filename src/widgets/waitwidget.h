@@ -1,13 +1,13 @@
 #ifndef WAITWIDGET_H
 #define WAITWIDGET_H
 
-#include "gui_global.hpp"
+#include "widgets_global.hpp"
 
 #include <QSplashScreen>
 
-namespace GUI {
+namespace Widgets {
 
-class GUI_EXPORT WaitWidget : public QSplashScreen
+class WIDGETS_EXPORT WaitWidget : public QSplashScreen
 {
     Q_OBJECT
 public:
@@ -24,6 +24,6 @@ private:
     QScopedPointer<WaitWidgetPrivate> d_ptr;
 };
 
-} // namespace GUI
+} // namespace Widgets
 
 #endif // WAITWIDGET_H

@@ -9,7 +9,7 @@ target_link_libraries(
   CrashReport
   PRIVATE dump
           thirdparty
-          gui
+          widgets
           resource
           utils
           Qt::Network

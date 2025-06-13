@@ -9,7 +9,7 @@ TARGET = $$replaceLibName(guiplugin)
 LIBS += \
     -l$$replaceLibName(core) \
     -l$$replaceLibName(extensionsystem) \
-    -l$$replaceLibName(gui) \
+    -l$$replaceLibName(widgets) \
     -l$$replaceLibName(utils)
 
 SOURCES += \

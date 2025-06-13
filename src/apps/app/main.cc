@@ -3,7 +3,6 @@
 #include <extensionsystem/iplugin.h>
 #include <extensionsystem/pluginmanager.h>
 #include <extensionsystem/pluginspec.h>
-#include <gui/waitwidget.h>
 #include <resource/resource.hpp>
 #include <utils/algorithm.h>
 #include <utils/appdata.hpp>
@@ -11,6 +10,7 @@
 #include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
 #include <utils/utils.h>
+#include <widgets/waitwidget.h>
 
 #include <QNetworkProxyFactory>
 #include <QStyle>
@@ -150,7 +150,7 @@ auto main(int argc, char *argv[]) -> int
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     // 等待界面
-    QScopedPointer<GUI::WaitWidget> waitWidgetPtr(new GUI::WaitWidget);
+    QScopedPointer<Widgets::WaitWidget> waitWidgetPtr(new Widgets::WaitWidget);
     waitWidgetPtr->show();
     app.processEvents();
 
@@ -191,5 +191,7 @@ auto main(int argc, char *argv[]) -> int
         return -1;
     }
 
-    return restarter.restartOrExit(app.exec());
+    auto exitCode = restarter.restartOrExit(app.exec());
+    log->stop();
+    return exitCode;
 }

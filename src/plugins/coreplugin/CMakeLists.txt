@@ -19,7 +19,7 @@ target_link_libraries(
   coreplugin
   PRIVATE core
           extensionsystem
-          gui
+          widgets
           resource
           utils
           Qt::Widgets

@@ -2,7 +2,7 @@
 
 #include <QEvent>
 
-namespace GUI {
+namespace Widgets {
 
 class PushButton::PushButtonPrivate
 {
@@ -88,4 +88,4 @@ auto createPushButton(const QStringList &normalIconPaths,
     return btn;
 }
 
-} // namespace GUI
+} // namespace Widgets

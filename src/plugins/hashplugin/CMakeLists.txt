@@ -12,7 +12,7 @@ target_link_libraries(
   hashplugin
   PRIVATE core
           extensionsystem
-          gui
+          widgets
           resource
           utils
           Qt::Widgets

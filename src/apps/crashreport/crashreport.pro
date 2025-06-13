@@ -13,7 +13,7 @@ TARGET = CrashReport
 LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(thirdparty) \
-    -l$$replaceLibName(gui) \
+    -l$$replaceLibName(widgets) \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
 

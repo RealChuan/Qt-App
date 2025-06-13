@@ -2,8 +2,8 @@ include(../slib.pri)
 
 QT += widgets
 
-DEFINES += GUI_LIBRARY
-TARGET = $$replaceLibName(gui)
+DEFINES += WIDGETS_LIBRARY
+TARGET = $$replaceLibName(widgets)
 
 LIBS += \
     -l$$replaceLibName(resource) \

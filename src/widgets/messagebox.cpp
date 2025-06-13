@@ -2,7 +2,7 @@
 
 #include <QtWidgets>
 
-namespace GUI {
+namespace Widgets {
 
 class MessageBox::MessBoxPrivate
 {
@@ -111,4 +111,4 @@ void MessageBox::buildConnect()
     connect(d_ptr->yesButton, &QPushButton::clicked, this, &MessageBox::accept);
 }
 
-} // namespace GUI
+} // namespace Widgets

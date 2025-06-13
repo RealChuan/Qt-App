@@ -10,7 +10,7 @@ LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(extensionsystem) \
     -l$$replaceLibName(thirdparty) \
-    -l$$replaceLibName(gui) \
+    -l$$replaceLibName(widgets) \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils) \
     -l$$replaceLibName(tasking) \

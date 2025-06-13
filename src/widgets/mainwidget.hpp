@@ -1,13 +1,13 @@
 #pragma once
 
-#include "gui_global.hpp"
+#include "widgets_global.hpp"
 
 #include <QMainWindow>
 
-namespace GUI {
+namespace Widgets {
 
 #ifndef Q_OS_MACOS
-class GUI_EXPORT MainWidget : public QWidget
+class WIDGETS_EXPORT MainWidget : public QWidget
 {
     Q_OBJECT
 public:
@@ -50,7 +50,7 @@ private:
     QScopedPointer<MainWidgetPrivate> d_ptr;
 };
 #else
-class GUI_EXPORT MainWidget : public QMainWindow
+class WIDGETS_EXPORT MainWidget : public QMainWindow
 {
     Q_OBJECT
 public:
@@ -68,4 +68,4 @@ signals:
 };
 #endif
 
-} // namespace GUI
+} // namespace Widgets

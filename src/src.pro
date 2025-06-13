@@ -6,7 +6,7 @@ SUBDIRS += \
     utils \
     dump \
     resource \
-    gui \
+    widgets \
     3rdparty \
     aggregation \
     extensionsystem \

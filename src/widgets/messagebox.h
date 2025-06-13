@@ -2,9 +2,9 @@
 
 #include "dialog.hpp"
 
-namespace GUI {
+namespace Widgets {
 
-class GUI_EXPORT MessageBox : public Dialog
+class WIDGETS_EXPORT MessageBox : public Dialog
 {
     Q_OBJECT
 public:
@@ -32,6 +32,6 @@ private:
     QScopedPointer<MessBoxPrivate> d_ptr;
 };
 
-} // namespace GUI
+} // namespace Widgets
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(GUI::MessageBox::StandardButtons)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Widgets::MessageBox::StandardButtons)

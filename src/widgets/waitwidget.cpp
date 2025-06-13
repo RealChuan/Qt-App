@@ -4,7 +4,7 @@
 
 #include <QtWidgets>
 
-namespace GUI {
+namespace Widgets {
 
 class WaitWidget::WaitWidgetPrivate
 {
@@ -67,4 +67,4 @@ void WaitWidget::updateProgressBar()
     d_ptr->processBar->setValue(value);
 }
 
-} // namespace GUI
+} // namespace Widgets

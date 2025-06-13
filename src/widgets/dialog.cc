@@ -4,7 +4,7 @@
 
 #include <QtWidgets>
 
-namespace GUI {
+namespace Widgets {
 
 #ifndef Q_OS_MACOS
 class Dialog::DialogPrivate
@@ -102,4 +102,4 @@ void Dialog::setCentralWidget(QWidget *widget)
 }
 #endif
 
-} // namespace GUI
+} // namespace Widgets

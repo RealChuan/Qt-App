@@ -4,10 +4,10 @@
 
 #include <QDialog>
 
-namespace GUI {
+namespace Widgets {
 
 #ifndef Q_OS_MACOS
-class GUI_EXPORT Dialog : public MainWidget
+class WIDGETS_EXPORT Dialog : public MainWidget
 {
     Q_OBJECT
 public:
@@ -37,7 +37,7 @@ private:
     QScopedPointer<DialogPrivate> d_ptr;
 };
 #else
-class GUI_EXPORT Dialog : public QDialog
+class WIDGETS_EXPORT Dialog : public QDialog
 {
     Q_OBJECT
 public:
@@ -57,4 +57,4 @@ public:
 };
 #endif
 
-} // namespace GUI
+} // namespace Widgets

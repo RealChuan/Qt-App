@@ -9,7 +9,7 @@ TARGET = $$replaceLibName(hashplugin)
 LIBS += \
     -l$$replaceLibName(core) \
     -l$$replaceLibName(extensionsystem) \
-    -l$$replaceLibName(gui) \
+    -l$$replaceLibName(widgets) \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
 

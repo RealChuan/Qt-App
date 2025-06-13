@@ -2,7 +2,7 @@
 #include "cpubenchthread.hpp"
 #include "hashthread.hpp"
 
-#include <gui/messagebox.h>
+#include <widgets/messagebox.h>
 
 #include <QtWidgets>
 
@@ -182,14 +182,16 @@ void HashWidget::onCalculate()
 {
     auto input = d_ptr->inputEdit->toPlainText();
     if (input.isEmpty()) {
-        GUI::MessageBox::Warning(this, tr("Input is empty!"), GUI::MessageBox::Close);
+        Widgets::MessageBox::Warning(this, tr("Input is empty!"), Widgets::MessageBox::Close);
         return;
     }
     auto algorithm = static_cast<QCryptographicHash::Algorithm>(
         d_ptr->hashComboBox->currentData().toInt());
     auto started = d_ptr->hashThread->startHash(input, algorithm);
     if (!started) {
-        GUI::MessageBox::Warning(this, tr("Hash thread is running!"), GUI::MessageBox::Close);
+        Widgets::MessageBox::Warning(this,
+                                     tr("Hash thread is running!"),
+                                     Widgets::MessageBox::Close);
         return;
     }
     d_ptr->calculateButton->setEnabled(false);

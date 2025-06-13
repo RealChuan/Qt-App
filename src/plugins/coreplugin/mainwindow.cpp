@@ -4,8 +4,8 @@
 
 #include <core/corewidget.hpp>
 #include <extensionsystem/pluginmanager.h>
-#include <gui/messagebox.h>
 #include <utils/utils.h>
+#include <widgets/messagebox.h>
 
 #include <QtWidgets>
 
@@ -68,9 +68,9 @@ private:
     void createSystemTray()
     {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-            GUI::MessageBox::Info(q_ptr,
-                                  tr("Systray, I couldn't detect any system "
-                                     "tray on this system."));
+            Widgets::MessageBox::Info(q_ptr,
+                                      tr("Systray, I couldn't detect any system "
+                                         "tray on this system."));
             return;
         }
 
@@ -176,7 +176,7 @@ private:
 };
 
 MainWindow::MainWindow(QWidget *parent)
-    : GUI::MainWidget(parent)
+    : Widgets::MainWidget(parent)
     , d_ptr(new MainWindowPrivate(this))
 {
     d_ptr->setupUI();
@@ -245,7 +245,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         default: break;
         }
     }
-    return GUI::MainWidget::eventFilter(watched, event);
+    return Widgets::MainWidget::eventFilter(watched, event);
 }
 
 void MainWindow::buildConnect()

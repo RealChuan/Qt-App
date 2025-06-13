@@ -43,7 +43,7 @@ target_link_libraries(
   PRIVATE dump
           extensionsystem
           thirdparty
-          gui
+          widgets
           resource
           utils
           Qt::Network

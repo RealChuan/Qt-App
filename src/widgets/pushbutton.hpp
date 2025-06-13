@@ -3,7 +3,7 @@
 
 #include <QPushButton>
 
-namespace GUI {
+namespace Widgets {
 
 class PushButton : public QPushButton
 {
@@ -34,6 +34,6 @@ auto createPushButton(const QStringList &normalIconPaths,
                       const QStringList &activeIconPaths,
                       QWidget *parent = nullptr) -> PushButton *;
 
-} // namespace GUI
+} // namespace Widgets
 
 #endif // PUSHBUTTON_HPP

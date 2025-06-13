@@ -3,7 +3,7 @@
 
 #include <QtWidgets>
 
-namespace GUI {
+namespace Widgets {
 
 #ifndef Q_OS_MACOS
 class MainWidget::MainWidgetPrivate
@@ -341,4 +341,4 @@ void MainWidget::setTitleBar(QWidget *widget)
 }
 #endif
 
-} // namespace GUI
+} // namespace Widgets
