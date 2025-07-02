@@ -1,14 +1,26 @@
 set(PROJECT_SOURCES
     configwidget.cpp
     configwidget.h
+    coreconstants.h
     coreplugin.cpp
-    coreplugin.h
+    coreplugin.hpp
     coreplugintr.h
+    icore.cpp
+    icore.h
     mainwindow.cpp
     mainwindow.h
     plugindialog.cpp
-    plugindialog.h)
+    plugindialog.h
+    themechooser.cpp
+    themechooser.h)
 
 add_custom_plugin(coreplugin ${PROJECT_SOURCES})
-target_link_libraries(coreplugin PRIVATE core extensionsystem gui resource
-                                         utils Qt6::Widgets)
+target_link_libraries(
+  coreplugin
+  PRIVATE core
+          extensionsystem
+          widgets
+          resource
+          utils
+          Qt::Widgets
+          tl::expected)

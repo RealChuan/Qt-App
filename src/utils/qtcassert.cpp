@@ -9,9 +9,9 @@
 #include <QTime>
 
 #if defined(Q_OS_UNIX)
-#include <execinfo.h>
-#include <signal.h>
 #include <stdio.h>
+#include <signal.h>
+#include <execinfo.h>
 #elif defined(_MSC_VER)
 #ifdef QTCREATOR_PCH_H
 #define CALLBACK WINAPI
@@ -19,7 +19,6 @@
 #define IN
 #endif
 #include <Windows.h>
-
 #include <DbgHelp.h>
 #endif
 
@@ -88,7 +87,7 @@ void dumpBacktrace(int maxdepth)
         if (++depth < 0)
             continue;
         char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
-        PSYMBOL_INFO pSymbol = (PSYMBOL_INFO) buffer;
+        PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)buffer;
         pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
         pSymbol->MaxNameLen = MAX_SYM_NAME;
 

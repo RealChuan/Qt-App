@@ -3,7 +3,7 @@
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
 #include <dump/breakpad.hpp>
 #include <resource/resource.hpp>
-#include <utils/appinfo.hpp>
+#include <utils/appdata.hpp>
 #include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
 #include <utils/utils.h>

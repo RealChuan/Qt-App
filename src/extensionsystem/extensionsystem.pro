@@ -1,15 +1,16 @@
 include(../lib.pri)
+include(../3rdparty/3rdparty.pri)
 
-QT += widgets core5compat
+QT += widgets core5compat network
 
 DEFINES += EXTENSIONSYSTEM_LIBRARY
 TARGET = $$replaceLibName(extensionsystem)
 
 LIBS += \
     -l$$replaceLibName(aggregation) \
-    -l$$replaceLibName(gui) \
-    -l$$replaceLibName(resource) \
-    -l$$replaceLibName(utils)
+    -l$$replaceLibName(utils) \
+    -l$$replaceLibName(tasking) \
+    -l$$replaceLibName(spinner)
 
 HEADERS += \
     extensionsystem_global.h \
@@ -23,7 +24,6 @@ HEADERS += \
     pluginmanager.h \
     pluginmanager_p.h \
     pluginspec.h \
-    pluginspec_p.h \
     pluginview.h
 
 SOURCES += \

@@ -61,7 +61,7 @@ InvokerBase::~InvokerBase()
             sig.constData(), target->metaObject()->className());
 }
 
-auto InvokerBase::wasSuccessful() const -> bool
+bool InvokerBase::wasSuccessful() const
 {
     nag = false;
     return success;

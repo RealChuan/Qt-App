@@ -1,6 +1,7 @@
 include(../plugins.pri)
+include(../../3rdparty/3rdparty.pri)
 
-QT += widgets
+QT += widgets network core5compat
 
 DEFINES += GUIPLUGIN_LIBRARY
 TARGET = $$replaceLibName(guiplugin)
@@ -8,7 +9,7 @@ TARGET = $$replaceLibName(guiplugin)
 LIBS += \
     -l$$replaceLibName(core) \
     -l$$replaceLibName(extensionsystem) \
-    -l$$replaceLibName(gui) \
+    -l$$replaceLibName(widgets) \
     -l$$replaceLibName(utils)
 
 SOURCES += \
@@ -16,7 +17,6 @@ SOURCES += \
     guiwidget.cc
 
 HEADERS += \
-    guiplugin.hpp \
     guiwidget.hpp
 
 DISTFILES += \
