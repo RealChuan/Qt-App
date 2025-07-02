@@ -1,6 +1,6 @@
 #include "aboutwidget.hpp"
 
-#include <utils/appinfo.hpp>
+#include <utils/appdata.hpp>
 #include <utils/utils.h>
 
 #include <QtWidgets>

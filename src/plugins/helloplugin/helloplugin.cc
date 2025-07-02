@@ -1,20 +1,35 @@
-#include "helloplugin.hpp"
 #include "hellowidget.hpp"
+
+#include <core/corewidget.hpp>
+#include <extensionsystem/iplugin.h>
 
 #include <QPushButton>
 
 namespace Plugin {
 
-HelloPluginWidget::HelloPluginWidget(QObject *parent)
+class HelloPluginWidget : public Core::CoreWidget
 {
-    setWidget(new HelloWidget);
-    setButton(new QPushButton(tr("Hello")), Core::CoreWidget::Main);
-}
+    Q_OBJECT
+public:
+    explicit HelloPluginWidget(QObject *parent = nullptr)
+    {
+        setWidget(new HelloWidget);
+        setButton(new QPushButton(tr("Hello")), Core::CoreWidget::Main);
+    }
+};
 
-bool HelloPlugin::initialize(const QStringList &arguments, QString *errorString)
+class HelloPlugin : public ExtensionSystem::IPlugin
 {
-    addObject(new HelloPluginWidget(this));
-    return true;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "helloplugin.json")
+public:
+    Utils::Result<> initialize(const QStringList &arguments) override
+    {
+        addObject(new HelloPluginWidget(this));
+        return Utils::ResultOk;
+    }
+};
 
 } // namespace Plugin
+
+#include "helloplugin.moc"

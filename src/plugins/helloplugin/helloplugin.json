@@ -1,11 +1,17 @@
 {
+    "Id": "helloplugin",
+    "DisplayName": "Hello",
     "Name": "HelloPlugin",
     "Version": "0.1.1",
     "CompatVersion": "0.1.1",
     "Required": false,
+    "VendorId": "Youth",
     "Vendor": "Youth",
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Main",
-    "Description": "Hello"
+    "Description": "Hello Widget Plugin",
+    "LongDescription": "Hello Widget Plugin",
+    "Url": "",
+    "DocumentationUrl": ""
 }

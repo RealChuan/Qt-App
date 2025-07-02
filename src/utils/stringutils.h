@@ -5,8 +5,11 @@
 
 #include "utils_global.h"
 
+#include <QBrush>
 #include <QList>
 #include <QString>
+#include <QSyntaxHighlighter>
+#include <QTextDocument>
 
 #include <functional>
 
@@ -16,55 +19,37 @@ QT_END_NAMESPACE
 
 namespace Utils {
 
+class FilePath;
+
 // Create a usable settings key from a category,
 // for example Editor|C++ -> Editor_C__
-UTILS_EXPORT auto settingsKey(const QString &category) -> QString;
+UTILS_EXPORT QString settingsKey(const QString &category);
 
 // Return the common prefix part of a string list:
 // "C:\foo\bar1" "C:\foo\bar2"  -> "C:\foo\bar"
-UTILS_EXPORT auto commonPrefix(const QStringList &strings) -> QString;
+UTILS_EXPORT QString commonPrefix(const QStringList &strings);
 
 // Removes first unescaped ampersand in text
-UTILS_EXPORT auto stripAccelerator(const QString &text) -> QString;
+UTILS_EXPORT QString stripAccelerator(const QString &text);
 // Quotes all ampersands
-UTILS_EXPORT auto quoteAmpersands(const QString &text) -> QString;
+UTILS_EXPORT QString quoteAmpersands(const QString &text);
+// Convert non-ascii characters into foobar
+UTILS_EXPORT QString asciify(const QString &input);
 
-UTILS_EXPORT auto readMultiLineString(const QJsonValue &value, QString *out) -> bool;
+UTILS_EXPORT bool readMultiLineString(const QJsonValue &value, QString *out);
+
+UTILS_EXPORT QByteArray removeCommentsFromJson(const QByteArray &json);
 
 // Compare case insensitive and use case sensitive comparison in case of that being equal.
-UTILS_EXPORT auto caseFriendlyCompare(const QString &a, const QString &b) -> int;
+UTILS_EXPORT int caseFriendlyCompare(const QString &a, const QString &b);
 
-class UTILS_EXPORT AbstractMacroExpander
-{
-public:
-    virtual ~AbstractMacroExpander() {}
-    // Not const, as it may change the state of the expander.
-    //! Find an expando to replace and provide a replacement string.
-    //! \param str The string to scan
-    //! \param pos Position to start scan on input, found position on output
-    //! \param ret Replacement string on output
-    //! \return Length of string part to replace, zero if no (further) matches found
-    virtual auto findMacro(const QString &str, int *pos, QString *ret) -> int;
-    //! Provide a replacement string for an expando
-    //! \param name The name of the expando
-    //! \param ret Replacement string on output
-    //! \return True if the expando was found
-    virtual auto resolveMacro(const QString &name, QString *ret, QSet<AbstractMacroExpander *> &seen) -> bool
-        = 0;
+UTILS_EXPORT int parseUsedPortFromNetstatOutput(const QByteArray &line);
 
-private:
-    auto expandNestedMacros(const QString &str, int *pos, QString *ret) -> bool;
-};
-
-UTILS_EXPORT void expandMacros(QString *str, AbstractMacroExpander *mx);
-UTILS_EXPORT auto expandMacros(const QString &str, AbstractMacroExpander *mx) -> QString;
-
-UTILS_EXPORT auto parseUsedPortFromNetstatOutput(const QByteArray &line) -> int;
-
-UTILS_EXPORT auto appendHelper(const QString &base, int n) -> QString;
+UTILS_EXPORT QString appendHelper(const QString &base, int n);
+UTILS_EXPORT FilePath appendHelper(const FilePath &base, int n);
 
 template<typename T>
-auto makeUniquelyNumbered(const T &preferred, const std::function<bool(const T &)> &isOk) -> T
+T makeUniquelyNumbered(const T &preferred, const std::function<bool(const T &)> &isOk)
 {
     if (isOk(preferred))
         return preferred;
@@ -76,7 +61,7 @@ auto makeUniquelyNumbered(const T &preferred, const std::function<bool(const T &
 }
 
 template<typename T, typename Container>
-auto makeUniquelyNumbered(const T &preferred, const Container &reserved) -> T
+T makeUniquelyNumbered(const T &preferred, const Container &reserved)
 {
     const std::function<bool(const T &)> isOk = [&reserved](const T &v) {
         return !reserved.contains(v);
@@ -84,7 +69,7 @@ auto makeUniquelyNumbered(const T &preferred, const Container &reserved) -> T
     return makeUniquelyNumbered(preferred, isOk);
 }
 
-UTILS_EXPORT auto formatElapsedTime(qint64 elapsed) -> QString;
+UTILS_EXPORT QString formatElapsedTime(qint64 elapsed);
 
 /* This function is only necessary if you need to match the wildcard expression against a
  * string that might contain path separators - otherwise
@@ -92,9 +77,9 @@ UTILS_EXPORT auto formatElapsedTime(qint64 elapsed) -> QString;
  * Working around QRegularExpression::wildcardToRegularExpression() taking native separators
  * into account and handling them to disallow matching a wildcard characters.
  */
-UTILS_EXPORT auto wildcardToRegularExpression(const QString &original) -> QString;
+UTILS_EXPORT QString wildcardToRegularExpression(const QString &original);
 
-UTILS_EXPORT auto languageNameFromLanguageCode(const QString &languageCode) -> QString;
+UTILS_EXPORT QString languageNameFromLanguageCode(const QString &languageCode);
 
 #ifdef QT_WIDGETS_LIB
 
@@ -103,15 +88,23 @@ UTILS_EXPORT void setClipboardAndSelection(const QString &text);
 
 #endif
 
-UTILS_EXPORT auto chopIfEndsWith(QString str, QChar c) -> QString;
+UTILS_EXPORT QString chopIfEndsWith(QString str, QChar c);
 UTILS_EXPORT QStringView chopIfEndsWith(QStringView str, QChar c);
 
-UTILS_EXPORT auto normalizeNewlines(const QString &text) -> QString;
+UTILS_EXPORT QString normalizeNewlines(const QStringView &text);
+UTILS_EXPORT QByteArray normalizeNewlines(const QByteArray &text);
 
 // Skips empty parts - see QTBUG-110900
-UTILS_EXPORT auto joinStrings(const QStringList &strings, QChar separator) -> QString;
-UTILS_EXPORT auto trimFront(const QString &string, QChar ch) -> QString;
-UTILS_EXPORT auto trimBack(const QString &string, QChar ch) -> QString;
-UTILS_EXPORT auto trim(const QString &string, QChar ch) -> QString;
+UTILS_EXPORT QString joinStrings(const QStringList &strings, QChar separator);
+UTILS_EXPORT QString trimFront(const QString &string, QChar ch);
+UTILS_EXPORT QString trimBack(const QString &string, QChar ch);
+UTILS_EXPORT QString trim(const QString &string, QChar ch);
+
+UTILS_EXPORT QPair<QStringView, QStringView> splitAtFirst(const QString &string, QChar ch);
+UTILS_EXPORT QPair<QStringView, QStringView> splitAtFirst(const QStringView &stringView, QChar ch);
+
+UTILS_EXPORT int endOfNextWord(const QString &string, int position = 0);
+
+UTILS_EXPORT QString ansiColoredText(const QString &text, const QColor &color);
 
 } // namespace Utils

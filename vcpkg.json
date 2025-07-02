@@ -5,7 +5,8 @@
   "description": "manifest",
   "dependencies": [
     "breakpad",
-    "crashpad"
+    "crashpad",
+    "tl-expected"
   ],
-  "builtin-baseline": "d5cb5b9392b89fe9ad25786022415999202277d6"
+  "builtin-baseline": "f9b54c1c539dda8d61c3001bb30eb9f0c5032086"
 }

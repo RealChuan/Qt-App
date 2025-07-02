@@ -2,28 +2,28 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "benchmarker.h"
+#include "environment.h"
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <QProcessEnvironment>
 #include <QTimer>
 
 static Q_LOGGING_CATEGORY(benchmarksLog, "qtc.benchmark", QtWarningMsg);
 
 namespace Utils {
 
-Benchmarker::Benchmarker(const QString &testsuite, const QString &testcase, const QString &tagData)
-    : Benchmarker(benchmarksLog(), testsuite, testcase, tagData)
-{}
+Benchmarker::Benchmarker(const QString &testsuite, const QString &testcase,
+                         const QString &tagData) :
+    Benchmarker(benchmarksLog(), testsuite, testcase, tagData)
+{ }
 
 Benchmarker::Benchmarker(const QLoggingCategory &cat,
-                         const QString &testsuite,
-                         const QString &testcase,
-                         const QString &tagData)
-    : m_category(cat)
-    , m_tagData(tagData)
-    , m_testsuite(testsuite)
-    , m_testcase(testcase)
+                         const QString &testsuite, const QString &testcase,
+                         const QString &tagData) :
+    m_category(cat),
+    m_tagData(tagData),
+    m_testsuite(testsuite),
+    m_testcase(testcase)
 {
     m_timer.start();
 }
@@ -41,21 +41,15 @@ void Benchmarker::report(qint64 ms)
 }
 
 void Benchmarker::report(const QString &testsuite,
-                         const QString &testcase,
-                         qint64 ms,
-                         const QString &tags)
+                         const QString &testcase, qint64 ms, const QString &tags)
 {
     report(benchmarksLog(), testsuite, testcase, ms, tags);
 }
 
-void Benchmarker::report(const QLoggingCategory &cat,
-                         const QString &testsuite,
-                         const QString &testcase,
-                         qint64 ms,
-                         const QString &tags)
+void Benchmarker::report(const QLoggingCategory &cat, const QString &testsuite, const QString &testcase,
+                         qint64 ms, const QString &tags)
 {
-    static const QByteArray quitAfter
-        = QProcessEnvironment().value("QTC_QUIT_AFTER_BENCHMARK").toLatin1();
+    static const QByteArray quitAfter = qtcEnvironmentVariable("QTC_QUIT_AFTER_BENCHMARK").toLatin1();
     QString t = "unit=ms";
     if (!tags.isEmpty())
         t += "," + tags;
@@ -66,5 +60,6 @@ void Benchmarker::report(const QLoggingCategory &cat,
     if (!quitAfter.isEmpty() && quitAfter == testSuite + "::" + testCase)
         QTimer::singleShot(1000, qApp, &QCoreApplication::quit);
 }
+
 
 } // namespace Utils

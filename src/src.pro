@@ -2,10 +2,11 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
+    solutions \
     utils \
     dump \
     resource \
-    gui \
+    widgets \
     3rdparty \
     aggregation \
     extensionsystem \

@@ -83,6 +83,7 @@ Source: "..\packet\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignore
 Source: "..\packet\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\plugins\*"; DestDir: "{app}\plugins"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "..\packet\resources\*"; DestDir: "{app}\resources"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion createallsubdirs recursesubdirs
@@ -94,7 +95,6 @@ Source: "..\packet\dump.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\dxil.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\extensionsystem.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\packet\gui.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\opengl32sw.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Core5Compat.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -103,9 +103,12 @@ Source: "..\packet\Qt6Network.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\resource.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\spinner.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\tasking.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\thirdparty.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\utils.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\vc_redist.x64.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; Source: "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Redist\MSVC\14.29.30133\x86\Microsoft.VC142.CRT\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 ; Source: "C:\Program Files (x86)\Windows Kits\10\Redist\10.0.19041.0\ucrt\DLLs\x86\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs

@@ -1,60 +1,190 @@
 set(PROJECT_SOURCES
-    mimetypes/mimedatabase_p.h
-    mimetypes/mimedatabase.cpp
-    mimetypes/mimedatabase.h
-    mimetypes/mimeglobpattern_p.h
-    mimetypes/mimeglobpattern.cpp
-    mimetypes/mimemagicrule_p.h
-    mimetypes/mimemagicrule.cpp
-    mimetypes/mimemagicrulematcher_p.h
-    mimetypes/mimemagicrulematcher.cpp
-    mimetypes/mimeprovider_p.h
-    mimetypes/mimeprovider.cpp
-    mimetypes/mimetype_p.h
-    mimetypes/mimetype.cpp
-    mimetypes/mimetype.h
-    mimetypes/mimetypeparser_p.h
-    mimetypes/mimetypeparser.cpp
-    mimetypes/mimeutils.cpp
+    fsengine/diriterator.h
+    fsengine/fileiconprovider.cpp
+    fsengine/fileiconprovider.h
+    fsengine/fileiteratordevicesappender.h
+    fsengine/filepathinfocache.h
+    fsengine/fsengine.cpp
+    fsengine/fsengine.h
+    fsengine/fsenginehandler.cpp
+    fsengine/fsenginehandler.h
+    mimetypes2/mimedatabase_p.h
+    mimetypes2/mimedatabase.cpp
+    mimetypes2/mimedatabase.h
+    mimetypes2/mimeglobpattern_p.h
+    mimetypes2/mimeglobpattern.cpp
+    mimetypes2/mimemagicrule_p.h
+    mimetypes2/mimemagicrule.cpp
+    mimetypes2/mimemagicrulematcher_p.h
+    mimetypes2/mimemagicrulematcher.cpp
+    mimetypes2/mimeprovider_p.h
+    mimetypes2/mimeprovider.cpp
+    mimetypes2/mimetype_p.h
+    mimetypes2/mimetype.cpp
+    mimetypes2/mimetype.h
+    mimetypes2/mimetypeparser_p.h
+    mimetypes2/mimetypeparser.cpp
+    mimetypes2/mimeutils.cpp
+    theme/theme_p.h
+    theme/theme.cpp
+    theme/theme.h
+    tooltip/effects.h
+    tooltip/tips.cpp
+    tooltip/tips.h
+    tooltip/tooltip.cpp
+    tooltip/tooltip.h
     algorithm.h
-    appinfo.cc
-    appinfo.hpp
+    appdata.hpp
+    appinfo.cpp
+    appinfo.h
+    async.cpp
+    async.h
     benchmarker.cpp
     benchmarker.h
-    countdownlatch.cc
-    countdownlatch.hpp
-    executeondestruction.h
+    builderutils.h
+    camelcasecursor.cpp
+    camelcasecursor.h
+    categorysortfiltermodel.cpp
+    categorysortfiltermodel.h
+    commandline.cpp
+    commandline.h
+    completinglineedit.cpp
+    completinglineedit.h
+    devicefileaccess.cpp
+    devicefileaccess.h
+    elidinglabel.cpp
+    elidinglabel.h
+    environment.cpp
+    environment.h
+    environmentfwd.h
+    execmenu.cpp
+    execmenu.h
+    expected.h
+    faketooltip.cpp
+    faketooltip.h
+    fancylineedit.cpp
+    fancylineedit.h
+    filepath.cpp
+    filepath.h
+    filepathinfo.h
+    filestreamer.cpp
+    filestreamer.h
+    filestreamermanager.cpp
+    filestreamermanager.h
+    fileutils.cpp
+    fileutils.h
+    futuresynchronizer.cpp
+    futuresynchronizer.h
+    guard.cpp
+    guard.h
+    guiutils.cpp
+    guiutils.h
+    historycompleter.cpp
+    historycompleter.h
     hostosinfo.cpp
     hostosinfo.h
+    icon.cpp
+    icon.h
+    icondisplay.cpp
+    icondisplay.h
+    id.cpp
+    id.h
     indexedcontainerproxyconstiterator.h
+    infolabel.cpp
+    infolabel.h
+    itemviews.cpp
+    itemviews.h
     languageconfig.cc
     languageconfig.hpp
+    layoutbuilder.cpp
+    layoutbuilder.h
     logasync.cpp
     logasync.h
     logfile.cc
     logfile.hpp
+    macroexpander.cpp
+    macroexpander.h
     mimeutils.h
+    multitextcursor.cpp
+    multitextcursor.h
+    namevaluedictionary.cpp
+    namevaluedictionary.h
+    namevalueitem.cpp
+    namevalueitem.h
     osspecificaspects.h
     predicates.h
+    processenums.h
+    processhelper.cpp
+    processhelper.h
+    processinterface.cpp
+    processinterface.h
+    processreaper.cpp
+    processreaper.h
     qtcassert.cpp
     qtcassert.h
+    qtcprocess.cpp
+    qtcprocess.h
     qtcsettings.cpp
     qtcsettings.h
+    result.cpp
+    result.h
+    savefile.cpp
+    savefile.h
+    shutdownguard.cpp
+    shutdownguard.h
     singleton.hpp
+    store.cpp
+    store.h
+    storekey.h
+    stringtable.cpp
+    stringtable.h
     stringutils.cpp
     stringutils.h
-    taskqueue.h
+    stylehelper.cpp
+    stylehelper.h
+    textcodec.cpp
+    textcodec.h
+    threadutils.cpp
+    threadutils.h
+    treemodel.cpp
+    treemodel.h
     utils_global.h
     utils.cpp
     utils.h
+    utilsicons.cpp
+    utilsicons.h
     utilstr.h
+    utiltypes.h
     validator.cc
     validator.hpp)
 
-add_custom_library(utils ${PROJECT_SOURCES})
-target_link_libraries(utils PRIVATE Qt6::Widgets Qt6::Core5Compat)
+if(CMAKE_HOST_APPLE)
+  list(APPEND PROJECT_SOURCES theme/theme_mac.mm theme/theme_mac.h
+       fileutils_mac.mm fileutils_mac.h)
+endif()
+
+qt_add_resources(RESOURCE_SOURCES utils.qrc)
+
+add_custom_library(utils ${PROJECT_SOURCES} ${RESOURCE_SOURCES})
+target_link_libraries(
+  utils
+  PRIVATE spinner
+          tasking
+          Qt::Network
+          Qt::Widgets
+          Qt::Concurrent
+          Qt::Core5Compat
+          Qt::CorePrivate
+          tl::expected)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(utils PRIVATE "UTILS_LIBRARY")
-  target_link_libraries(utils PRIVATE dbghelp)
+  target_link_libraries(utils PRIVATE dbghelp user32 shell32)
+elseif(CMAKE_HOST_APPLE)
+  find_library(Foundation_LIBRARY Foundation)
+  find_library(AppKit_LIBRARY AppKit)
+  target_link_libraries(utils PRIVATE ${Foundation_LIBRARY} ${AppKit_LIBRARY})
+  target_compile_definitions(utils PRIVATE "UTILS_STATIC_LIBRARY")
+else()
+  target_compile_definitions(utils PRIVATE "UTILS_STATIC_LIBRARY")
 endif()
