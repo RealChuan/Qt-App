@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "iplugin.h"
-#include "pluginmanager.h"
+
+#include "pluginmanager_p.h"
 
 #include <utils/algorithm.h>
 
@@ -29,7 +30,7 @@
 */
 
 /*!
-    \enum IPlugin::ShutdownFlag
+    \enum ExtensionSystem::IPlugin::ShutdownFlag
 
     This enum type holds whether the plugin is shut down synchronously or
     asynchronously.
@@ -160,42 +161,27 @@
 */
 
 namespace ExtensionSystem {
-namespace Internal {
-
-class IPluginPrivate
-{
-public:
-    QList<TestCreator> testCreators;
-};
-
-} // namespace Internal
 
 /*!
     \internal
 */
-IPlugin::IPlugin()
-    : d(new Internal::IPluginPrivate())
-{}
+IPlugin::IPlugin() = default;
 
 /*!
     \internal
 */
-IPlugin::~IPlugin()
-{
-    delete d;
-    d = nullptr;
-}
+IPlugin::~IPlugin() = default;
 
-bool IPlugin::initialize(const QStringList &arguments, QString *errorString)
+Utils::Result<> IPlugin::initialize(const QStringList &arguments)
 {
     Q_UNUSED(arguments)
-    Q_UNUSED(errorString)
     initialize();
-    return true;
+    return Utils::ResultOk;
 }
 
 /*!
-    Registers a function object that creates a test object.
+    Registers a function object that creates a test object with the owner
+    \a creator.
 
     The created objects are meant to be passed on to \l QTest::qExec().
 
@@ -207,17 +193,7 @@ bool IPlugin::initialize(const QStringList &arguments, QString *errorString)
 
 void IPlugin::addTestCreator(const TestCreator &creator)
 {
-    d->testCreators.append(creator);
-}
-
-/*!
-    \deprecated [10.0] Use addTest() instead
-
-    \sa addTest()
-*/
-QVector<QObject *> IPlugin::createTestObjects() const
-{
-    return Utils::transform(d->testCreators, &TestCreator::operator());
+    Internal::PluginManagerPrivate::addTestCreator(this, creator);
 }
 
 void IPlugin::addObject(QObject *obj)

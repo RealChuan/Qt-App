@@ -5,6 +5,8 @@
 
 #include "extensionsystem_global.h"
 
+#include <utils/result.h>
+
 #include <QObject>
 
 #include <functional>
@@ -27,22 +29,16 @@ public:
     IPlugin();
     ~IPlugin() override;
 
-    virtual auto initialize(const QStringList &arguments, QString *errorString) -> bool;
+    virtual Utils::Result<> initialize(const QStringList &arguments);
     virtual void extensionsInitialized() {}
-    virtual auto delayedInitialize() -> bool { return false; }
-    virtual auto aboutToShutdown() -> ShutdownFlag { return SynchronousShutdown; }
-    virtual auto remoteCommand(const QStringList & /* options */,
-                               const QString & /* workingDirectory */,
-                               const QStringList & /* arguments */) -> QObject *
+    virtual bool delayedInitialize() { return false; }
+    virtual ShutdownFlag aboutToShutdown() { return SynchronousShutdown; }
+    virtual QObject *remoteCommand(const QStringList & /* options */,
+                                   const QString & /* workingDirectory */,
+                                   const QStringList & /* arguments */)
     {
         return nullptr;
     }
-
-    // Deprecated in 10.0, use addTest()
-    [[nodiscard]] virtual auto createTestObjects() const -> QVector<QObject *>;
-
-protected:
-    virtual void initialize() {}
 
     template<typename Test, typename... Args>
     void addTest(Args &&...args)
@@ -51,6 +47,9 @@ protected:
     }
     void addTestCreator(const TestCreator &creator);
 
+protected:
+    virtual void initialize() {}
+
 signals:
     void asynchronousShutdownFinished();
 
@@ -58,7 +57,7 @@ protected:
     void addObject(QObject *obj);
 
 private:
-    Internal::IPluginPrivate *d;
+    Internal::IPluginPrivate *d = nullptr; // For potential extension. Currently unused.
 };
 
 } // namespace ExtensionSystem

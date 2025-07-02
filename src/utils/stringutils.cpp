@@ -3,9 +3,10 @@
 
 #include "stringutils.h"
 
-#include "algorithm.h"
-#include "hostosinfo.h"
+#include "filepath.h"
 #include "qtcassert.h"
+// #include "stylehelper.h"
+// #include "theme/theme.h"
 #include "utilstr.h"
 
 #ifdef QT_WIDGETS_LIB
@@ -13,19 +14,24 @@
 #include <QClipboard>
 #endif
 
+#include <QCollator>
 #include <QDir>
+#include <QFontMetrics>
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QLocale>
+#include <QPalette>
 #include <QRegularExpression>
 #include <QSet>
+#include <QTextDocument>
+#include <QTextList>
 #include <QTime>
 
 #include <limits.h>
 
 namespace Utils {
 
-UTILS_EXPORT auto settingsKey(const QString &category) -> QString
+UTILS_EXPORT QString settingsKey(const QString &category)
 {
     QString rc(category);
     const QChar underscore = '_';
@@ -43,7 +49,7 @@ UTILS_EXPORT auto settingsKey(const QString &category) -> QString
 }
 
 // Figure out length of common start of string ("C:\a", "c:\b"  -> "c:\"
-static inline auto commonPartSize(const QString &s1, const QString &s2) -> int
+static inline int commonPartSize(const QString &s1, const QString &s2)
 {
     const int size = qMin(s1.size(), s2.size());
     for (int i = 0; i < size; i++)
@@ -52,7 +58,7 @@ static inline auto commonPartSize(const QString &s1, const QString &s2) -> int
     return size;
 }
 
-UTILS_EXPORT auto commonPrefix(const QStringList &strings) -> QString
+UTILS_EXPORT QString commonPrefix(const QStringList &strings)
 {
     switch (strings.size()) {
     case 0: return QString();
@@ -64,132 +70,12 @@ UTILS_EXPORT auto commonPrefix(const QStringList &strings) -> QString
     const int last = strings.size() - 1;
     for (int i = 0; i < last; i++)
         commonLength = qMin(commonLength, commonPartSize(strings.at(i), strings.at(i + 1)));
-    if (commonLength == 0)
+    if (!commonLength)
         return QString();
     return strings.at(0).left(commonLength);
 }
 
-static auto validateVarName(const QString &varName) -> bool
-{
-    return !varName.startsWith("JS:");
-}
-
-bool AbstractMacroExpander::expandNestedMacros(const QString &str, int *pos, QString *ret)
-{
-    QString varName;
-    QString pattern, replace;
-    QString defaultValue;
-    QString *currArg = &varName;
-    QChar prev;
-    QChar c;
-    QChar replacementChar;
-    bool replaceAll = false;
-
-    int i = *pos;
-    int strLen = str.length();
-    varName.reserve(strLen - i);
-    for (; i < strLen; prev = c) {
-        c = str.at(i++);
-        if (c == '\\' && i < strLen) {
-            c = str.at(i++);
-            // For the replacement, do not skip the escape sequence when followed by a digit.
-            // This is needed for enabling convenient capture group replacement,
-            // like %{var/(.)(.)/\2\1}, without escaping the placeholders.
-            if (currArg == &replace && c.isDigit())
-                *currArg += '\\';
-            *currArg += c;
-        } else if (c == '}') {
-            if (varName.isEmpty()) { // replace "%{}" with "%"
-                *ret = QString('%');
-                *pos = i;
-                return true;
-            }
-            QSet<AbstractMacroExpander *> seen;
-            if (resolveMacro(varName, ret, seen)) {
-                *pos = i;
-                if (!pattern.isEmpty() && currArg == &replace) {
-                    const QRegularExpression regexp(pattern);
-                    if (regexp.isValid()) {
-                        if (replaceAll) {
-                            ret->replace(regexp, replace);
-                        } else {
-                            // There isn't an API for replacing once...
-                            const QRegularExpressionMatch match = regexp.match(*ret);
-                            if (match.hasMatch()) {
-                                *ret = ret->left(match.capturedStart(0))
-                                       + match.captured(0).replace(regexp, replace)
-                                       + ret->mid(match.capturedEnd(0));
-                            }
-                        }
-                    }
-                }
-                return true;
-            }
-            if (!defaultValue.isEmpty()) {
-                *pos = i;
-                *ret = defaultValue;
-                return true;
-            }
-            return false;
-        } else if (c == '{' && prev == '%') {
-            if (!expandNestedMacros(str, &i, ret))
-                return false;
-            varName.chop(1);
-            varName += *ret;
-        } else if (currArg == &varName && c == '-' && prev == ':' && validateVarName(varName)) {
-            varName.chop(1);
-            currArg = &defaultValue;
-        } else if (currArg == &varName && (c == '/' || c == '#') && validateVarName(varName)) {
-            replacementChar = c;
-            currArg = &pattern;
-            if (i < strLen && str.at(i) == replacementChar) {
-                ++i;
-                replaceAll = true;
-            }
-        } else if (currArg == &pattern && c == replacementChar) {
-            currArg = &replace;
-        } else {
-            *currArg += c;
-        }
-    }
-    return false;
-}
-
-int AbstractMacroExpander::findMacro(const QString &str, int *pos, QString *ret)
-{
-    forever {
-        int openPos = str.indexOf("%{", *pos);
-        if (openPos < 0)
-            return 0;
-        int varPos = openPos + 2;
-        if (expandNestedMacros(str, &varPos, ret)) {
-            *pos = openPos;
-            return varPos - openPos;
-        }
-        // An actual expansion may be nested into a "false" one,
-        // so we continue right after the last %{.
-        *pos = openPos + 2;
-    }
-}
-
-UTILS_EXPORT void expandMacros(QString *str, AbstractMacroExpander *mx)
-{
-    QString rsts;
-
-    for (int pos = 0; int len = mx->findMacro(*str, &pos, &rsts);) {
-        str->replace(pos, len, rsts);
-        pos += rsts.length();
-    }
-}
-
-UTILS_EXPORT auto expandMacros(const QString &str, AbstractMacroExpander *mx) -> QString
-{
-    QString ret = str;
-    expandMacros(&ret, mx);
-    return ret;
-}
-
-UTILS_EXPORT auto stripAccelerator(const QString &text) -> QString
+UTILS_EXPORT QString stripAccelerator(const QString &text)
 {
     QString res = text;
     for (int index = res.indexOf('&'); index != -1; index = res.indexOf('&', index + 1))
@@ -197,13 +83,63 @@ UTILS_EXPORT auto stripAccelerator(const QString &text) -> QString
     return res;
 }
 
-UTILS_EXPORT auto readMultiLineString(const QJsonValue &value, QString *out) -> bool
+UTILS_EXPORT QByteArray removeCommentsFromJson(const QByteArray &input)
+{
+    QByteArray output;
+    bool inString = false;
+    bool inSingleLineComment = false;
+    bool inMultiLineComment = false;
+    char previousChar = '\0';
+
+    for (int i = 0; i < input.size(); ++i) {
+        char currentChar = input[i];
+        char nextChar = (i + 1 < input.size()) ? input[i + 1] : '\0';
+
+        if (inSingleLineComment) {
+            if (currentChar == '\n') {
+                inSingleLineComment = false;
+                output.append(currentChar); // Keep the newline
+            }
+            // Skip character
+        } else if (inMultiLineComment) {
+            if (currentChar == '*' && nextChar == '/') {
+                inMultiLineComment = false;
+                ++i; // Skip '/'
+            }
+            // Skip character
+        } else if (inString) {
+            if (currentChar == '"' && previousChar != '\\') {
+                inString = false;
+            }
+            output.append(currentChar);
+        } else {
+            if (currentChar == '/' && nextChar == '/') {
+                inSingleLineComment = true;
+                ++i; // Skip second '/'
+            } else if (currentChar == '/' && nextChar == '*') {
+                inMultiLineComment = true;
+                ++i; // Skip '*'
+            } else {
+                if (currentChar == '"') {
+                    inString = true;
+                }
+                output.append(currentChar);
+            }
+        }
+
+        previousChar = currentChar;
+    }
+
+    return output;
+}
+
+UTILS_EXPORT bool readMultiLineString(const QJsonValue &value, QString *out)
 {
     QTC_ASSERT(out, return false);
     if (value.isString()) {
         *out = value.toString();
     } else if (value.isArray()) {
-        QJsonArray array = value.toArray();
+        const QJsonArray array = value.toArray();
         QStringList lines;
         for (const QJsonValue &v : array) {
             if (!v.isString())
@@ -217,121 +153,177 @@ UTILS_EXPORT auto readMultiLineString(const QJsonValue &value, QString *out) -> 
     return true;
 }
 
-UTILS_EXPORT auto parseUsedPortFromNetstatOutput(const QByteArray &line) -> int
-{
-    const QByteArray trimmed = line.trimmed();
-    int base = 0;
-    QByteArray portString;
+enum class Base { Dec, Hex };
 
-    if (trimmed.startsWith("TCP") || trimmed.startsWith("UDP")) {
-        // Windows.  Expected output is something like
-        //
-        // Active Connections
-        //
-        //   Proto  Local Address          Foreign Address        State
-        //   TCP    0.0.0.0:80             0.0.0.0:0              LISTENING
-        //   TCP    0.0.0.0:113            0.0.0.0:0              LISTENING
-        // [...]
-        //   TCP    10.9.78.4:14714       0.0.0.0:0              LISTENING
-        //   TCP    10.9.78.4:50233       12.13.135.180:993      ESTABLISHED
-        // [...]
-        //   TCP    [::]:445               [::]:0                 LISTENING
-        //   TCP    192.168.0.80:51905     169.55.74.50:443       ESTABLISHED
-        //   UDP    [fe80::880a:2932:8dff:a858%6]:1900  *:*
-        const int firstBracketPos = trimmed.indexOf('[');
-        int colonPos = -1;
-        if (firstBracketPos == -1) {
-            colonPos = trimmed.indexOf(':'); // IPv4
-        } else {
-            // jump over host part
-            const int secondBracketPos = trimmed.indexOf(']', firstBracketPos + 1);
-            colonPos = trimmed.indexOf(':', secondBracketPos);
-        }
-        const int firstDigitPos = colonPos + 1;
-        const int spacePos = trimmed.indexOf(' ', firstDigitPos);
-        if (spacePos < 0)
+static bool isHex(const QChar &c)
+{
+    return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+static bool isDigit(const QChar &c, Base base)
+{
+    if (base == Base::Hex && isHex(c))
+        return true;
+    return c.isDigit();
+}
+
+static int trailingNumber(const QString &line, Base base = Base::Dec)
+{
+    int lastNumberPos = line.size();
+    while (lastNumberPos > 0) {
+        if (!isDigit(line.at(lastNumberPos - 1), base))
+            break;
+        --lastNumberPos;
+    }
+    bool ok = true;
+    const int port = line.mid(lastNumberPos).toInt(&ok, base == Base::Dec ? 10 : 16);
+    return ok ? port : -1;
+}
+
+/*
+
+Parsing algo is simple:
+Depending on the value of 1st column we detect whether it's Win, Mac / Android / Qnx, or Linux
+output.
+
+In case of Win or Linux, we select the 2nd column for port parsing, otherwise we select
+the 4th column.
+
+For selected column we parse the trailing digits. In case of Linux we take into account hex digits.
+
+Expected output (see tst_StringUtils::testParseUsedPortFromNetstatOutput_data()):
+
+    === Windows ===
+
+    Active Connections
+
+    Proto  Local Address          Foreign Address        State
+    TCP    0.0.0.0:80             0.0.0.0:0              LISTENING
+    TCP    0.0.0.0:113            0.0.0.0:0              LISTENING
+    [...]
+    TCP    10.9.78.4:14714        0.0.0.0:0              LISTENING
+    TCP    10.9.78.4:50233        12.13.135.180:993      ESTABLISHED
+    [...]
+    TCP    [::]:445               [::]:0                 LISTENING
+    TCP    192.168.0.80:51905     169.55.74.50:443       ESTABLISHED
+    UDP    [fe80::880a:2932:8dff:a858%6]:1900  *:*
+
+    === Mac ===
+
+    Active Internet connections (including servers)
+    Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)
+    tcp4       0      0  192.168.1.12.55687     88.198.14.66.443       ESTABLISHED
+    tcp6       0      0  2a01:e34:ee42:d0.55684 2a02:26f0:ff::5c.443   ESTABLISHED
+    [...]
+    tcp4       0      0  *.631                  *.*                    LISTEN
+    tcp6       0      0  *.631                  *.*                    LISTEN
+    [...]
+    udp4       0      0  192.168.79.1.123       *.*
+    udp4       0      0  192.168.8.1.123        *.*
+
+    === QNX ===
+
+    Active Internet connections (including servers)
+    Proto Recv-Q Send-Q  Local Address          Foreign Address        State
+    tcp        0      0  10.9.7.5.22          10.9.7.4.46592       ESTABLISHED
+    tcp        0      0  *.8000                 *.*                    LISTEN
+    tcp        0      0  *.22                   *.*                    LISTEN
+    udp        0      0  *.*                    *.*
+    udp        0      0  *.*                    *.*
+    Active Internet6 connections (including servers)
+    Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)
+    tcp6       0      0  *.22                   *.*                    LISTEN
+
+    === Android ===
+
+    tcp        0      0 10.0.2.16:49088         142.250.180.74:443      ESTABLISHED
+    tcp        0      0 10.0.2.16:48380         142.250.186.196:443     CLOSE_WAIT
+    tcp6       0      0 [::]:5555               [::]:*                  LISTEN
+    tcp6       0      0 ::ffff:127.0.0.1:39417  [::]:*                  LISTEN
+    tcp6       0      0 ::ffff:10.0.2.16:35046  ::ffff:142.250.203.:443 ESTABLISHED
+    tcp6       0      0 ::ffff:127.0.0.1:46265  ::ffff:127.0.0.1:33155  TIME_WAIT
+    udp        0      0 10.0.2.16:50950         142.250.75.14:443       ESTABLISHED
+    udp     2560      0 10.0.2.16:68            10.0.2.2:67             ESTABLISHED
+    udp        0      0 0.0.0.0:5353            0.0.0.0:*
+    udp6       0      0 [::]:36662              [::]:*
+
+    === Linux ===
+
+    sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt ...
+    0: 00000000:2805 00000000:0000 0A 00000000:00000000 00:00000000 00000000  ...
+*/
+UTILS_EXPORT int parseUsedPortFromNetstatOutput(const QByteArray &line)
+{
+    const QStringList columns = QString::fromUtf8(line).split(' ', Qt::SkipEmptyParts);
+    if (columns.size() < 3)
+        return -1;
+
+    const QString firstColumn = columns.first();
+    QString columnToParse;
+    Base base = Base::Dec;
+
+    if (firstColumn.startsWith("TCP") || firstColumn.startsWith("UDP")) { // Windows
+        columnToParse = columns.at(1);
+    } else if (firstColumn.startsWith("tcp") || firstColumn.startsWith("udp")) { // Mac, Android, Qnx
+        if (columns.size() < 4)
             return -1;
-        const int len = spacePos - firstDigitPos;
-        base = 10;
-        portString = trimmed.mid(firstDigitPos, len);
-    } else if (trimmed.startsWith("tcp") || trimmed.startsWith("udp")) {
-        // macOS. Expected output is something like
-        //
-        // Active Internet connections (including servers)
-        // Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)
-        // tcp4       0      0  192.168.1.12.55687     88.198.14.66.443       ESTABLISHED
-        // tcp6       0      0  2a01:e34:ee42:d0.55684 2a02:26f0:ff::5c.443   ESTABLISHED
-        // [...]
-        // tcp4       0      0  *.631                  *.*                    LISTEN
-        // tcp6       0      0  *.631                  *.*                    LISTEN
-        // [...]
-        // udp4       0      0  192.168.79.1.123       *.*
-        // udp4       0      0  192.168.8.1.123        *.*
-        int firstDigitPos = -1;
-        int spacePos = -1;
-        if (trimmed[3] == '6') {
-            // IPV6
-            firstDigitPos = trimmed.indexOf('.') + 1;
-            spacePos = trimmed.indexOf(' ', firstDigitPos);
-        } else {
-            // IPV4
-            firstDigitPos = trimmed.indexOf('.') + 1;
-            spacePos = trimmed.indexOf(' ', firstDigitPos);
-            firstDigitPos = trimmed.lastIndexOf('.', spacePos) + 1;
-        }
-        if (spacePos < 0)
-            return -1;
-        base = 10;
-        portString = trimmed.mid(firstDigitPos, spacePos - firstDigitPos);
-        if (portString == "*")
-            return -1;
+        columnToParse = columns.at(3);
+    } else if (firstColumn.size() > 1 && firstColumn.at(1) == ':') { // Linux
+        columnToParse = columns.at(1);
+        base = Base::Hex;
     } else {
-        // Expected output on Linux something like
-        //
-        //   sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt ...
-        //   0: 00000000:2805 00000000:0000 0A 00000000:00000000 00:00000000 00000000  ...
-        //
-        const int firstColonPos = trimmed.indexOf(':');
-        if (firstColonPos < 0)
-            return -1;
-        const int secondColonPos = trimmed.indexOf(':', firstColonPos + 1);
-        if (secondColonPos < 0)
-            return -1;
-        const int spacePos = trimmed.indexOf(' ', secondColonPos + 1);
-        if (spacePos < 0)
-            return -1;
-        const int len = spacePos - secondColonPos - 1;
-        base = 16;
-        portString = trimmed.mid(secondColonPos + 1, len);
+        return -1;
     }
 
-    bool ok = true;
-    const int port = portString.toInt(&ok, base);
-    if (!ok) {
+    if (columnToParse.size() > 0 && columnToParse.back() == '*')
+        return -1; // Valid case, no warning. See QNX udp case.
+
+    const int port = trailingNumber(columnToParse, base);
+    if (port == -1) {
         qWarning("%s: Unexpected string '%s' is not a port. Tried to read from '%s'",
                  Q_FUNC_INFO,
                  line.data(),
-                 portString.data());
-        return -1;
+                 columnToParse.toUtf8().data());
     }
     return port;
 }
 
-auto caseFriendlyCompare(const QString &a, const QString &b) -> int
+int caseFriendlyCompare(const QString &a, const QString &b)
 {
-    int result = a.compare(b, Qt::CaseInsensitive);
+    static const auto makeCollator = [](Qt::CaseSensitivity caseSensitivity) {
+        QCollator collator;
+        collator.setNumericMode(true);
+        collator.setCaseSensitivity(caseSensitivity);
+        return collator;
+    };
+    static const QCollator insensitiveCollator = makeCollator(Qt::CaseInsensitive);
+    const int result = insensitiveCollator.compare(a, b);
     if (result != 0)
         return result;
-    return a.compare(b, Qt::CaseSensitive);
+    static const QCollator sensitiveCollator = makeCollator(Qt::CaseSensitive);
+    return sensitiveCollator.compare(a, b);
 }
 
-auto quoteAmpersands(const QString &text) -> QString
+QString quoteAmpersands(const QString &text)
 {
     QString result = text;
     return result.replace("&", "&&");
 }
 
-auto formatElapsedTime(qint64 elapsed) -> QString
+QString asciify(const QString &input)
+{
+    QString result;
+    result.reserve(input.size() * 5);
+    for (const QChar &c : input) {
+        if (c.isPrint() && c.unicode() < 128)
+            result += c;
+        else
+            result += QString::asprintf("u%04x", c.unicode());
+    }
+    return result;
+}
+
+QString formatElapsedTime(qint64 elapsed)
 {
     elapsed += 500; // round up
     const QString format = QString::fromLatin1(elapsed >= 3600000 ? "h:mm:ss" : "mm:ss");
@@ -343,7 +335,7 @@ auto formatElapsedTime(qint64 elapsed) -> QString
  * Basically QRegularExpression::wildcardToRegularExpression(), but let wildcards match
  * path separators as well
  */
-auto wildcardToRegularExpression(const QString &original) -> QString
+QString wildcardToRegularExpression(const QString &original)
 {
     const qsizetype wclen = original.size();
     QString rx;
@@ -398,7 +390,7 @@ auto wildcardToRegularExpression(const QString &original) -> QString
     return QRegularExpression::anchoredPattern(rx);
 }
 
-UTILS_EXPORT auto languageNameFromLanguageCode(const QString &languageCode) -> QString
+UTILS_EXPORT QString languageNameFromLanguageCode(const QString &languageCode)
 {
     QLocale locale(languageCode);
     QString languageName = QLocale::languageToString(locale.language());
@@ -419,7 +411,7 @@ UTILS_EXPORT void setClipboardAndSelection(const QString &text)
 }
 #endif
 
-UTILS_EXPORT auto chopIfEndsWith(QString str, QChar c) -> QString
+UTILS_EXPORT QString chopIfEndsWith(QString str, QChar c)
 {
     if (str.endsWith(c))
         str.chop(1);
@@ -427,7 +419,7 @@ UTILS_EXPORT auto chopIfEndsWith(QString str, QChar c) -> QString
     return str;
 }
 
-UTILS_EXPORT auto chopIfEndsWith(QStringView str, QChar c) -> QStringView
+UTILS_EXPORT QStringView chopIfEndsWith(QStringView str, QChar c)
 {
     if (str.endsWith(c))
         str.chop(1);
@@ -435,22 +427,31 @@ UTILS_EXPORT auto chopIfEndsWith(QStringView str, QChar c) -> QStringView
     return str;
 }
 
-UTILS_EXPORT auto normalizeNewlines(const QString &text) -> QString
+UTILS_EXPORT QString normalizeNewlines(const QStringView &text)
 {
-    QString res = text;
-    const auto newEnd = std::unique(res.begin(), res.end(), [](const QChar c1, const QChar c2) {
-        return c1 == '\r' && c2 == '\r'; // QTCREATORBUG-24556
+    QString res = text.toString();
+    const auto newEnd = std::unique(res.rbegin(), res.rend(), [](const QChar c1, const QChar c2) {
+        return c1 == '\n' && c2 == '\r'; // QTCREATORBUG-24556
     });
-    res.chop(std::distance(newEnd, res.end()));
-    res.replace("\r\n", "\n");
+    res.remove(0, std::distance(newEnd, res.rend()));
+    return res;
+}
+
+UTILS_EXPORT QByteArray normalizeNewlines(const QByteArray &text)
+{
+    QByteArray res = text;
+    const auto newEnd = std::unique(res.rbegin(), res.rend(), [](const char c1, const char c2) {
+        return c1 == '\n' && c2 == '\r'; // QTCREATORBUG-24556
+    });
+    res.remove(0, std::distance(newEnd, res.rend()));
     return res;
 }
 
 /*!
     Joins all the not empty string list's \a strings into a single string with each element
-    separated by the given separator (which can be an empty string).
+    separated by the given \a separator (which can be an empty string).
 */
-UTILS_EXPORT auto joinStrings(const QStringList &strings, QChar separator) -> QString
+UTILS_EXPORT QString joinStrings(const QStringList &strings, QChar separator)
 {
     QString result;
     for (const QString &string : strings) {
@@ -466,7 +467,7 @@ UTILS_EXPORT auto joinStrings(const QStringList &strings, QChar separator) -> QS
 /*!
     Returns a copy of \a string that has \a ch characters removed from the start.
 */
-UTILS_EXPORT auto trimFront(const QString &string, QChar ch) -> QString
+UTILS_EXPORT QString trimFront(const QString &string, QChar ch)
 {
     const int size = string.size();
     int i = 0;
@@ -485,7 +486,7 @@ UTILS_EXPORT auto trimFront(const QString &string, QChar ch) -> QString
 /*!
     Returns a copy of \a string that has \a ch characters removed from the end.
 */
-UTILS_EXPORT auto trimBack(const QString &string, QChar ch) -> QString
+UTILS_EXPORT QString trimBack(const QString &string, QChar ch)
 {
     const int size = string.size();
     int i = 0;
@@ -504,14 +505,59 @@ UTILS_EXPORT auto trimBack(const QString &string, QChar ch) -> QString
 /*!
     Returns a copy of \a string that has \a ch characters removed from the start and the end.
 */
-UTILS_EXPORT auto trim(const QString &string, QChar ch) -> QString
+UTILS_EXPORT QString trim(const QString &string, QChar ch)
 {
     return trimFront(trimBack(string, ch), ch);
 }
 
-UTILS_EXPORT auto appendHelper(const QString &base, int n) -> QString
+UTILS_EXPORT QString appendHelper(const QString &base, int n)
 {
     return base + QString::number(n);
+}
+
+UTILS_EXPORT FilePath appendHelper(const FilePath &base, int n)
+{
+    return base.stringAppended(QString::number(n));
+}
+
+UTILS_EXPORT QPair<QStringView, QStringView> splitAtFirst(const QStringView &stringView, QChar ch)
+{
+    int splitIdx = stringView.indexOf(ch);
+    if (splitIdx == -1)
+        return {stringView, {}};
+
+    QStringView left = stringView.mid(0, splitIdx);
+    QStringView right = stringView.mid(splitIdx + 1);
+
+    return {left, right};
+}
+
+UTILS_EXPORT QPair<QStringView, QStringView> splitAtFirst(const QString &string, QChar ch)
+{
+    QStringView view = string;
+    return splitAtFirst(view, ch);
+}
+
+UTILS_EXPORT int endOfNextWord(const QString &string, int position)
+{
+    QTC_ASSERT(string.size() > position, return -1);
+
+    static const QString wordSeparators = QStringLiteral(" \t\n\r()[]{}<>");
+
+    const auto predicate = [](const QChar &c) { return wordSeparators.contains(c); };
+
+    auto it = string.begin() + position;
+    if (predicate(*it))
+        it = std::find_if_not(it, string.end(), predicate);
+
+    if (it == string.end())
+        return -1;
+
+    it = std::find_if(it, string.end(), predicate);
+    if (it == string.end())
+        return -1;
+
+    return std::distance(string.begin(), it);
 }
 
 } // namespace Utils

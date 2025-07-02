@@ -46,7 +46,7 @@ jobs:
             arch: arm64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: 
           fetch-depth: 1
           
@@ -60,7 +60,7 @@ jobs:
           mkdir build
 
       - name: msvc-build
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           ..\scripts\windows\setVsDev.ps1
@@ -68,16 +68,33 @@ jobs:
           & jom
         working-directory: build
       - name: ubuntu-build
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           qmake ./../.
           make -j $(nproc)
         working-directory: build
       - name: macos-build
-        if: startsWith(matrix.os, 'macos')
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           qmake QMAKE_APPLE_DEVICE_ARCHS="${{ matrix.arch }}" ./../.
           make -j $(sysctl -n hw.ncpu)
         working-directory: build
+
+      - name: Show file list on linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          ls -al 
+          ls -al ./resources
+          ls -al ./resources/themes
+        working-directory: bin-64/Release
+      
+      - name: Show file list on macos
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          ls -al ./Qt-App.app/Contents/Resources
+          ls -al ./Qt-App.app/Contents/Resources/themes
+        working-directory: bin-64/Release

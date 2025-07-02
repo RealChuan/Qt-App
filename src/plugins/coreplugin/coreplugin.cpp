@@ -1,33 +1,105 @@
-#include "coreplugin.h"
+#include "coreplugin.hpp"
+#include "coreplugintr.h"
+#include "icore.h"
 #include "mainwindow.h"
+#include "themechooser.h"
+
+#include <extensionsystem/iplugin.h>
+#include <extensionsystem/pluginmanager.h>
+#include <utils/guiutils.h>
+#include <utils/id.h>
+#include <utils/theme/theme_p.h>
 
 #include <QApplication>
+#include <QPointer>
 
 namespace Plugin {
 
-CorePlugin::CorePlugin() = default;
+static QPointer<MainWindow> mainwindowPtr;
 
-CorePlugin::~CorePlugin() = default;
-
-auto CorePlugin::initialize(const QStringList &, QString *) -> bool
+QWidget *dialogParent()
 {
-    m_mainWindowPtr.reset(new MainWindow);
-    return true;
+    QWidget *active = QApplication::activeModalWidget();
+    if (!active)
+        active = QApplication::activeWindow();
+    if (!active || active->windowFlags().testFlag(Qt::SplashScreen)
+        || active->windowFlags().testFlag(Qt::Popup)) {
+        active = mainwindowPtr;
+    }
+    return active;
 }
 
-void CorePlugin::extensionsInitialized()
+class CorePlugin : public ExtensionSystem::IPlugin
 {
-    m_mainWindowPtr->extensionsInitialized();
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "coreplugin.json")
 
-auto CorePlugin::remoteCommand(const QStringList &, const QString &, const QStringList &)
-    -> QObject *
-{
-    m_mainWindowPtr->setWindowState(m_mainWindowPtr->windowState() & ~Qt::WindowMinimized);
-    m_mainWindowPtr->show();
-    m_mainWindowPtr->raise();
-    m_mainWindowPtr->activateWindow();
-    return nullptr;
-}
+    struct CoreArguments
+    {
+        QColor overrideColor;
+        Utils::Id themeId;
+        bool presentationMode = false;
+    };
+
+    CoreArguments parseArguments(const QStringList &arguments)
+    {
+        CoreArguments args;
+        for (int i = 0; i < arguments.size(); ++i) {
+            if (arguments.at(i) == QLatin1String("-color")) {
+                const QString colorcode(arguments.at(i + 1));
+                args.overrideColor = QColor(colorcode);
+                i++; // skip the argument
+            }
+            if (arguments.at(i) == QLatin1String("-presentationMode"))
+                args.presentationMode = true;
+            if (arguments.at(i) == QLatin1String("-theme")) {
+                args.themeId = Utils::Id::fromString(arguments.at(i + 1));
+                i++; // skip the argument
+            }
+        }
+        return args;
+    }
+
+public:
+    ~CorePlugin() override {}
+
+    Utils::Result<> initialize(const QStringList &arguments) override
+    {
+        if (ThemeEntry::availableThemes().isEmpty()) {
+            return Utils::ResultError(Tr::tr("No themes found in installation."));
+        }
+
+        const auto args = parseArguments(arguments);
+        auto *themeFromArg = ThemeEntry::createTheme(args.themeId);
+        auto *theme = themeFromArg ? themeFromArg
+                                   : ThemeEntry::createTheme(ThemeEntry::themeSetting());
+        Utils::Theme::setInitialPalette(theme); // Initialize palette before setting it
+        Utils::setCreatorTheme(theme);
+
+        m_corePtr.reset(new ICore);
+        m_mainWindowPtr.reset(new MainWindow);
+        mainwindowPtr = m_mainWindowPtr.data();
+        Utils::setDialogParentGetter(dialogParent);
+
+        return Utils::ResultOk;
+    }
+
+    void extensionsInitialized() override { m_mainWindowPtr->extensionsInitialized(); }
+
+    QObject *remoteCommand(const QStringList &, const QString &, const QStringList &) override
+    {
+        m_mainWindowPtr->setWindowState(m_mainWindowPtr->windowState() & ~Qt::WindowMinimized);
+        m_mainWindowPtr->show();
+        m_mainWindowPtr->raise();
+        m_mainWindowPtr->activateWindow();
+        return nullptr;
+    }
+
+private:
+    QScopedPointer<MainWindow> m_mainWindowPtr;
+    QScopedPointer<ICore> m_corePtr;
+};
 
 } // namespace Plugin
+
+#include "coreplugin.moc"

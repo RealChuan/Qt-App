@@ -2,10 +2,15 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "pluginerrorview.h"
+
 #include "extensionsystemtr.h"
 #include "pluginspec.h"
 
-#include <QtWidgets>
+#include <utils/layoutbuilder.h>
+
+#include <QCoreApplication>
+#include <QLabel>
+#include <QTextEdit>
 
 /*!
     \class ExtensionSystem::PluginErrorView
@@ -28,7 +33,7 @@ namespace ExtensionSystem::Internal {
 class PluginErrorViewPrivate
 {
 public:
-    explicit PluginErrorViewPrivate(PluginErrorView *view)
+    PluginErrorViewPrivate(PluginErrorView *view)
         : q(view)
         , state(new QLabel(q))
         , errorString(new QTextEdit(q))
@@ -36,10 +41,13 @@ public:
         errorString->setTabChangesFocus(true);
         errorString->setReadOnly(true);
 
-        auto *layout = new QFormLayout(q);
-        layout->setContentsMargins({});
-        layout->addRow(Tr::tr("State:"), state);
-        layout->addRow(Tr::tr("Error message:"), errorString);
+        using namespace Layouting;
+
+        Form {
+            Tr::tr("State:"), state, br,
+            Tr::tr("Error message:"), errorString,
+            noMargin,
+        }.attachTo(q);
     }
 
     PluginErrorView *q = nullptr;
@@ -55,9 +63,10 @@ using namespace Internal;
     Constructs a new error view with given \a parent widget.
 */
 PluginErrorView::PluginErrorView(QWidget *parent)
-    : QWidget(parent)
-    , d(new PluginErrorViewPrivate(this))
-{}
+    : QWidget(parent),
+      d(new PluginErrorViewPrivate(this))
+{
+}
 
 PluginErrorView::~PluginErrorView()
 {
