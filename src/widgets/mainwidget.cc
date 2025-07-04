@@ -1,6 +1,8 @@
 #include "mainwidget.hpp"
 #include "pushbutton.hpp"
 
+#include <utils/utils.h>
+
 #include <QtWidgets>
 
 namespace Widgets {
@@ -27,11 +29,7 @@ public:
     void setupUI()
     {
         auto *widget = new QWidget(q_ptr);
-        auto *effect = new QGraphicsDropShadowEffect(q_ptr);
-        effect->setOffset(0, 0);
-        effect->setColor(Qt::gray);
-        effect->setBlurRadius(shadowPadding);
-        widget->setGraphicsEffect(effect);
+        Utils::addGraphicsDropShadowEffect(widget, shadowPadding);
 
         auto *layout = new QGridLayout(widget);
         layout->setContentsMargins(0, 0, 0, 0);
@@ -190,22 +188,6 @@ void MainWidget::setMinButtonVisible(bool visible)
     d_ptr->minButton->setVisible(visible);
 }
 
-void MainWidget::setTitle(const QString &title)
-{
-    setWindowTitle(title);
-    d_ptr->titleButton->setToolTip(title);
-}
-
-void MainWidget::setIcon(const QIcon &icon)
-{
-    if (icon.isNull()) {
-        d_ptr->titleButton->setIcon({});
-        return;
-    }
-
-    setWindowIcon(icon);
-}
-
 void MainWidget::setCentralWidget(QWidget *centralWidget)
 {
     auto *layout = new QHBoxLayout(d_ptr->centralWidget);
@@ -220,11 +202,6 @@ void MainWidget::setTitleBar(QWidget *titleBar)
     layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(titleBar);
-}
-
-void MainWidget::setShadowPadding(int shadowPadding)
-{
-    d_ptr->shadowPadding = shadowPadding;
 }
 
 auto MainWidget::shadowPadding() -> int

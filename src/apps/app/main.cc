@@ -8,8 +8,8 @@
 #include <utils/appdata.hpp>
 #include <utils/appinfo.h>
 #include <utils/hostosinfo.h>
-#include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
+#include <utils/singletonmanager.hpp>
 #include <utils/utils.h>
 #include <widgets/waitwidget.h>
 
@@ -147,7 +147,7 @@ auto main(int argc, char *argv[]) -> int
     // QObject::connect(breakPad, &Dump::BreakPad::crash, [] { Dump::openCrashReporter(); });
 
     QDir::setCurrent(app.applicationDirPath());
-    Utils::LanguageConfig::instance()->loadLanguage();
+    LANGUAGE_MANAGER->loadLanguage();
 
     auto *log = Utils::LogAsync::instance();
     log->setLogPath(Utils::logPath());
@@ -245,7 +245,7 @@ auto main(int argc, char *argv[]) -> int
                      &ExtensionSystem::PluginManager::shutdown);
 
     waitWidgetPtr->fullProgressBar();
-    // coreplugin->plugin()->remoteCommand({}, {}, {});
+    app.processEvents();
     waitWidgetPtr->close();
 
     auto exitCode = restarter.restartOrExit(app.exec());

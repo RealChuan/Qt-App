@@ -4,8 +4,8 @@
 #include <dump/breakpad.hpp>
 #include <resource/resource.hpp>
 #include <utils/appdata.hpp>
-#include <utils/languageconfig.hpp>
 #include <utils/logasync.h>
+#include <utils/singletonmanager.hpp>
 #include <utils/utils.h>
 
 #include <QNetworkProxyFactory>
@@ -71,7 +71,7 @@ auto main(int argc, char *argv[]) -> int
     setAppInfo();
     Dump::BreakPad::instance()->setDumpPath(Utils::crashPath());
     QDir::setCurrent(app.applicationDirPath());
-    Utils::LanguageConfig::instance()->loadLanguage();
+    LANGUAGE_MANAGER->loadLanguage();
 
     // 异步日志
     auto *log = Utils::LogAsync::instance();

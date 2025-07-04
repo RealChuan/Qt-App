@@ -17,13 +17,9 @@ public:
     void setRestoreMaxButtonVisible(bool visible);
     void setMinButtonVisible(bool visible);
 
-    void setTitle(const QString &title);
-    void setIcon(const QIcon &icon);
-
     void setCentralWidget(QWidget *centralWidget);
     void setTitleBar(QWidget *titleBar);
 
-    void setShadowPadding(int shadowPadding = 10);
     auto shadowPadding() -> int;
 
     void setSizeGripVisible(bool visible);
@@ -58,8 +54,6 @@ public:
         : QMainWindow(parent)
     {}
 
-    void setIcon(const QIcon &icon) { setWindowIcon(icon); }
-    void setTitle(const QString &title) { setWindowTitle(title); }
     void setTitleBar(QWidget *widget);
     int shadowPadding() { return 0; }
 

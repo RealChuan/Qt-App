@@ -50,8 +50,6 @@ public:
     void setMinButtonVisible(bool) {}
     void setRestoreMaxButtonVisible(bool) {}
 
-    void setIcon(const QIcon &icon) { setWindowIcon(icon); }
-    void setTitle(const QString &title) { setWindowTitle(title); }
     void setCentralWidget(QWidget *widget);
     int shadowPadding() { return 0; }
 };
