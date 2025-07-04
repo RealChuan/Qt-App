@@ -1,5 +1,4 @@
-#ifndef CONFIGWIDGET_H
-#define CONFIGWIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -12,6 +11,8 @@ public:
 
 private slots:
     void onReloadLanguage(int index);
+    void onMaskCheckStateChanged(Qt::CheckState state);
+    void onBlurCheckStateChanged(Qt::CheckState state);
 
 protected:
     void changeEvent(QEvent *event) override;
@@ -23,5 +24,3 @@ private:
     class ConfigWidgetPrivate;
     QScopedPointer<ConfigWidgetPrivate> d_ptr;
 };
-
-#endif // CONFIGWIDGET_H

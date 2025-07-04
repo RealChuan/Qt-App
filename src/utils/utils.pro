@@ -49,7 +49,7 @@ SOURCES += \
     id.cpp \
     infolabel.cpp \
     itemviews.cpp \
-    languageconfig.cc \
+    languagemanager.cc \
     layoutbuilder.cpp \
     logasync.cpp \
     logfile.cc \
@@ -66,6 +66,7 @@ SOURCES += \
     result.cpp \
     savefile.cpp \
     shutdownguard.cpp \
+    singletonmanager.cc \
     store.cpp \
     stringtable.cpp \
     stringutils.cpp \
@@ -75,7 +76,8 @@ SOURCES += \
     treemodel.cpp \
     utils.cpp \
     utilsicons.cpp \
-    validator.cc
+    validator.cc \
+    widgetmanager.cc
 
 HEADERS += \
     algorithm.h \
@@ -112,7 +114,7 @@ HEADERS += \
     indexedcontainerproxyconstiterator.h \
     infolabel.h \
     itemviews.h \
-    languageconfig.hpp \
+    languagemanager.hpp \
     layoutbuilder.h \
     logasync.h \
     logfile.hpp \
@@ -134,6 +136,7 @@ HEADERS += \
     savefile.h \
     shutdownguard.h \
     singleton.hpp \
+    singletonmanager.hpp \
     store.h \
     storekey.h \
     stringtable.h \
@@ -147,7 +150,8 @@ HEADERS += \
     utilsicons.h \
     utilstr.h \
     utiltypes.h \
-    validator.hpp
+    validator.hpp \
+    widgetmanager.hpp
 
 RESOURCES += \
     utils.qrc

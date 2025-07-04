@@ -27,6 +27,7 @@ UTILS_EXPORT auto crashPath() -> QString;
 UTILS_EXPORT auto logPath() -> QString;
 UTILS_EXPORT auto cachePath() -> QString;
 
+UTILS_EXPORT void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius = 10);
 UTILS_EXPORT auto systemInfo() -> QString;
 UTILS_EXPORT void setHighDpiEnvironmentVariable();
 UTILS_EXPORT void quitApplication();

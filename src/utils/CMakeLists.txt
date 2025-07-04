@@ -94,8 +94,8 @@ set(PROJECT_SOURCES
     infolabel.h
     itemviews.cpp
     itemviews.h
-    languageconfig.cc
-    languageconfig.hpp
+    languagemanager.cc
+    languagemanager.hpp
     layoutbuilder.cpp
     layoutbuilder.h
     logasync.cpp
@@ -133,6 +133,8 @@ set(PROJECT_SOURCES
     shutdownguard.cpp
     shutdownguard.h
     singleton.hpp
+    singletonmanager.cc
+    singletonmanager.hpp
     store.cpp
     store.h
     storekey.h
@@ -156,7 +158,9 @@ set(PROJECT_SOURCES
     utilstr.h
     utiltypes.h
     validator.cc
-    validator.hpp)
+    validator.hpp
+    widgetmanager.cc
+    widgetmanager.hpp)
 
 if(CMAKE_HOST_APPLE)
   list(APPEND PROJECT_SOURCES theme/theme_mac.mm theme/theme_mac.h

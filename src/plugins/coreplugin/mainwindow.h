@@ -22,7 +22,7 @@ protected:
 
 private:
     void buildConnect();
-    void initMenu();
+    void setupMenu();
 
     class MainWindowPrivate;
     QScopedPointer<MainWindowPrivate> d_ptr;
