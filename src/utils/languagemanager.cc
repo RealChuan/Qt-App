@@ -1,34 +1,42 @@
-#include "languageconfig.hpp"
+#include "languagemanager.hpp"
 #include "utils.h"
 
 namespace Utils {
 
-class LanguageConfig::LanguageConfigPrivate
+class LanguageManager::LanguageManagerPrivate
 {
 public:
-    explicit LanguageConfigPrivate(LanguageConfig *q)
+    explicit LanguageManagerPrivate(LanguageManager *q)
         : q_ptr(q)
     {}
-    ~LanguageConfigPrivate() = default;
+    ~LanguageManagerPrivate() {}
 
-    LanguageConfig *q_ptr;
+    LanguageManager *q_ptr;
+
     Language currentLanguage = Chinese;
     QScopedPointer<QTranslator> translatorPtr;
     QScopedPointer<QTranslator> qtTranslatorPtr;
 };
 
-LanguageConfig::Language LanguageConfig::currentLanguage()
+LanguageManager::LanguageManager(QObject *parent)
+    : QObject(parent)
+    , d_ptr(new LanguageManagerPrivate(this))
+{}
+
+LanguageManager::~LanguageManager() {}
+
+LanguageManager::Language LanguageManager::currentLanguage()
 {
     return d_ptr->currentLanguage;
 }
 
-void LanguageConfig::loadLanguage(Language language)
+void LanguageManager::loadLanguage(Language language)
 {
     d_ptr->currentLanguage = language;
     loadLanguage();
 }
 
-void LanguageConfig::loadLanguage()
+void LanguageManager::loadLanguage()
 {
     if (!d_ptr->translatorPtr.isNull()) {
         qApp->removeTranslator(d_ptr->translatorPtr.data());
@@ -57,40 +65,23 @@ void LanguageConfig::loadLanguage()
     qApp->installTranslator(d_ptr->qtTranslatorPtr.data());
 }
 
-LanguageConfig::LanguageConfig(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new LanguageConfigPrivate(this))
+void LanguageManager::saveSettings(QSettings &settings)
 {
-    getConfig();
+    settings.beginGroup("Language");
+    settings.setValue("Language", d_ptr->currentLanguage);
+    settings.endGroup();
 }
 
-LanguageConfig::~LanguageConfig()
+void LanguageManager::loadSettings(QSettings &settings)
 {
-    saveConfig();
-}
-
-void LanguageConfig::getConfig()
-{
-    const QString configFile(Utils::configFilePath());
-    if (QFileInfo::exists(configFile)) {
-        QSettings setting(configFile, QSettings::IniFormat);
-        setting.beginGroup("Language_config"); //向当前组追加前缀
-        d_ptr->currentLanguage = Language(setting.value("Language").toInt());
-        setting.endGroup();
-    } else if (QLocale().language() == QLocale::Language::Chinese) {
+    if (QLocale().language() == QLocale::Language::Chinese) {
         d_ptr->currentLanguage = Chinese;
     } else {
         d_ptr->currentLanguage = English;
     }
-}
-
-void LanguageConfig::saveConfig()
-{
-    const QString configFile(Utils::configFilePath());
-    QSettings setting(configFile, QSettings::IniFormat);
-    setting.beginGroup("Language_config");
-    setting.setValue("Language", d_ptr->currentLanguage);
-    setting.endGroup();
+    settings.beginGroup("Language");
+    d_ptr->currentLanguage = Language(settings.value("Language", d_ptr->currentLanguage).toInt());
+    settings.endGroup();
 }
 
 } // namespace Utils

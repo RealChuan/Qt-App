@@ -87,6 +87,15 @@ auto compilerString() -> QString
     return QLatin1String("<unknown compiler>");
 }
 
+void Utils::addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
+{
+    auto *effect = new QGraphicsDropShadowEffect(widget);
+    effect->setOffset(0, 0);
+    effect->setColor(Qt::gray);
+    effect->setBlurRadius(blurRadius);
+    widget->setGraphicsEffect(effect);
+}
+
 auto Utils::systemInfo() -> QString
 {
     auto text = QString("%1 (%2) on %3 (%4) with CPU Cores: %5")

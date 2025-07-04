@@ -83,11 +83,15 @@ QAbstractItemView::indicator {
 }
 
 QAbstractItemView::indicator {
-    border-image: url(:/common/icon/common/checkbox-unchecked-insensitive.png) 0 0 0 0 stretch stretch;
+    border-image: url(":/common/icon/common/checkbox-selectionmode.png") 0 0 0 0 stretch stretch;
 }
 
 QAbstractItemView::indicator:checked {
-    border-image: url(:/common/icon/common/checkbox-checked-selectionmode.png) 0 0 0 0 stretch stretch;
+    border-image: url(":/common/icon/common/checkbox-checked-selectionmode.png") 0 0 0 0 stretch stretch;
+}
+
+QAbstractItemView::indicator:indeterminate {
+    border-image: url(":/common/icon/common/checkbox-mixed@2.png") 0 0 0 0 stretch stretch;
 }
 
 QAbstractItemView::icon {

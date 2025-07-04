@@ -4,6 +4,7 @@
 
 #include <core/corewidget.hpp>
 #include <extensionsystem/pluginmanager.h>
+#include <utils/singletonmanager.hpp>
 #include <utils/utils.h>
 #include <widgets/messagebox.h>
 
@@ -32,25 +33,28 @@ public:
         vLayoutGroup2->setSpacing(0);
         vLayoutGroup3->setContentsMargins({});
         vLayoutGroup3->setSpacing(0);
-
-        initMaskWidget();
     }
 
     void setupUI()
     {
-        createSystemTray();
-        setInitWidget(MainWindow::tr("Hello World!"));
+        setupSystemTray();
+        setupInitWidget(MainWindow::tr("Hello World!"));
 
         auto *widget = new QWidget(q_ptr);
         auto *layout = new QHBoxLayout(widget);
         layout->setContentsMargins({});
         layout->setSpacing(0);
-        layout->addWidget(createSidebar());
+        layout->addWidget(setupSidebar());
         layout->addWidget(stackedWidget);
 
         q_ptr->setCentralWidget(widget);
         q_ptr->setMinimumSize(1000, 618);
         Utils::windowCenter(q_ptr);
+
+        setupMaskWidget();
+        setupBlurEffect();
+
+        widget->setGraphicsEffect(blurEffect);
     }
 
     MainWindow *q_ptr;
@@ -63,9 +67,10 @@ public:
     QVBoxLayout *vLayoutGroup3;
 
     QWidget *maskWidget;
+    QGraphicsBlurEffect *blurEffect;
 
 private:
-    void createSystemTray()
+    void setupSystemTray()
     {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
             Widgets::MessageBox::Info(q_ptr,
@@ -114,7 +119,7 @@ private:
             Qt::QueuedConnection);
     }
 
-    void setInitWidget(const QString &text) const
+    void setupInitWidget(const QString &text) const
     {
         auto *label = new QLabel(text, q_ptr);
         label->setAlignment(Qt::AlignCenter);
@@ -123,7 +128,7 @@ private:
         stackedWidget->setCurrentWidget(label);
     }
 
-    auto createSidebar() -> QWidget *
+    auto setupSidebar() -> QWidget *
     {
         auto *toolsButton = new QPushButton(MainWindow::tr("Main"), q_ptr);
         auto *helpButton = new QPushButton(MainWindow::tr("Help"), q_ptr);
@@ -167,11 +172,17 @@ private:
         return widget;
     }
 
-    void initMaskWidget()
+    void setupMaskWidget()
     {
         maskWidget = new QWidget(q_ptr);
         maskWidget->setStyleSheet("background:rgba(0, 0, 0, 128);");
         maskWidget->hide();
+    }
+
+    void setupBlurEffect()
+    {
+        blurEffect = new QGraphicsBlurEffect(q_ptr);
+        blurEffect->setEnabled(false);
     }
 };
 
@@ -206,7 +217,7 @@ void MainWindow::extensionsInitialized()
         });
     }
 
-    initMenu();
+    setupMenu();
 }
 
 void MainWindow::onShowGroupButton(int id)
@@ -232,16 +243,24 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == this) {
         switch (event->type()) {
-        case QEvent::WindowBlocked: {
-            auto size = this->size();
-            auto padding = shadowPadding();
-            size -= QSize(padding, padding) * 2;
-            d_ptr->maskWidget->resize(size);
-            d_ptr->maskWidget->move(padding, padding);
-            d_ptr->maskWidget->show();
-            d_ptr->maskWidget->raise();
-        } break;
-        case QEvent::WindowUnblocked: d_ptr->maskWidget->hide(); break;
+        case QEvent::WindowBlocked:
+            if (WIDGET_MANAGER->showMask()) {
+                auto size = this->size();
+                auto padding = shadowPadding();
+                size -= QSize(padding, padding) * 2;
+                d_ptr->maskWidget->resize(size);
+                d_ptr->maskWidget->move(padding, padding);
+                d_ptr->maskWidget->show();
+                d_ptr->maskWidget->raise();
+            }
+            if (WIDGET_MANAGER->blurBackground()) {
+                d_ptr->blurEffect->setEnabled(true);
+            }
+            break;
+        case QEvent::WindowUnblocked:
+            d_ptr->maskWidget->hide();
+            d_ptr->blurEffect->setEnabled(false);
+            break;
         default: break;
         }
     }
@@ -258,7 +277,7 @@ void MainWindow::buildConnect()
         Qt::QueuedConnection);
 }
 
-void MainWindow::initMenu()
+void MainWindow::setupMenu()
 {
     auto buttons = d_ptr->switchBtnGroup->buttons();
     for (auto *btn : buttons) {
