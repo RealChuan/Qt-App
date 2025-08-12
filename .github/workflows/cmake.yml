@@ -152,7 +152,7 @@ jobs:
           mkdir -p ${{ env.RELEASES_DIR }}
 
       - name: Download packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: ${{ env.RELEASES_DIR }}
 
