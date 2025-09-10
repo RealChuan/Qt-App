@@ -1,8 +1,10 @@
 #!/bin/sh -e
 
-chmod +x /opt/Qt-App/Qt-App
-chmod +x /opt/Qt-App/Qt-App.sh
-chmod 777 /opt/Qt-App/app.png
-chmod 744 /usr/share/applications/Qt-App.desktop
+app_name="Qt-App"
+
+chmod +x /opt/${app_name}/${app_name}
+chmod +x /opt/${app_name}/${app_name}.sh
+chmod 777 /opt/${app_name}/app.png
+chmod 744 /usr/share/applications/${app_name}.desktop
 
 exit 0
