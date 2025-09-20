@@ -3,112 +3,153 @@
 - [简体中文](README.md)
 - [English](README.en.md)
 
-> 图片资源等来自于互联网。
-本代码仓库，仅供学习，若被他人用于商业用途 与本人无关！ 请遵守许可证！
+> 图片资源等来自于互联网。  
+> 本代码仓库仅供学习使用，若被用于商业用途与本人无关！请遵守相关许可证。
 
-## Qt-App
+## 项目简介
 
-- 插件式开发的桌面应用程序框架，可以用于快速开发桌面应用程序；
-[qt-creator/src/libs/extensionsystem at master · qt-creator/qt-creator (github.com)](https://github.com/qt-creator/qt-creator/tree/master/src/libs/extensionsystem)；
-- 配合[vcpkg](https://github.com/microsoft/vcpkg)进行使用；
-- 同时支持[cmake](.github/workflows/cmake.yml)和[qmake](.github/workflows/qmake.yml)编译；
-- [支持Apple Silicon原生编译；](#问题和备注)
-- 支持[actions](.github/workflows/cmake.yml)编译，打包、发布；
+Qt-App 是一个基于插件式架构开发的桌面应用程序框架，可用于快速构建功能丰富的跨平台桌面应用。其核心插件系统源自 [Qt Creator](https://github.com/qt-creator/qt-creator/tree/master/src/libs/extensionsystem)，并进行了适当修改与增强。
+
+项目特点：
+
+- 🔌 采用插件化架构，支持功能模块的动态加载与管理
+- 📦 使用 [vcpkg](https://github.com/microsoft/vcpkg) 进行依赖管理
+- 🛠️ 同时支持 [CMake](.github/workflows/cmake.yml) 和 [QMake](.github/workflows/qmake.yml) 构建系统
+- 🍎 支持 Apple Silicon 原生编译
+- ⚡ 集成 GitHub Actions 自动化编译、打包和发布流程
+- 🚨 内置崩溃报告系统 (CrashReport)
+
+## 项目预览
+
+### 主应用程序
 
 <div align="center">
 <img src="docs/Qt-App.jpg" width="90%" height="90%">
 </div>
 
-## CrashReport
-
-崩溃报告程序；
+### 崩溃报告程序
 
 <div align="center">
 <img src="docs/CrashReport.jpg" width="50%" height="50%">
 </div>
 
-## 代码结构
+## 编译与使用
 
-1. [cmake](cmake)：封装的CMake实用函数；
-   1. [utils](cmake/utils.cmake)：实用函数；
-2. [docs](docs)：文档说明和图片；
-3. [examples](examples)：示例代码;
-4. [packaging](packaging)：打包和发布；
-5. [src](src)：源码；
-   1. [3rdparty](src/3rdparty)：第三方库；
-      1. [qtlockedfile](src/3rdparty/qtlockedfile)：Qt文件锁；
-      2. [qtsingleapplication](src/3rdparty/qtsingleapplication)：Qt单实例；
-   2. [aggregate](src/aggregate)：聚合；
-   3. [apps](src/apps)：应用程序；
-      1. [app](src/apps/app)：Qt-App；
-      2. [crashreport](src/apps/crashreport)：CrashReport；
-   4. [core](src/core)：插件都继承于此；
-   5. [dump](src/dump)：崩溃捕捉功能；
-      1. [breakpad](src/dump/breakpad.hpp)：基于Google Breakpad封装的崩溃捕捉；
-      2. [crashpad](src/dump/crashpad.hpp)：基于Google Crashpad封装的崩溃捕捉；
-         > 在unix系统下，可能需要对`crashpad_handler`赋予执行权限，否则无法正常启动。
+### 使用 [CMake](.github/workflows/cmake.yml) 构建
 
-            ```bash
-            chmod +x crashpad_handler
-            ```
+```bash
+# 配置项目
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[vcpkg root]/scripts/buildsystems/vcpkg.cmake
 
-   6. [extensionsystem](src/extensionsystem)：插件系统，代码来自于Qt-Creator，做了一些修改；
-   7. [gui](src/gui)：封装的界面组件；
-   8. [plugins](src/plugins)：插件；
-      1. [aboutplugin](src/plugins/aboutplugin)：关于插件;
-      2. [coreplugin](src/plugins/coreplugin)：核心插件，主界面、菜单、工具栏、状态栏、设置、插件管理器等；
-      3. [guiplugin](src/plugins/guiplugin)：GUI插件，一些基于QSS样式定制的GUI组件；
-      4. [hashplugin](src/plugins/hashplugin)：哈希插件，QT提供的哈希算法；
-      5. [helloplugin](src/plugins/helloplugin)：Hello插件，用于测试插件开发；
-      6. [systeminfoplugin](src/plugins/systeminfoplugin)：系统信息插件;
-   9. [resource](resource)：图片和QSS文件；
-   10. [utils](utils)：工具函数封装；
-6. [translations](translations)：翻译文件；
+# 编译项目
+cmake --build build
 
-## 问题和备注
+# 生成翻译文件
+cmake --build build --target Qt-App_lupdate
+```
 
-- > ubuntu wayland桌面下move函数无效；
-   1. 需要在main函数开始加上`qputenv("QT_QPA_PLATFORM", "xcb");`可以解决这个问题；
+### 使用 [QMake](.github/workflows/qmake.yml) 构建
 
-- > MacOS，cmake生成的bundle，在.app/Contents/文件夹下没有生成`PkgInfo`文件；
-   1. [app/CMakeLists](/apps/app/CMakeLists.txt)，使用这个CMakeLists.txt可以在MacOS上生成bundle，也可以正常显示图标，但是没有PkgInfo文件；
-   2. cmake该怎么生成PkgInfo文件？
-      1. WireShark使用`set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/PkgInfo PROPERTIES MACOSX_PACKAGE_LOCATION .)`类似这种方式，拷贝到bundle中；
-   3. qmake默认会生成PkgInfo文件，只需要指定`TARGET=app`或者`CONFIG+=bundle`即可；
+```bash
+# 生成 Makefile
+qmake Qt-App.pro
 
-- > Unix 系统下，需要尽量使用静态库，避免动态库的依赖问题；
-   1. 本项目有几个模块是动态库，因为是plugin，需要动态加载；
-   2. 然后需要对这几个动态库进行打包，然后在运行时加载，还需要对rpath`"-Wl,-rpath,\'\$$ORIGIN\':\'\$$ORIGIN/lib\':'\$$ORIGIN/../lib'")`，进行设置，否则会找不到动态库；
-   3. 或者使用install_name_tool(macos)、patchelf/chrpath(linux)修改动态库的依赖路径，非常麻烦；
-   4. 还要考虑到这些库都是可以共享的，所以不要重复打包；
-   5. 具体可以看[workflows](.github/workflows/cmake.yml)；
+# 编译项目
+make -j$(nproc)
+```
 
-- > MacOS，[vcpkg](https://github.com/microsoft/vcpkg)编译第三方库问题；
-   1. 由于[vcpkg](https://github.com/microsoft/vcpkg)目前[只支持单独编译x64-osx和arm64-osx](https://github.com/microsoft/vcpkg/discussions/19454)；
-   2. 在使用[cmake](.github/workflows/cmake.yml)时，需要指定`CMAKE_OSX_ARCHITECTURES=x86_64`或者`CMAKE_OSX_ARCHITECTURES=arm64`;
-   3. 在使用[qmake](.github/workflows/qmake.yml)时，需要指定`QMAKE_APPLE_DEVICE_ARCHS=x86_64`或者`QMAKE_APPLE_DEVICE_ARCHS=arm64`；
+## 插件开发
 
-- > 国际化实时翻译，当前更改完翻译设置，需要重启程序才能生效；
-   1. 更新翻译的命令
+Qt-App 使用基于 Qt Creator 的插件系统，开发者可以轻松创建自己的功能插件：
 
-      ```bash
-       cmake --build build --target Qt-App_lupdate
-      ```
+1. 在 `src/plugins/` 目录下创建新插件文件夹
+2. 实现 `IPlugin` 接口
+3. 添加插件元数据文件 (`*.json`)
+4. 在 `src/plugins/CMakeLists.txt` 或 `src/plugins/plugins.pro` 中注册插件
 
-   2. 懒得改代码了；
-   3. [具体参考：QT实用小技巧（想到就更新）](https://realchuan.github.io/2021/10/12/QT%E5%AE%9E%E7%94%A8%E5%B0%8F%E6%8A%80%E5%B7%A7%EF%BC%88%E6%83%B3%E5%88%B0%E5%B0%B1%E6%9B%B4%E6%96%B0%EF%BC%89/)，核心代码；
+## 国际化
 
-      ```cpp
-      void Widget::changeEvent(QEvent *e)
-      {
-         QWidget::changeEvent(e);
-         switch (e->type()) {
-         case QEvent::LanguageChange:
-            comboBox->setItemText(0, tr("Hello"));
-            label->setText(tr("Hello")); // 代码添加的文字
-            ui->retranslateUi(this);     // 有UI文件情况下
-            break;
-         default: break;
-         }
-      }
-      ```
+项目支持多语言国际化，翻译文件位于 `translations/` 目录：
+
+- 生成翻译文件：`cmake --build build --target Qt-App_lupdate`
+- 发布翻译文件：`cmake --build build --target Qt-App_lrelease`
+
+> 注意：当前更改翻译设置后需要重启程序才能生效
+
+## 打包与分发
+
+项目提供了多平台打包支持：
+
+- **macOS**: 使用 `packaging/macos/` 下的脚本生成 DMG 安装包
+- **Ubuntu/Debian**: 使用 `packaging/ubuntu/` 配置生成 DEB 包
+- **Windows**: 使用 `packaging/windows/` 下的 Inno Setup 脚本生成安装程序
+
+## 注意事项与常见问题
+
+### 平台特定问题
+
+1. **Ubuntu Wayland**: 需要设置环境变量解决窗口移动问题：
+
+   ```cpp
+   qputenv("QT_QPA_PLATFORM", "xcb");
+   ```
+
+2. **macOS Bundle**: CMake 生成的应用程序包可能需要手动处理 `PkgInfo` 文件
+
+3. **Unix 系统**: 建议使用静态链接避免动态库依赖问题，或正确设置 RPATH
+
+### 依赖管理
+
+1. **vcpkg 限制**: 目前 vcpkg 单独支持 x64-osx 和 arm64-osx 架构，需要明确指定：
+   - CMake: `-DCMAKE_OSX_ARCHITECTURES=x86_64` 或 `-DCMAKE_OSX_ARCHITECTURES=arm64`
+   - QMake: `QMAKE_APPLE_DEVICE_ARCHS=x86_64` 或 `QMAKE_APPLE_DEVICE_ARCHS=arm64`
+
+2. **Crashpad 权限**: 在 Unix 系统下需要确保 `crashpad_handler` 有执行权限：
+
+   ```bash
+   chmod +x crashpad_handler
+   ```
+
+## 目录结构详解
+
+```
+Qt-App/
+├── cmake/                 # CMake 实用函数封装
+├── docs/                 # 文档和图片资源
+├── examples/             # 示例代码
+│   └── i18n/            # 国际化示例
+├── packaging/            # 打包和发布配置
+│   ├── macos/           # macOS 打包脚本
+│   ├── ubuntu/          # Ubuntu/Debian 打包配置
+│   └── windows/         # Windows 打包脚本
+├── src/                 # 源代码
+│   ├── 3rdparty/        # 第三方库
+│   │   ├── qtsingleapplication/  # Qt 单实例应用支持
+│   │   └── ui_watchdog/ # UI 看门狗组件
+│   ├── aggregation/      # 聚合功能模块
+│   ├── apps/            # 应用程序入口
+│   │   ├── app/         # 主应用程序
+│   │   └── crashreport/ # 崩溃报告程序
+│   ├── core/            # 核心基础模块
+│   ├── dump/            # 崩溃捕捉功能
+│   │   ├── breakpad/    # Google Breakpad 封装
+│   │   └── crashpad/    # Google Crashpad 封装
+│   ├── extensionsystem/ # 插件系统（源自 Qt Creator）
+│   ├── plugins/         # 功能插件
+│   │   ├── aboutplugin/     # 关于插件
+│   │   ├── coreplugin/      # 核心插件（主界面、菜单等）
+│   │   ├── guiplugin/       # GUI 组件插件
+│   │   ├── hashplugin/      # 哈希算法插件
+│   │   ├── helloplugin/     # Hello 测试插件
+│   │   └── systeminfoplugin/# 系统信息插件
+│   ├── resource/        # 资源文件（图标、样式表等）
+│   ├── solutions/       # 解决方案组件
+│   │   ├── spinner/     # 加载指示器
+│   │   ├── tasking/     # 任务处理
+│   │   └── terminal/    # 终端模拟
+│   ├── utils/           # 工具函数库
+│   └── widgets/         # 自定义界面组件
+├── tests/               # 测试代码
+├── translations/        # 国际化翻译文件
+└── 配置文件等
+```

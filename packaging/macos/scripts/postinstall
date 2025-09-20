@@ -1,5 +1,11 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
+# 让 LaunchServices 立即识别新装 App
+/usr/bin/touch "/Applications/Qt-App.app"
 
-echo "Postinstall script is not implemented for macOS."
+# 清可能残留的缓存
+rm -rf "/Library/Caches/org.youth.Qt-App" || true
+
+# 给安装日志写一条
+logger -t Qt-App "postinstall finished (v0.1.1)"
 
 exit 0

@@ -1,20 +1,26 @@
 #!/bin/sh -e
 
-delete_file_or_dir() {
-    local target=$1
+APP_NAME="Qt-App"
 
-    if [ -e "$target" ]; then
-        if [ -d "$target" ]; then
-            rm -rf "$target"
-        else
-            rm "$target"
-        fi
-    fi
-}
+# 仅对 remove/purge 事件清配置
+case "$1" in
+    remove)
+        # 保留配置，只清缓存（若未来有）
+        rm -rf "${HOME:-/root}"/.config/Youth/${APP_NAME}/cache
+        ;;
+    purge)
+        # 连配置一起删
+        rm -rf "${HOME:-/root}"/.config/Youth/${APP_NAME} \
+               "${HOME:-/root}"/.config/Youth/CrashReport
+        ;;
+esac
 
-if [ "$1" = "remove" -o "$1" = "purge" ]; then
-    delete_file_or_dir ~/.config/Youth/Qt-App
-    delete_file_or_dir ~/.config/Youth/CrashReport
+# 删除桌面快捷方式
+rm -f ~/.local/share/applications/${APP_NAME}.desktop || true
+
+# 刷新桌面数据库
+if command -v update-desktop-database >/dev/null; then
+    update-desktop-database -q /usr/share/applications
 fi
 
 exit 0

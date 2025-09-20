@@ -1,31 +1,60 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<installer-gui-script minSpecVersion="1">
-    <title>Qt-App</title>
-    <organization>org.youth</organization>
-    <domains enable_localSystem="true"/>
-    <options customize="never" require-scripts="true" rootVolumeOnly="true" />
-    <!-- Define documents displayed at various steps -->
-    <welcome    file="welcome.html"    mime-type="text/html" />
-    <conclusion file="conclusion.html" mime-type="text/html" />
-    <!-- List all component packages -->
+<installer-gui-script minSpecVersion="2">   <!-- minSpecVersion≥2 才能用多数高级特性 -->
+    <!-- ==================== 基本信息 ==================== -->
+    <title>Qt-App</title>                           
+    <organization>org.youth</organization>        
+    <domain system="true"/>                      
+    <domains enable_localSystem="true"             
+             enable_anywhere="false"
+             enable_currentUserHome="false"/>
+    <!-- ==================== 安装选项 ==================== -->
+    <options customize="never"                    
+             require-scripts="true"                
+             rootVolumeOnly="true"                
+             hostArchitectures="arm64"/>   
+    <!-- ==================== 最小系统版本 ==================== -->
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="12.0"/>              
+        </allowed-os-versions>
+    </volume-check>
+    <!-- ==================== 欢迎 & 结束页 ==================== -->
+    <welcome    file="welcome.html"    mime-type="text/html"/>
+    <conclusion file="conclusion.html" mime-type="text/html"/>
+    <!-- ==================== 多语言标题（可选） ==================== -->
+    <localized-string key="INSTALLER_TITLE" value="Qt-App"/>
+    <localized-string key="INSTALLER_TITLE" value="Qt-App 简体中文版" lang="zh"/>
+    <!-- ==================== 组件包定义 ==================== -->
+    <!-- 主应用 -->
     <pkg-ref id="org.qt-app.client"
-             version="0"
-             auth="root">tmp.pkg</pkg-ref>
-    <!-- List them again here. They can now be organized
-         as a hierarchy if you want. -->
+             version="0.0.1"
+             auth="root">                
+        tmp.pkg
+    </pkg-ref>
+    <!-- ==================== 选择树 ==================== -->
     <choices-outline>
-        <line choice="default">
+        <line choice="root">
             <line choice="org.qt-app.client"/>
         </line>
     </choices-outline>
-    <!-- Define each choice above -->
-    <choice id="default"/>
-    <choice
-        id="org.qt-app.client"
-        visible="true"
-        title="Qt-App"
-        description="A qt Application template"
-        start_selected="true">
-      <pkg-ref id="org.qt-app.client"/>
+    <!-- ==================== 每个 choice 的展示文案 ==================== -->
+    <!-- 根 choice，仅用于结构，用户看不到 -->
+    <choice id="root" visible="false"/>
+    <!-- 主程序 -->
+    <choice id="org.qt-app.client"
+            visible="true"
+            selected="true"
+            enabled="false"                        
+            title="Qt-App"
+            description="The main Qt-App application">
+        <pkg-ref id="org.qt-app.client"/>
     </choice>
+    <!-- ==================== 升级检测 ==================== -->
+    <upgrade-bundle>
+        <bundle id="org.qt-app.client" path="/Applications/Qt-App.app"/>
+    </upgrade-bundle>
+    <!-- ==================== 安装后自动打开（可选） ==================== -->
+    <post-install>
+        <open-file path="/Applications/Qt-App.app"/>
+    </post-install>
 </installer-gui-script>

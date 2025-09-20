@@ -63,7 +63,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          ..\scripts\windows\setVsDev.ps1
+          ..\packaging\windows\Enter-VsDevShell.ps1
           & qmake ./../.
           & jom
         working-directory: build

@@ -81,6 +81,7 @@
         <file>icon/mactitle/titlebutton-restore-hover-alt.png</file>
         <file>icon/mactitle/titlebutton-restore-hover-alt@2.png</file>
         <file>icon/app.png</file>
+        <file>icon/crash.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file>qss/common.css</file>

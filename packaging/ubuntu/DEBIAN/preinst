@@ -1,6 +1,12 @@
 #!/bin/sh -e
 
-killall -q -9 Qt-App || true
-killall -q -9 CrashReport || true
+APP_NAME="Qt-App"
+
+# 升级/安装前先优雅退出
+pkill -TERM -x ${APP_NAME} 2>/dev/null || true
+sleep 1
+pkill -KILL -x ${APP_NAME} 2>/dev/null || true
+pkill -TERM -x CrashReport 2>/dev/null || true
+pkill -KILL -x CrashReport 2>/dev/null || true
 
 exit 0

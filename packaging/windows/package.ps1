@@ -6,7 +6,7 @@ Write-Host $ProjectDir
 
 Import-Module (Join-Path $ProjectDir "packaging\windows\utils.ps1")
 
-Invoke-Expression -Command "$ProjectDir\scripts\windows\setVsDev.ps1"
+Invoke-Expression -Command "$ProjectDir\packaging\windows\Enter-VsDevShell.ps1"
 
 $releases_dir = Join-Path $ProjectDir "packaging\releases"
 $packet_dir = Join-Path $ProjectDir "packaging\packet"

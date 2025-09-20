@@ -1,8 +1,20 @@
 #!/bin/sh -e
 
-chmod +x /opt/Qt-App/Qt-App
-chmod +x /opt/Qt-App/Qt-App.sh
-chmod 777 /opt/Qt-App/app.png
-chmod 744 /usr/share/applications/Qt-App.desktop
+APP_NAME="Qt-App"
+APP_DIR=/opt/${APP_NAME}
+DESK=/usr/share/applications/${APP_NAME}.desktop
+
+# 二进制可执行
+chmod 0755 "${APP_DIR}"/${APP_NAME}
+chmod 0755 "${APP_DIR}"/${APP_NAME}.sh
+# 图标只读
+chmod 0644 "${APP_DIR}"/app.png
+# desktop 只读
+chmod 0644 "$DESK"
+
+# 更新桌面数据库（无声失败）
+if command -v update-desktop-database >/dev/null; then
+    update-desktop-database -q /usr/share/applications
+fi
 
 exit 0

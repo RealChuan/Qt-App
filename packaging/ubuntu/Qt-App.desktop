@@ -1,10 +1,13 @@
 [Desktop Entry]
+Version=1.0
+Type=Application
 Name=Qt-App
-Comment=A qt Application template
-GenericName=Qt-App
+GenericName=Application Template
+Comment=Small Qt-based demo utility
 Exec=AppRun %F
 Icon=app
-Type=Application
-StartupNotify=false
+StartupNotify=true
 StartupWMClass=Qt-App
 Categories=Utility;
+Keywords=qt-app;
+MimeType=application/x-qtapp-project;

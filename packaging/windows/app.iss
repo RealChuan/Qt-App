@@ -5,7 +5,7 @@
 #define MyAppVersion "0.1.1"
 #define MyAppPublisher "The Youth."
 #define MyAppURL "https://github.com/RealChuan/Qt-App"
-#define MyAppExeName "Qt-App.exe"
+#define MyAppExeName MyAppName + ".exe"
 #define MyAppAssocName MyAppName + ""
 #define MyAppAssocExt ".myp"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -18,7 +18,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{{#MyAppId}}
+AppId={#MyAppId}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ; AppVerName={#MyAppName} {#MyAppVersion}
@@ -57,13 +57,10 @@ ShowLanguageDialog=auto
 ; SignTool = sha256
 ; SignedUninstaller = yes
 
-; "ArchitecturesAllowed=x64" specifies that Setup cannot run on
-; anything but x64.
-ArchitecturesAllowed=x64
-; "ArchitecturesInstallIn64BitMode=x64" requests that the install be
-; done in "64-bit mode" on x64, meaning it should use the native
-; 64-bit Program Files directory and the 64-bit view of the registry.
-ArchitecturesInstallIn64BitMode=x64
+; Only allow the installer to run on x64-compatible systems,
+; and enable 64-bit install mode.
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
 Name: "Chinese"; MessagesFile: "ChineseSimplified.isl"
@@ -71,7 +68,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
 Source: "..\packet\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyAppExeName}')
