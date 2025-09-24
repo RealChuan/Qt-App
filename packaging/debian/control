@@ -1,11 +1,23 @@
-Package: qt-app
-Version: 0.1.1
-Architecture: amd64
+Source: qt-app
 Section: utils
 Priority: optional
 Maintainer: RealChuan <sun1070753498@163.com>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake,
+ ninja-build,
+Standards-Version: 4.6.2
 Homepage: https://github.com/RealChuan/Qt-App
-Depends: libc6 (>= 2.35)
+#Vcs-Browser: https://salsa.debian.org/debian/qt-app
+#Vcs-Git: https://salsa.debian.org/debian/qt-app.git
+
+Package: qt-app
+Architecture: any
+Multi-Arch: foreign
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
 Description: simple Qt6-based system tray application
  Qt-App demonstrates how to build a modern cross-platform GUI
  with Qt6 and CMake. Features include:

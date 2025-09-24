@@ -8,7 +8,7 @@
 
 ## 项目简介
 
-Qt-App 是一个基于插件式架构开发的桌面应用程序框架，可用于快速构建功能丰富的跨平台桌面应用。其核心插件系统源自 [Qt Creator](https://github.com/qt-creator/qt-creator/tree/master/src/libs/extensionsystem)，并进行了适当修改与增强。
+Qt-App 是一个基于插件式架构开发的桌面应用程序框架，可用于快速构建功能丰富的跨平台桌面应用。其核心插件系统源自 [Qt Creator](https://github.com/qt-creator/qt-creator/tree/master/src/libs/extensionsystem)，并进行了适当修改。
 
 项目特点：
 
@@ -80,9 +80,16 @@ Qt-App 使用基于 Qt Creator 的插件系统，开发者可以轻松创建自�
 
 项目提供了多平台打包支持：
 
-- **macOS**: 使用 `packaging/macos/` 下的脚本生成 DMG 安装包
-- **Ubuntu/Debian**: 使用 `packaging/ubuntu/` 配置生成 DEB 包
-- **Windows**: 使用 `packaging/windows/` 下的 Inno Setup 脚本生成安装程序
+- **Windows**  
+  使用 `packaging/windows/` 目录下的 Inno Setup 脚本构建安装程序。具体操作可参考 [.github/workflows/cmake.yml](.github/workflows/cmake.yml) 中的相关流程。
+
+- **macOS**  
+  通过 `packaging/macos/` 中的脚本可生成 DMG 镜像或 PKG 安装包。构建方法详见 [.github/workflows/cmake.yml](.github/workflows/cmake.yml)。
+
+- **Ubuntu/Debian**  
+  - **官方 DEB 包**：基于 `packaging/debian/` 配置，使用 `dpkg-buildpackage` 进行构建，参考 [.github/workflows/debian.yml](.github/workflows/debian.yml)。
+  - **快速打包**：使用 `packaging/ubuntu/` 配置配合 `dpkg -b` 快速生成 DEB 包，详见 [.github/workflows/cmake.yml](.github/workflows/cmake.yml)。  
+  两种方式均会同步生成对应的 AppImage 文件。
 
 ## 注意事项与常见问题
 
@@ -114,19 +121,20 @@ Qt-App 使用基于 Qt Creator 的插件系统，开发者可以轻松创建自�
 
 ```
 Qt-App/
-├── cmake/                 # CMake 实用函数封装
-├── docs/                 # 文档和图片资源
-├── examples/             # 示例代码
+├── cmake/               # CMake 实用函数封装
+├── docs/                # 文档和图片资源
+├── examples/            # 示例代码
 │   └── i18n/            # 国际化示例
-├── packaging/            # 打包和发布配置
-│   ├── macos/           # macOS 打包脚本
-│   ├── ubuntu/          # Ubuntu/Debian 打包配置
-│   └── windows/         # Windows 打包脚本
+├── packaging/           # 打包和发布配置
+│   ├── debian/          # Debian 官方打包（dpkg-buildpackage）
+│   ├── macos/           # DMG/PKG 安装包制作
+│   ├── ubuntu/          # Ubuntu/Debian 快速打包（dpkg -b）
+│   └── windows/         # Inno Setup 安装程序制作
 ├── src/                 # 源代码
 │   ├── 3rdparty/        # 第三方库
 │   │   ├── qtsingleapplication/  # Qt 单实例应用支持
 │   │   └── ui_watchdog/ # UI 看门狗组件
-│   ├── aggregation/      # 聚合功能模块
+│   ├── aggregation/     # 聚合功能模块
 │   ├── apps/            # 应用程序入口
 │   │   ├── app/         # 主应用程序
 │   │   └── crashreport/ # 崩溃报告程序

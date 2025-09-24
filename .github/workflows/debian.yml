@@ -1,0 +1,90 @@
+name: Build debian packages
+
+on: 
+  push:
+    paths-ignore:
+        - 'docs/**'
+        - 'translations/**'
+        - '.clang-*'
+        - '.gitignore'
+        - '*.pri'
+        - 'LICENSE'
+        - '*.pro'
+        - 'README*'
+  pull_request:
+    paths-ignore:
+        - 'docs/**'
+        - 'translations/**'
+        - '.clang-*'
+        - '.gitignore'
+        - '*.pri'
+        - 'LICENSE'
+        - '*.pro'
+        - 'README*'
+
+env:
+  PACKET_DIR: ./packaging/packet
+  RELEASES_DIR: ./packaging/releases
+
+jobs:
+  deb:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with: 
+          fetch-depth: 1
+          
+      - uses: ./.github/actions/install-dependencies
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y devscripts build-essential debhelper-compat equivs
+
+      - name: Install linuxdeployqt
+        shell: bash
+        run: |
+          sudo add-apt-repository universe
+          sudo apt update
+          sudo apt install -y libfuse2 libxcb-cursor0
+          wget -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" \
+            -O /usr/local/bin/linuxdeployqt
+          sudo chmod +x /usr/local/bin/linuxdeployqt
+         
+      - name: Create output directories
+        shell: bash
+        run: |
+          mkdir -p ${{ env.PACKET_DIR }}
+          mkdir -p ${{ env.RELEASES_DIR }}
+
+      - name: Download fonts
+        shell: bash
+        working-directory: ${{ env.PACKET_DIR }}
+        run: |
+          cmake -P ./../fonts.cmake
+          ls -al
+          ls -al ./fonts
+
+      - name: Generate Debian package
+        shell: bash
+        run: |
+          ln --symbolic --no-dereference --force packaging/debian
+          sudo mk-build-deps --install --remove
+          sudo chmod +x debian/package.sh
+          export DPKG_GENSYMBOLS_CHECK_LEVEL=0
+          export DEB_BUILD_OPTIONS="nocheck parallel=$(( $(getconf _NPROCESSORS_ONLN) + 2 ))"
+          dpkg-buildpackage -b -us -uc -jauto
+
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mv ../*.deb ${{ env.RELEASES_DIR }}/Qt-App.deb
+          ls -al ${{ env.RELEASES_DIR }}
+          dpkg-deb -I ${{ env.RELEASES_DIR }}/Qt-App.deb control
+
+      - name: Upload Debian packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-packages
+          path: ${{ env.RELEASES_DIR }}

@@ -10,7 +10,7 @@ echo "Current directory: ${project_dir}"
 packet_dir="${project_dir}/packaging/packet"
 releases_dir="${project_dir}/packaging/releases"
 
-sudo chmod -R +x ${packet_dir}
+chmod -R +x ${packet_dir}
 
 # 安装linuxdeployqt
 sudo add-apt-repository universe
@@ -55,7 +55,7 @@ linuxdeployqt ${packet_dir}/${app_name} \
     -always-overwrite \
     -unsupported-allow-new-glibc \
     -appimage || true
-sudo chmod +x *.AppImage
+chmod +x *.AppImage
 cd "${project_dir}"
 
 mv -v "${packet_dir}"/*.AppImage "$releases_dir"/${app_name}.AppImage
@@ -73,9 +73,9 @@ cp -rv "${project_dir}"/packaging/ubuntu/DEBIAN "${packet_dir}"/
 cp -rv "${project_dir}"/packaging/ubuntu/usr "${packet_dir}"/
 cp -v "${project_dir}"/packaging/ubuntu/${app_name}.sh "${packet_dir}"/opt/${app_name}/
 
-sudo chmod -R +x "${packet_dir}"/DEBIAN
-sudo chmod 777 "${packet_dir}"/opt/${app_name}/app.png
-sudo chmod 744 "${packet_dir}"/usr/share/applications/${app_name}.desktop
+chmod -R +x "${packet_dir}"/DEBIAN
+chmod 777 "${packet_dir}"/opt/${app_name}/app.png
+chmod 744 "${packet_dir}"/usr/share/applications/${app_name}.desktop
 
 deb_path="${releases_dir}/${app_name}.deb"
 sudo dpkg -b ${packet_dir}/. ${deb_path}

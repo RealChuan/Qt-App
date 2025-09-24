@@ -1,4 +1,4 @@
-name: CMake Build
+name: CMake build
 
 on: 
   push:
@@ -28,8 +28,7 @@ env:
   RELEASES_DIR: ./packaging/releases
 
 jobs:
-  build:
-    name: Build
+  Build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -134,9 +133,8 @@ jobs:
           name: ${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}
           path: ${{ env.RELEASES_DIR }}
 
-  release:
-    name: Release
-    needs: build
+  Release:
+    needs: Build
     if: startsWith(github.ref, 'refs/tags/')
 
     runs-on: ubuntu-latest

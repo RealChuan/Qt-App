@@ -1,4 +1,4 @@
-name: QMake Build
+name: QMake build
 
 on: 
   push:
@@ -30,8 +30,7 @@ env:
   MACOSX_DEPLOYMENT_TARGET: 11.0
 
 jobs:
-  build:
-    name: Build
+  Build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
