@@ -151,8 +151,8 @@ set(PROJECT_SOURCES
     treemodel.cpp
     treemodel.h
     utils_global.h
-    utils.cpp
-    utils.h
+    utils.cc
+    utils.hpp
     utilsicons.cpp
     utilsicons.h
     utilstr.h

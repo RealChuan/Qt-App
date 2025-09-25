@@ -1,6 +1,6 @@
 #include "cpubenchthread.hpp"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 namespace Plugin {
 

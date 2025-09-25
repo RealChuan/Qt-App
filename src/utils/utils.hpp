@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include "utils_global.h"
 
@@ -27,6 +26,7 @@ UTILS_EXPORT auto crashPath() -> QString;
 UTILS_EXPORT auto logPath() -> QString;
 UTILS_EXPORT auto cachePath() -> QString;
 
+UTILS_EXPORT void restoreAndActivate(QWidget *window);
 UTILS_EXPORT void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius = 10);
 UTILS_EXPORT auto systemInfo() -> QString;
 UTILS_EXPORT void setHighDpiEnvironmentVariable();
@@ -54,5 +54,3 @@ UTILS_EXPORT auto cpuBench(int iterations,
     -> double;
 
 } // namespace Utils
-
-#endif // UTILS_H

@@ -1,6 +1,6 @@
 #include "waitwidget.h"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

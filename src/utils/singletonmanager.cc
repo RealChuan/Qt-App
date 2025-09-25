@@ -1,5 +1,5 @@
 #include "singletonmanager.hpp"
-#include "utils.h"
+#include "utils.hpp"
 
 #include <QSettings>
 
