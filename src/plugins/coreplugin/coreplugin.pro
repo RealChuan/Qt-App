@@ -13,8 +13,6 @@ LIBS += \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
 
-
-
 HEADERS += \
     configwidget.h \
     coreconstants.h \

@@ -2,7 +2,7 @@
 
 #include <utils/guiutils.h>
 #include <utils/singletonmanager.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

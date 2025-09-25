@@ -7,7 +7,7 @@
 
 #include <extensionsystem/pluginmanager.h>
 #include <utils/appinfo.h>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

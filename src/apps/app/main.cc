@@ -10,7 +10,7 @@
 #include <utils/hostosinfo.h>
 #include <utils/logasync.h>
 #include <utils/singletonmanager.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 #include <widgets/waitwidget.h>
 
 #include <QMessageBox>

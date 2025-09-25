@@ -5,7 +5,7 @@
 #include <core/corewidget.hpp>
 #include <extensionsystem/pluginmanager.h>
 #include <utils/singletonmanager.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 #include <widgets/messagebox.h>
 
 #include <QtWidgets>
@@ -74,8 +74,8 @@ private:
     {
         if (!QSystemTrayIcon::isSystemTrayAvailable()) {
             Widgets::MessageBox::Info(q_ptr,
-                                      tr("Systray, I couldn't detect any system "
-                                         "tray on this system."));
+                                      MainWindow::tr("Systray, I couldn't detect any system "
+                                                     "tray on this system."));
             return;
         }
 
@@ -91,30 +91,21 @@ private:
         q_ptr->connect(systemTrayIcon,
                        &QSystemTrayIcon::activated,
                        q_ptr,
-                       [this](QSystemTrayIcon::ActivationReason reason) {
-                           switch (reason) {
-                           case QSystemTrayIcon::DoubleClick: q_ptr->show(); break;
-                           default: break;
-                           }
-                       });
+                       &MainWindow::onSystrayIconActivated);
 
         qApp->setQuitOnLastWindowClosed(false);
-
+        // for macOS, when the app is active, click the dock icon to show the main window
         q_ptr->connect(qApp,
                        &QApplication::applicationStateChanged,
                        q_ptr,
-                       [this](Qt::ApplicationState state) {
-                           if (state == Qt::ApplicationActive) {
-                               q_ptr->show();
-                           }
-                       });
+                       &MainWindow::onApplicationStateChanged);
 
         QMetaObject::invokeMethod(
             q_ptr,
             [systemTrayIcon] {
                 systemTrayIcon->showMessage(MainWindow::tr("Hello World!"),
                                             MainWindow::tr("This is an Qt-App."),
-                                            QIcon(":/icon/icon/app.png"));
+                                            systemTrayIcon->icon());
             },
             Qt::QueuedConnection);
     }
@@ -231,6 +222,22 @@ void MainWindow::onShowGroupButton(int id)
         } else {
             btn->hide();
         }
+    }
+}
+
+void MainWindow::onSystrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+    case QSystemTrayIcon::DoubleClick:
+    case QSystemTrayIcon::Trigger: Utils::restoreAndActivate(this); break;
+    default: break;
+    }
+}
+
+void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
+{
+    if (state == Qt::ApplicationActive) {
+        Utils::restoreAndActivate(this);
     }
 }
 

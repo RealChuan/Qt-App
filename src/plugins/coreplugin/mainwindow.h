@@ -2,6 +2,8 @@
 
 #include <widgets/mainwidget.hpp>
 
+#include <QSystemTrayIcon>
+
 namespace Plugin {
 
 class MainWindow : public Widgets::MainWidget
@@ -14,6 +16,8 @@ public:
     void extensionsInitialized();
 
 private slots:
+    void onSystrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void onApplicationStateChanged(Qt::ApplicationState state);
     void onShowGroupButton(int id);
     void onAboutPlugins();
 

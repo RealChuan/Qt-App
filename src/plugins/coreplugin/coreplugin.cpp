@@ -9,6 +9,7 @@
 #include <utils/guiutils.h>
 #include <utils/id.h>
 #include <utils/theme/theme_p.h>
+#include <utils/utils.hpp>
 
 #include <QApplication>
 #include <QPointer>
@@ -88,10 +89,7 @@ public:
 
     QObject *remoteCommand(const QStringList &, const QString &, const QStringList &) override
     {
-        m_mainWindowPtr->setWindowState(m_mainWindowPtr->windowState() & ~Qt::WindowMinimized);
-        m_mainWindowPtr->show();
-        m_mainWindowPtr->raise();
-        m_mainWindowPtr->activateWindow();
+        Utils::restoreAndActivate(mainwindowPtr.data());
         return nullptr;
     }
 

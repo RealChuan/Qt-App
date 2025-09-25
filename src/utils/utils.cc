@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "utils.hpp"
 #include "hostosinfo.h"
 #include "utilstr.h"
 
@@ -12,12 +12,14 @@
 #endif
 // clang-format on
 
-void Utils::setUTF8Code()
+namespace Utils {
+
+void setUTF8Code()
 {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 }
 
-void Utils::setQSS(const QStringList &qssFilePaths)
+void setQSS(const QStringList &qssFilePaths)
 {
     QStringList qssFiles;
     for (const auto &path : std::as_const(qssFilePaths)) {
@@ -36,7 +38,7 @@ void Utils::setQSS(const QStringList &qssFilePaths)
     qApp->setStyleSheet(qssFiles.join("\n"));
 }
 
-void Utils::loadFonts(const QString &fontPath)
+void loadFonts(const QString &fontPath)
 {
     const QDir dir(fontPath);
     if (!dir.exists()) {
@@ -55,7 +57,7 @@ void Utils::loadFonts(const QString &fontPath)
     }
 }
 
-void Utils::windowCenter(QWidget *child, QWidget *parent)
+void windowCenter(QWidget *child, QWidget *parent)
 {
     const QSize size = parent->size() - child->size();
     int x = qMax(0, size.width() / 2);
@@ -63,7 +65,7 @@ void Utils::windowCenter(QWidget *child, QWidget *parent)
     child->move(x, y);
 }
 
-void Utils::windowCenter(QWidget *window)
+void windowCenter(QWidget *window)
 {
     const QRect rect = qApp->primaryScreen()->availableGeometry();
     int x = (rect.width() - window->width()) / 2 + rect.x();
@@ -87,7 +89,18 @@ auto compilerString() -> QString
     return QLatin1String("<unknown compiler>");
 }
 
-void Utils::addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
+void restoreAndActivate(QWidget *window)
+{
+    if (window->isMinimized()) {
+        window->setWindowState(window->windowState() & ~Qt::WindowMinimized);
+    }
+
+    window->show();
+    window->raise();
+    window->activateWindow();
+}
+
+void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
 {
     auto *effect = new QGraphicsDropShadowEffect(widget);
     effect->setOffset(0, 0);
@@ -96,7 +109,7 @@ void Utils::addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
     widget->setGraphicsEffect(effect);
 }
 
-auto Utils::systemInfo() -> QString
+auto systemInfo() -> QString
 {
     auto text = QString("%1 (%2) on %3 (%4) with CPU Cores: %5")
                     .arg(QSysInfo::prettyProductName(),
@@ -110,7 +123,7 @@ auto Utils::systemInfo() -> QString
     return text;
 }
 
-void Utils::setHighDpiEnvironmentVariable()
+void setHighDpiEnvironmentVariable()
 {
 #ifdef Q_OS_WIN
 
@@ -131,7 +144,7 @@ void Utils::setHighDpiEnvironmentVariable()
 #endif // Q_OS_WIN
 }
 
-void Utils::reboot()
+void reboot()
 {
     QProcess::startDetached(QApplication::applicationFilePath(),
                             QApplication::arguments(),
@@ -139,12 +152,12 @@ void Utils::reboot()
     QApplication::exit();
 }
 
-auto Utils::createDirectoryRecursively(const QString &path) -> bool
+auto createDirectoryRecursively(const QString &path) -> bool
 {
     return QDir().mkpath(path);
 }
 
-auto Utils::removeDirectory(const QString &path) -> bool
+auto removeDirectory(const QString &path) -> bool
 {
     if (path.isEmpty()) { // QDir("") points to the working directory! We never want to remove that one.
         return false;
@@ -158,7 +171,7 @@ auto Utils::removeDirectory(const QString &path) -> bool
     return dir.removeRecursively();
 }
 
-auto Utils::removeFile(const QString &path) -> bool
+auto removeFile(const QString &path) -> bool
 {
     if (path.isEmpty()) {
         return false;
@@ -171,7 +184,7 @@ auto Utils::removeFile(const QString &path) -> bool
     return file.remove();
 }
 
-QString Utils::formatBytes(qint64 bytes, int precision)
+QString formatBytes(qint64 bytes, int precision)
 {
     const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     const int unit = 1024;
@@ -185,7 +198,7 @@ QString Utils::formatBytes(qint64 bytes, int precision)
     return QString("%1 %2").arg(QString::number(size, 'f', precision)).arg(list.at(index));
 }
 
-auto Utils::jsonFromFile(const QString &filePath) -> QJsonObject
+auto jsonFromFile(const QString &filePath) -> QJsonObject
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -197,7 +210,7 @@ auto Utils::jsonFromFile(const QString &filePath) -> QJsonObject
     return jsonFromBytes(buf);
 }
 
-auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
+auto jsonFromBytes(const QByteArray &bytes) -> QJsonObject
 {
     QJsonParseError jsonParseError;
     auto jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
@@ -209,7 +222,7 @@ auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
     return jsonDocument.object();
 }
 
-auto Utils::configLocation() -> QString
+auto configLocation() -> QString
 {
     static QString path;
     if (path.isEmpty()) {
@@ -219,11 +232,11 @@ auto Utils::configLocation() -> QString
         }
     }
     //qInfo() << path;
-    Utils::createDirectoryRecursively(path);
+    createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::getPidFromProcessName(const QString &processName) -> qint64
+auto getPidFromProcessName(const QString &processName) -> qint64
 {
 #if defined(Q_OS_WIN)
     auto *hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -271,7 +284,7 @@ auto Utils::getPidFromProcessName(const QString &processName) -> qint64
 #endif
 }
 
-auto Utils::killProcess(qint64 pid) -> bool
+auto killProcess(qint64 pid) -> bool
 {
     qWarning() << "kill process: " << pid;
 #if defined(Q_OS_WIN)
@@ -287,7 +300,7 @@ auto Utils::killProcess(qint64 pid) -> bool
 #endif
 }
 
-void Utils::setMacComboBoxStyle(QWidget *parent)
+void setMacComboBoxStyle(QWidget *parent)
 {
 #ifndef Q_OS_MACOS
     return;
@@ -298,45 +311,45 @@ void Utils::setMacComboBoxStyle(QWidget *parent)
     }
 }
 
-void Utils::quitApplication()
+void quitApplication()
 {
     QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
-auto Utils::crashPath() -> QString
+auto crashPath() -> QString
 {
     const auto path = configLocation() + "/crash";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::logPath() -> QString
+auto logPath() -> QString
 {
     const auto path = configLocation() + "/log";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::configPath() -> QString
+auto configPath() -> QString
 {
     const auto path = configLocation() + "/config";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::configFilePath() -> QString
+auto configFilePath() -> QString
 {
     return (configPath() + "/config.ini");
 }
 
-auto Utils::cachePath() -> QString
+auto cachePath() -> QString
 {
     const auto path = configLocation() + "/cache";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::calculateDirectoryStats(const QString &path) -> DirectoryStats
+auto calculateDirectoryStats(const QString &path) -> DirectoryStats
 {
     DirectoryStats stats;
     if (path.isEmpty() || !QDir(path).exists()) {
@@ -391,10 +404,10 @@ double cpuBenchOnce(int durationMs, QCryptographicHash::Algorithm algorithm, con
     return (totalBytes / elapsedSeconds) / (1024 * 1024); // MB/s
 }
 
-double Utils::cpuBench(int iterations,
-                       int durationMs,
-                       int dataSize,
-                       QCryptographicHash::Algorithm algorithm)
+double cpuBench(int iterations,
+                int durationMs,
+                int dataSize,
+                QCryptographicHash::Algorithm algorithm)
 {
     double maxSpeed = 0.0;
 
@@ -409,10 +422,12 @@ double Utils::cpuBench(int iterations,
     return maxSpeed;
 }
 
-void Utils::setPixmapCacheLimit()
+void setPixmapCacheLimit()
 {
     const int originalLimit = QPixmapCache::cacheLimit();
     const qreal dpr = qApp->devicePixelRatio();
     const qreal multiplier = std::clamp(dpr * dpr, 1.0, 4.0);
     QPixmapCache::setCacheLimit(originalLimit * multiplier);
 }
+
+} // namespace Utils

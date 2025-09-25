@@ -74,7 +74,7 @@ SOURCES += \
     textcodec.cpp \
     threadutils.cpp \
     treemodel.cpp \
-    utils.cpp \
+    utils.cc \
     utilsicons.cpp \
     validator.cc \
     widgetmanager.cc
@@ -146,7 +146,7 @@ HEADERS += \
     threadutils.h \
     treemodel.h \
     utils_global.h \
-    utils.h \
+    utils.hpp \
     utilsicons.h \
     utilstr.h \
     utiltypes.h \
