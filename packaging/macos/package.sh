@@ -12,7 +12,7 @@ echo "Current directory: ${project_dir}"
 packet_dir="${project_dir}/packaging/packet"
 releases_dir="${project_dir}/packaging/releases"
 
-sudo chmod -R +x ${packet_dir}
+chmod -R +x ${packet_dir}
 mv -vf "${packet_dir}/fonts" "${packet_dir}/${app_name}.app/Contents/Resources/"
 
 macdeployqt "${packet_dir}/${app_name}.app" -always-overwrite
@@ -27,7 +27,7 @@ zip_path="${releases_dir}/${app_name}.7z"
 version="0.1.1"
 mkdir -p ${packet_dir}/output
 # process_plist "${project_dir}/packaging/macos/distribution.xml"
-sudo chmod -R +x ${project_dir}/packaging/macos/scripts
+chmod -R +x ${project_dir}/packaging/macos/scripts
 pkgbuild --root ${packet_dir}/${app_name}.app --identifier org.qt-app.client \
 	--version ${version} \
 	--scripts ${project_dir}/packaging/macos/scripts \
@@ -41,7 +41,7 @@ productbuild --distribution ${project_dir}/packaging/macos/distribution.xml \
 brew install node graphicsmagick imagemagick
 npm install -g create-dmg
 
-cd "${packet_dir}"
+cd ${packet_dir}
 create-dmg "${app_name}.app" "${releases_dir}" \
 	--overwrite --no-version-in-filename --no-code-sign
 

@@ -57,10 +57,10 @@ void setAppInfo()
     info.displayVersion = Utils::displayVersion;
     info.id = Utils::id;
     info.plugins = (appDirPath / "plugins").cleanPath();
-#ifndef Q_OS_MACOS
-    info.resources = (appDirPath / "resources").cleanPath();
-#else
+#ifdef Q_OS_MACOS
     info.resources = (appDirPath / "../Resources").cleanPath();
+#else
+    info.resources = (appDirPath / "resources").cleanPath();
 #endif
     // sync with src\tools\qmlpuppet\qmlpuppet\qmlpuppet.cpp -> QString crashReportsPath()
     info.crashReports = Utils::FilePath::fromString(Utils::crashPath());

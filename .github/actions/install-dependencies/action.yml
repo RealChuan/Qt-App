@@ -73,12 +73,23 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang
+        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang lintian
         ninja --version
         cmake --version
         gcc --version
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
+    - name: Install linuxdeployqt
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo add-apt-repository universe
+        sudo apt update
+        sudo apt install -y libfuse2 libxcb-cursor0
+        wget -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" \
+          -O /usr/local/bin/linuxdeployqt
+        sudo chmod +x /usr/local/bin/linuxdeployqt
+ 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:

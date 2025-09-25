@@ -23,7 +23,7 @@ on:
         - 'README*'
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 11.0
+  MACOSX_DEPLOYMENT_TARGET: 12.0
   PACKET_DIR: ./packaging/packet
   RELEASES_DIR: ./packaging/releases
 
@@ -113,13 +113,13 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          sudo chmod +x ./packaging/macos/package.sh
+          chmod +x ./packaging/macos/package.sh
           ./packaging/macos/package.sh
       - name: Packaging ubuntu
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          sudo chmod 755 ./packaging/ubuntu/package.sh
+          chmod +x ./packaging/ubuntu/package.sh
           ./packaging/ubuntu/package.sh
 
       - name: Check packages
@@ -158,7 +158,7 @@ jobs:
         working-directory: packaging
         shell: bash
         run: |
-          sudo chmod +x rename_packages.sh
+          chmod +x rename_packages.sh
           ./rename_packages.sh
 
       - name: Create release

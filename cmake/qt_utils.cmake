@@ -18,10 +18,10 @@ function(add_translations OUTPUT_NAME)
   # 确定翻译文件的输出位置
   if(CMAKE_HOST_APPLE)
     set(output_location
-        "${EXECUTABLE_OUTPUT_PATH}/${OUTPUT_NAME}.app/Contents/Resources/translations"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${OUTPUT_NAME}.app/Contents/Resources/translations"
     )
   else()
-    set(output_location "${EXECUTABLE_OUTPUT_PATH}/translations")
+    set(output_location "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
   endif()
 
   # 查找所有的翻译文件(.ts)

@@ -30,9 +30,6 @@ on:
     - cron: '0 0 1 * *'
   workflow_dispatch:
   
-env:
-  MACOSX_DEPLOYMENT_TARGET: 11.0
-
 jobs:
   CodeQL:
     runs-on: ubuntu-latest

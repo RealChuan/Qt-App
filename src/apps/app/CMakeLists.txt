@@ -29,10 +29,8 @@ elseif(CMAKE_HOST_APPLE)
     helloplugin
     systeminfoplugin
     CrashReport)
-  add_rpath(${PROJECT_NAME})
 elseif(CMAKE_HOST_LINUX)
   qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
-  add_rpath(${PROJECT_NAME})
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE TRUE
@@ -59,25 +57,38 @@ string(REPLACE "share/crashpad" "tools/crashpad" crash_handler_path
 message(STATUS "crashpad tools directory: ${crash_handler_path}")
 
 if(CMAKE_HOST_APPLE)
+  set(BUNDLE_CONTENTS_DIR
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/MacOS")
+
   add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-    # copy plugins  to bundle
+    COMMENT "Configuring macOS application bundle"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${BUNDLE_CONTENTS_DIR}/plugins"
     COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${EXECUTABLE_OUTPUT_PATH}/plugins
-      ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS/plugins
-      # copy crashrepoter to bundle
+      ${CMAKE_COMMAND} -E copy_directory
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins"
+      "${BUNDLE_CONTENTS_DIR}/plugins"
     COMMAND
-      ${CMAKE_COMMAND} -E copy ${EXECUTABLE_OUTPUT_PATH}/CrashReport
-      ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS/CrashReport
-      # copy crashpad_handler to bundle
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${crash_handler_path}
-            ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS)
+      ${CMAKE_COMMAND} -E copy "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CrashReport"
+      "${BUNDLE_CONTENTS_DIR}/CrashReport"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
+            "${BUNDLE_CONTENTS_DIR}"
+    COMMAND chmod +x "${BUNDLE_CONTENTS_DIR}/crashpad_handler")
+
 else()
   add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-    # copy crashpad_handler to bundle
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${crash_handler_path}
-            ${EXECUTABLE_OUTPUT_PATH})
+    COMMENT "Configuring crashpad handler for non-macOS platform"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+  if(CMAKE_HOST_LINUX)
+    add_custom_command(
+      TARGET ${PROJECT_NAME}
+      POST_BUILD
+      COMMENT "Setting execute permissions for crashpad_handler on Linux"
+      COMMAND chmod +x "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/crashpad_handler")
+  endif()
 endif()

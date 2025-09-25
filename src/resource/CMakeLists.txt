@@ -15,7 +15,7 @@ if(CMAKE_HOST_APPLE)
     COMMAND
       ${CMAKE_COMMAND} -E copy_directory
       "${PROJECT_SOURCE_DIR}/src/resource/themes"
-      "${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/Resources/themes"
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/Resources/themes"
     COMMENT "Copying themes directory...")
 else()
   add_custom_command(
@@ -24,6 +24,6 @@ else()
     COMMAND
       ${CMAKE_COMMAND} -E copy_directory
       "${PROJECT_SOURCE_DIR}/src/resource/themes"
-      "${EXECUTABLE_OUTPUT_PATH}/resources/themes"
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/themes"
     COMMENT "Copying themes directory...")
 endif()

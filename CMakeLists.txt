@@ -28,9 +28,6 @@ find_package(
 
 qt_standard_project_setup(I18N_SOURCE_LANGUAGE en I18N_TRANSLATED_LANGUAGES
                           zh_CN)
-# qt_standard_project_setup will set CMAKE_RUNTIME_OUTPUT_DIRECTORY, we need to
-# set it back, and use EXECUTABLE_OUTPUT_PATH
-unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
 find_package(unofficial-breakpad CONFIG REQUIRED)
 if(unofficial-breakpad_FOUND)
