@@ -1,5 +1,5 @@
 #include "languagemanager.hpp"
-#include "utils.h"
+#include "utils.hpp"
 
 namespace Utils {
 

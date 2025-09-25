@@ -6,7 +6,7 @@
 #include <utils/appdata.hpp>
 #include <utils/logasync.h>
 #include <utils/singletonmanager.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QNetworkProxyFactory>
 #include <QStyle>
