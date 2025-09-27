@@ -5,7 +5,7 @@ set(PROJECT_SOURCES
     qtsingleapplication/qtlocalpeer.h
     thirdparty_global.hpp)
 
-add_custom_library(thirdparty ${PROJECT_SOURCES})
+add_platform_library(thirdparty ${PROJECT_SOURCES})
 target_link_libraries(thirdparty PRIVATE utils Qt::Network Qt::Widgets)
 
 if(CMAKE_HOST_WIN32)

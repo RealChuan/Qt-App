@@ -56,11 +56,15 @@ void setAppInfo()
     info.copyright = Utils::copyright;
     info.displayVersion = Utils::displayVersion;
     info.id = Utils::id;
+#if defined(Q_OS_WIN)
     info.plugins = (appDirPath / "plugins").cleanPath();
-#ifndef Q_OS_MACOS
     info.resources = (appDirPath / "resources").cleanPath();
-#else
+#elif defined(Q_OS_MACOS)
+    info.plugins = (appDirPath / "../PlugIns" / QString(Utils::appName).toLower()).cleanPath();
     info.resources = (appDirPath / "../Resources").cleanPath();
+#else
+    info.plugins = (appDirPath / "plugins" / QString(Utils::appName).toLower()).cleanPath();
+    info.resources = (appDirPath / "resources").cleanPath();
 #endif
     // sync with src\tools\qmlpuppet\qmlpuppet\qmlpuppet.cpp -> QString crashReportsPath()
     info.crashReports = Utils::FilePath::fromString(Utils::crashPath());
@@ -189,9 +193,7 @@ auto main(int argc, char *argv[]) -> int
     // We need to install plugins before we scan for them.
     ExtensionSystem::PluginManager::installPluginsAfterRestart();
 
-    const QStringList pluginPaths{app.applicationDirPath() + "/plugins"};
-    ExtensionSystem::PluginManager::setPluginPaths(
-        Utils::transform(pluginPaths, &Utils::FilePath::fromUserInput));
+    ExtensionSystem::PluginManager::setPluginPaths({Utils::appInfo().plugins});
 
     // Shutdown plugin manager on the exit
     QObject::connect(&app,
@@ -203,7 +205,9 @@ auto main(int argc, char *argv[]) -> int
 
     auto *coreplugin = ExtensionSystem::PluginManager::specById(QLatin1String("CorePlugin"));
     if (!coreplugin) {
-        QString nativePaths = QDir::toNativeSeparators(pluginPaths.join(QLatin1Char(',')));
+        const QString pluginPath
+            = ExtensionSystem::PluginManager::pluginPaths().first().toUserOutput();
+        QString nativePaths = QDir::toNativeSeparators(pluginPath);
         const QString reason = QCoreApplication::translate("Application",
                                                            "Could not find Core plugin in %1")
                                    .arg(nativePaths);

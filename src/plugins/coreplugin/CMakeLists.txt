@@ -14,7 +14,7 @@ set(PROJECT_SOURCES
     themechooser.cpp
     themechooser.h)
 
-add_custom_plugin(coreplugin ${PROJECT_SOURCES})
+add_platform_plugin(coreplugin ${PROJECT_SOURCES})
 target_link_libraries(
   coreplugin
   PRIVATE core

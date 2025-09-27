@@ -11,7 +11,7 @@ set(PROJECT_SOURCES
     waitwidget.h
     widgets_global.hpp)
 
-add_custom_library(widgets ${PROJECT_SOURCES})
+add_platform_library(widgets ${PROJECT_SOURCES})
 target_link_libraries(widgets PRIVATE resource utils Qt::Widgets)
 
 if(CMAKE_HOST_WIN32)
