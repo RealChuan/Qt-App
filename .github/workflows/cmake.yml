@@ -1,34 +1,41 @@
-name: CMake build
+name: CMake Build and Release
 
-on: 
+on:
   push:
     paths-ignore:
-        - 'docs/**'
-        - 'translations/**'
-        - '.clang-*'
-        - '.gitignore'
-        - '*.pri'
-        - 'LICENSE'
-        - '*.pro'
-        - 'README*'
+      - 'docs/**'
+      - 'translations/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/.clang-*'
+      - '**/.gitignore'
+      - '**/*.pri'
+      - '**/LICENSE*'
+      - '**/*.pro'
+      - '**/README*'
   pull_request:
     paths-ignore:
-        - 'docs/**'
-        - 'translations/**'
-        - '.clang-*'
-        - '.gitignore'
-        - '*.pri'
-        - 'LICENSE'
-        - '*.pro'
-        - 'README*'
+      - 'docs/**'
+      - 'translations/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/.clang-*'
+      - '**/.gitignore'
+      - '**/*.pri'
+      - '**/LICENSE*'
+      - '**/*.pro'
+      - '**/README*'
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 11.0
-  PACKET_DIR: ./packaging/packet
-  RELEASES_DIR: ./packaging/releases
+  MACOSX_DEPLOYMENT_TARGET: '12.0'
+  PACKET_DIR: packaging/packet
+  RELEASES_DIR: packaging/releases
+  BUILD_DIR: build
+  BUILD_TYPE: RelWithDebInfo
 
 jobs:
-  Build:
+  build:
+    name: Build (${{ matrix.os }} - ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,15 +43,13 @@ jobs:
         os:
           - windows-latest
           - ubuntu-latest
-        build_type:
-          - "RelWithDebInfo"
+          - macos-latest
         generators:
           - "Ninja"
         arch:
           - x86_64
         include:
           - os: macos-latest
-            build_type: "RelWithDebInfo"
             generators: "Ninja"
             arch: arm64
 
@@ -62,79 +67,121 @@ jobs:
           .\packaging\windows\Enter-VsDevShell.ps1
           cmake `
             -S . `
-            -B ./build `
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -B "${{ env.BUILD_DIR }}" `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -G "${{ matrix.generators }}"
-          cmake --build ./build --config ${{ matrix.build_type }}
+          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
       - name: Configure and build ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
           cmake \
             -S . \
-            -B ./build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -G "${{ matrix.generators }}"
-          cmake --build ./build --config ${{ matrix.build_type }}
+          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
       - name: Configure and build macos
         if: startsWith(matrix.os, 'macos')
         shell: bash
         run: |
           cmake \
             -S . \
-            -B ./build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
             -G "${{ matrix.generators }}"
-          cmake --build ./build --config ${{ matrix.build_type }}
+          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
 
-      - name: Move compiled files to packaging/packet
+      - name: Prepare packaging directory
         shell: bash
         run: |
-          mkdir -p ${{ env.PACKET_DIR }}
-          mkdir -p ${{ env.RELEASES_DIR }}
-          mv -v ./bin-64/${{ matrix.build_type }}/* ${{ env.PACKET_DIR }}/
+          mkdir -p "${{ env.PACKET_DIR }}" "${{ env.RELEASES_DIR }}"
+          cp -avf binaries/*/bin/*/* ${{ env.PACKET_DIR }}/
           ls -al ${{ env.PACKET_DIR }}
 
       - name: Download fonts
         shell: bash
         working-directory: ${{ env.PACKET_DIR }}
         run: |
-          cmake -P ./../fonts.cmake
+          cmake -P ../fonts.cmake
           ls -al
-          ls -al ./fonts
+          ls -al fonts
 
       - name: Packaging windows
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          .\packaging\windows\package.ps1
+          packaging\windows\package.ps1
       - name: Packaging macos
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          sudo chmod +x ./packaging/macos/package.sh
-          ./packaging/macos/package.sh
+          chmod +x packaging/macos/package.sh
+          packaging/macos/package.sh
       - name: Packaging ubuntu
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          sudo chmod 755 ./packaging/ubuntu/package.sh
-          ./packaging/ubuntu/package.sh
+          chmod +x packaging/ubuntu/package.sh
+          packaging/ubuntu/package.sh
 
-      - name: Check packages
+      - name: Verify artifacts
         shell: bash
         run: |
-          ls -al ${{ env.PACKET_DIR }}
-          ls -al ${{ env.RELEASES_DIR }}
-      - name: Upload packages
+          echo "Package directory contents:"
+          ls -la "${{ env.PACKET_DIR }}/"
+          echo "Release directory contents:"
+          ls -la "${{ env.RELEASES_DIR }}/"
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-${{matrix.arch}}-${{ matrix.build_type }}
+          name: ${{ matrix.os }}-${{matrix.arch}}-${{ env.BUILD_TYPE }}
           path: ${{ env.RELEASES_DIR }}
 
-  Release:
-    needs: Build
+  macos-universal-bundle:
+    name: Create macOS universal bundle
+    needs: build
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with: 
+          fetch-depth: 1
+
+      - name: Create releases directory
+        shell: bash
+        run: |
+          mkdir -p "${{ env.PACKET_DIR }}" "${{ env.RELEASES_DIR }}"
+
+      - name: Download platform artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: ${{ env.PACKET_DIR }}
+
+      - name: Create universal macos Package
+        shell: bash
+        run: |
+          chmod -R +x packaging/macos/universal
+          packaging/macos/universal/package.sh
+
+      - name: Verify universal bundle
+        shell: bash
+        run: |
+          echo "Package directory contents:"
+          ls -la "${{ env.PACKET_DIR }}/"
+          echo "Release directory contents:"
+          ls -la "${{ env.RELEASES_DIR }}/"
+
+      - name: Upload universal artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-latest-universal-${{ env.BUILD_TYPE }}
+          path: ${{ env.RELEASES_DIR }}
+  
+  github-release:
+    name: Create gitHub release
+    needs: macos-universal-bundle
     if: startsWith(github.ref, 'refs/tags/')
 
     runs-on: ubuntu-latest
@@ -144,24 +191,24 @@ jobs:
         with: 
           fetch-depth: 1
 
-      - name: Mkdir releases
+      - name: Prepare release directory
         shell: bash
         run: |
-          mkdir -p ${{ env.RELEASES_DIR }}
+          mkdir -p "${{ env.RELEASES_DIR }}"
 
-      - name: Download packages
+      - name: Download all artifacts
         uses: actions/download-artifact@v5
         with:
           path: ${{ env.RELEASES_DIR }}
 
-      - name: Move packages
-        working-directory: packaging
+      - name: Standardize package names
+        working-directory: ${{ github.workspace }}/packaging
         shell: bash
         run: |
-          sudo chmod +x rename_packages.sh
+          chmod +x rename_packages.sh
           ./rename_packages.sh
 
-      - name: Create release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: false

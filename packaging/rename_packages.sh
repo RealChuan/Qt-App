@@ -40,6 +40,13 @@ mv *.pkg ${app_name}_${TAG_NAME}_aarch64.pkg
 mv * ${releases_dir}/
 cd ..
 
+cd macos*universal*
+mv *.7z ${app_name}_${TAG_NAME}_macos_universal.7z
+mv *.dmg ${app_name}_${TAG_NAME}_universal.dmg
+mv *.pkg ${app_name}_${TAG_NAME}_universal.pkg
+mv * ${releases_dir}/
+cd ..
+
 cd ${releases_dir}
 wget -nv "https://github.com/RealChuan/${app_name}/releases/download/0.0.1/fonts.7z"
 

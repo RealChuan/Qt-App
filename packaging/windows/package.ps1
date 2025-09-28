@@ -26,9 +26,11 @@ foreach ($file in $allFiles) {
 }
 
 $Remove_List_Relative = @(
+    "examples",
+    "*.ilk",
+    "*.pdb",
     "*Test*",
-    "*plugin*.dll",
-    "examples"
+    "*plugin*.dll"
 )
 $Remove_List_Absolute = $Remove_List_Relative | ForEach-Object {
     Join-Path $packet_dir $_
@@ -39,7 +41,7 @@ foreach ($item in $Remove_List_Absolute) {
 
 # packaging with 7z
 $zip_path = Join-Path $releases_dir "Qt-App.7z"
-7z a -t7z -r -mx=9 -mmt $zip_path $packet_dir\*
+7z a -t7z -mx=9 -mmt $zip_path $packet_dir\*
 
 # packaging with iscc
 ISCC (Join-Path $PSScriptRoot "app.iss")

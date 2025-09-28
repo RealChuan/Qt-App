@@ -25,7 +25,7 @@ include_directories(${PROJECT_SOURCE_DIR}/utils)
 
 set_property(SOURCE pluginmanager.cpp PROPERTY SKIP_AUTOMOC ON)
 
-add_share_library(extensionsystem ${PROJECT_SOURCES} ${SOURCE})
+add_shared_library(extensionsystem ${PROJECT_SOURCES} ${SOURCE})
 target_link_libraries(extensionsystem PRIVATE aggregation utils Qt::Core5Compat
                                               Qt::Widgets tl::expected)
 

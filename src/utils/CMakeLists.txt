@@ -169,7 +169,7 @@ endif()
 
 qt_add_resources(RESOURCE_SOURCES utils.qrc)
 
-add_custom_library(utils ${PROJECT_SOURCES} ${RESOURCE_SOURCES})
+add_platform_library(utils ${PROJECT_SOURCES} ${RESOURCE_SOURCES})
 target_link_libraries(
   utils
   PRIVATE spinner

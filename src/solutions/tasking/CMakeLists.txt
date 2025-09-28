@@ -16,7 +16,7 @@ set(PROJECT_SOURCES
     tcpsocket.cpp
     tcpsocket.h)
 
-add_custom_library(tasking ${PROJECT_SOURCES})
+add_platform_library(tasking ${PROJECT_SOURCES})
 target_link_libraries(tasking PRIVATE Qt::Concurrent Qt::Network)
 
 if(CMAKE_HOST_WIN32)

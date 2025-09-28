@@ -103,7 +103,17 @@ Qt-App 使用基于 Qt Creator 的插件系统，开发者可以轻松创建自�
 
 2. **macOS Bundle**: CMake 生成的应用程序包可能需要手动处理 `PkgInfo` 文件
 
-3. **Unix 系统**: 建议使用静态链接避免动态库依赖问题，或正确设置 RPATH
+3. **macOS 代码签名**: 打包后的应用程序可能需要 ad-hoc 签名才能正常运行，避免出现 `EXC_BAD_ACCESS (SIGKILL (Code Signature Invalid))` 错误：
+
+   ```bash
+   # 对应用程序进行 ad-hoc 签名
+   codesign --force --deep --sign - /path/to/Qt-App.app
+   
+   # 或者对 DMG 包中的应用程序签名
+   codesign --force --deep --sign - /Volumes/Qt-App/Qt-App.app
+   ```
+
+4. **Unix 系统**: 建议使用静态链接避免动态库依赖问题，或正确设置 RPATH
 
 ### 依赖管理
 

@@ -7,7 +7,7 @@ set(PROJECT_SOURCES
     hashwidget.cc
     hashwidget.hpp)
 
-add_custom_plugin(hashplugin ${PROJECT_SOURCES})
+add_platform_plugin(hashplugin ${PROJECT_SOURCES})
 target_link_libraries(
   hashplugin
   PRIVATE core

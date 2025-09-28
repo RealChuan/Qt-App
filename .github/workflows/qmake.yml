@@ -27,7 +27,7 @@ on:
         - 'vcpkg.json'
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 11.0
+  MACOSX_DEPLOYMENT_TARGET: 12.0
 
 jobs:
   Build:
@@ -38,6 +38,7 @@ jobs:
         os:
           - windows-latest
           - ubuntu-latest
+          - macos-latest
         arch:
           - x86_64
         include:
@@ -81,19 +82,20 @@ jobs:
           make -j $(sysctl -n hw.ncpu)
         working-directory: build
 
-      - name: Show file list on linux
-        if: runner.os == 'Linux'
+      - name: List binaries & resources (Linux/Win)
+        if: runner.os == 'Linux' || runner.os == 'Windows'
         shell: bash
         run: |
           ls -al 
-          ls -al ./resources
-          ls -al ./resources/themes
+          ls -al resources
+          ls -al resources/themes
         working-directory: bin-64/Release
       
-      - name: Show file list on macos
+      - name: List binaries & resources (Mac)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          ls -al ./Qt-App.app/Contents/Resources
-          ls -al ./Qt-App.app/Contents/Resources/themes
+          ls -al Qt-App.app/Contents/MacOS
+          ls -al Qt-App.app/Contents/Resources
+          ls -al Qt-App.app/Contents/Resources/themes
         working-directory: bin-64/Release

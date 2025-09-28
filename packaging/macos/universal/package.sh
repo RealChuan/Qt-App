@@ -3,6 +3,7 @@
 app_name="Qt-App"
 
 cd "$(dirname "$0")"
+cd ..
 source utils.sh
 
 cd ../..
@@ -12,15 +13,30 @@ echo "Current directory: ${project_dir}"
 packet_dir="${project_dir}/packaging/packet"
 releases_dir="${project_dir}/packaging/releases"
 
-chmod -R +x ${packet_dir}/${app_name}.app/Contents/MacOS
-mv -vf "${packet_dir}/fonts" "${packet_dir}/${app_name}.app/Contents/Resources/"
+cd ${packet_dir}
+ls -al
 
-macdeployqt "${packet_dir}/${app_name}.app" \
-	-executable="${packet_dir}/${app_name}.app/Contents/MacOS/CrashReport" \
-	-always-overwrite
+cd macos*x86*
+7z x *.7z
+ls -al
+cd ..
 
-rm -f ${packet_dir}/${app_name}.app/Contents/Frameworks/*plugin*.dylib
-ls -al "${packet_dir}/${app_name}.app/Contents/Frameworks"
+cd macos*arm64*
+7z x *.7z
+ls -al
+cd ..
+
+cd ${project_dir}
+chmod -R +x ${project_dir}/packaging/macos/universal
+
+${project_dir}/packaging/macos/universal/merge_universal_app.sh \
+	-x ${packet_dir}/macos*x86*/${app_name}.app \
+	-a ${packet_dir}/macos*arm64*/${app_name}.app \
+	-o ${packet_dir}/${app_name}.app
+
+${project_dir}/packaging/macos/universal/verify_universal_app.sh \
+	${packet_dir}/${app_name}.app \
+	-v -s
 
 # package with 7z
 zip_path="${releases_dir}/${app_name}.7z"

@@ -14,30 +14,18 @@ elseif(CMAKE_HOST_APPLE)
                MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
                MACOSX_BUNDLE_COPYRIGHT "(C) 2025 Youth"
                MACOSX_BUNDLE_GUI_IDENTIFIER "com.Youth.${PROJECT_NAME}"
-               MACOSX_BUNDLE_ICON_FILE app.icns
+               MACOSX_BUNDLE_ICON_FILE "app.icns"
                MACOSX_BUNDLE_INFO_STRING "APPL???")
-  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/app.icns
-                              PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/PkgInfo
-                              PROPERTIES MACOSX_PACKAGE_LOCATION .)
-  add_dependencies(
-    ${PROJECT_NAME}
-    aboutplugin
-    coreplugin
-    guiplugin
-    hashplugin
-    helloplugin
-    systeminfoplugin
-    CrashReport)
-  add_rpath(${PROJECT_NAME})
+  set_source_files_properties(app.icns PROPERTIES MACOSX_PACKAGE_LOCATION
+                                                  Resources)
+  set_source_files_properties(PkgInfo PROPERTIES MACOSX_PACKAGE_LOCATION .)
+  add_dependencies(${PROJECT_NAME} CrashReport)
 elseif(CMAKE_HOST_LINUX)
   qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
-  add_rpath(${PROJECT_NAME})
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE TRUE
                                                  WIN32_EXECUTABLE TRUE)
-
 target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE dump
@@ -55,29 +43,44 @@ target_link_libraries(
 qt_finalize_executable(${PROJECT_NAME})
 
 string(REPLACE "share/crashpad" "tools/crashpad" crash_handler_path
-               ${crashpad_DIR})
-message(STATUS "crashpad tools directory: ${crash_handler_path}")
+               "${crashpad_DIR}")
+message(STATUS "Crashpad tools directory: ${crash_handler_path}")
+
+if(NOT EXISTS "${crash_handler_path}")
+  message(
+    FATAL_ERROR "Crashpad tools directory not found: ${crash_handler_path}")
+endif()
 
 if(CMAKE_HOST_APPLE)
+  set(BUNDLE_CONTENTS_DIR
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/MacOS")
+
   add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-    # copy plugins  to bundle
+    COMMENT "Configuring macOS application bundle with crashpad"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${BUNDLE_CONTENTS_DIR}"
     COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${EXECUTABLE_OUTPUT_PATH}/plugins
-      ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS/plugins
-      # copy crashrepoter to bundle
-    COMMAND
-      ${CMAKE_COMMAND} -E copy ${EXECUTABLE_OUTPUT_PATH}/CrashReport
-      ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS/CrashReport
-      # copy crashpad_handler to bundle
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${crash_handler_path}
-            ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_NAME}.app/Contents/MacOS)
+      ${CMAKE_COMMAND} -E copy "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CrashReport"
+      "${BUNDLE_CONTENTS_DIR}/CrashReport"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
+            "${BUNDLE_CONTENTS_DIR}"
+    COMMAND chmod +x "${BUNDLE_CONTENTS_DIR}/crashpad_handler"
+    VERBATIM)
 else()
   add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-    # copy crashpad_handler to bundle
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${crash_handler_path}
-            ${EXECUTABLE_OUTPUT_PATH})
+    COMMENT "Configuring crashpad handler for ${CMAKE_SYSTEM_NAME}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    VERBATIM)
+  if(CMAKE_HOST_LINUX)
+    add_custom_command(
+      TARGET ${PROJECT_NAME}
+      POST_BUILD
+      COMMENT "Setting execute permissions for crashpad_handler on Linux"
+      COMMAND chmod +x "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/crashpad_handler"
+      VERBATIM)
+  endif()
 endif()

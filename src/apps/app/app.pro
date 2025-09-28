@@ -38,15 +38,17 @@ win32{
 
 macx{
     QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$APP_OUTPUT_PATH/plugins $$APP_OUTPUT_PATH/Qt-App.app/Contents/MacOS
-    QMAKE_POST_LINK += & $$QMAKE_COPY_FILE $$APP_OUTPUT_PATH/CrashReport $$APP_OUTPUT_PATH/Qt-App.app/Contents/MacOS/CrashReport
-    QMAKE_POST_LINK += & $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/" "$$APP_OUTPUT_PATH/Qt-App.app/Contents/MacOS"
+    QMAKE_POST_LINK += && $$QMAKE_COPY_FILE $$APP_OUTPUT_PATH/CrashReport $$APP_OUTPUT_PATH/Qt-App.app/Contents/MacOS/CrashReport
+    QMAKE_POST_LINK += && $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/*" "$$APP_OUTPUT_PATH/Qt-App.app/Contents/MacOS"
+    QMAKE_POST_LINK += && chmod +x "$$APP_OUTPUT_PATH/Qt-App.app/Contents/MacOS/crashpad_handler"
 
-    QMAKE_POST_LINK += & $$QMAKE_COPY_DIR "$$PWD/../../resource/themes" "$$APP_OUTPUT_PATH/Qt-App.app/Contents/Resources/themes"
+    QMAKE_POST_LINK += && $$QMAKE_COPY_DIR "$$PWD/../../resource/themes" "$$APP_OUTPUT_PATH/Qt-App.app/Contents/Resources"
 }
 
 unix:!macx{
-    QMAKE_POST_LINK += $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad" "$$APP_OUTPUT_PATH"
+    QMAKE_POST_LINK += $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/*" "$$APP_OUTPUT_PATH"
+    QMAKE_POST_LINK += && chmod +x "$$APP_OUTPUT_PATH/crashpad_handler"
 
-    QMAKE_POST_LINK += & mkdir -p "$$APP_OUTPUT_PATH/resources"
-    QMAKE_POST_LINK += & $$QMAKE_COPY_DIR "$$PWD/../../resource/themes" "$$APP_OUTPUT_PATH/resources/themes"
+    QMAKE_POST_LINK += && mkdir -p "$$APP_OUTPUT_PATH/resources"
+    QMAKE_POST_LINK += && $$QMAKE_COPY_DIR "$$PWD/../../resource/themes" "$$APP_OUTPUT_PATH/resources"
 }

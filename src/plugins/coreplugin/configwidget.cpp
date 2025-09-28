@@ -34,9 +34,12 @@ public:
         blockedLayout->addWidget(maskCheckBox);
         blockedLayout->addWidget(blurCheckBox);
 
-        fromLayout = new QFormLayout(q_ptr);
-        fromLayout->addRow(ConfigWidget::tr("Language(Requires Restart): "), languageBox);
-        fromLayout->addRow(testButton, blockedLayout);
+        formLayout = new QFormLayout(q_ptr);
+        formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+        formLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+        formLayout->setLabelAlignment(Qt::AlignLeft);
+        formLayout->addRow(ConfigWidget::tr("Language(Requires Restart): "), languageBox);
+        formLayout->addRow(testButton, blockedLayout);
     }
 
     void setData() const
@@ -51,7 +54,7 @@ public:
     QComboBox *languageBox;
     QCheckBox *maskCheckBox;
     QCheckBox *blurCheckBox;
-    QFormLayout *fromLayout;
+    QFormLayout *formLayout;
 };
 
 ConfigWidget::ConfigWidget(QWidget *parent)
