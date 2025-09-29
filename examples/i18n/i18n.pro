@@ -1,4 +1,4 @@
-include(../../common.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT = core
 
@@ -11,4 +11,4 @@ TARGET = I18N
 SOURCES += \
         main.cc
 
-DESTDIR = $$APP_OUTPUT_PATH/examples
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/examples

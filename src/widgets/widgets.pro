@@ -1,9 +1,9 @@
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += widgets
 
 DEFINES += WIDGETS_LIBRARY
-TARGET = $$replaceLibName(widgets)
+TARGET = $$add_platform_library(widgets)
 
 LIBS += \
     -l$$replaceLibName(resource) \

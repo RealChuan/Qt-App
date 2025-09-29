@@ -20,7 +20,7 @@ macdeployqt "${packet_dir}/${app_name}.app" \
 	-always-overwrite
 
 rm -f ${packet_dir}/${app_name}.app/Contents/Frameworks/*plugin*.dylib
-ls -al "${packet_dir}/${app_name}.app/Contents/Frameworks"
+tree "${packet_dir}/${app_name}.app"
 
 # package with 7z
 zip_path="${releases_dir}/${app_name}.7z"

@@ -1,9 +1,9 @@
-include(../../../common.pri)
+include(../../../qmake/PlatformLibraries.pri)
 
 QT       += core gui network widgets core5compat concurrent core-private
 
 macx {
-CONFIG -= app_bundle
+    CONFIG -= app_bundle
 }
 
 TEMPLATE = app
@@ -17,9 +17,9 @@ LIBS += \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
 
-include(../../3rdparty/3rdparty.pri)
+include(../../../qmake/VcpkgDeps.pri)
 
-DESTDIR = $$APP_OUTPUT_PATH
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
 RC_ICONS = app.ico
 ICON     = app.icns

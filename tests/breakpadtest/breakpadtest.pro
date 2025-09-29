@@ -1,8 +1,10 @@
-include(../../common.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT = core widgets core5compat
 
 CONFIG += cmdline
+
+TEMPLATE = app
 
 TARGET = BreakpadTest
 
@@ -10,9 +12,9 @@ LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(utils)
 
-include(../../src/3rdparty/3rdparty.pri)
+include(../../qmake/VcpkgDeps.pri)
 
 SOURCES += \
         main.cc
 
-DESTDIR = $$APP_OUTPUT_PATH
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY

@@ -1,20 +1,22 @@
-include(../../common.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT = core
 
 CONFIG += cmdline
 
+TEMPLATE = app
+
 TARGET = CrashpadTest
 
 LIBS += -l$$replaceLibName(dump)
 
-include(../../src/3rdparty/3rdparty.pri)
+include(../../qmake/VcpkgDeps.pri)
 
 SOURCES += \
         main.cc
 
-DESTDIR = $$APP_OUTPUT_PATH
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
 macx{
-    QMAKE_POST_LINK += $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/" "$$APP_OUTPUT_PATH"
+    QMAKE_POST_LINK += $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/*" "$$RUNTIME_OUTPUT_DIRECTORY"
 }

@@ -1,15 +1,16 @@
-include(../plugins.pri)
-include(../../3rdparty/3rdparty.pri)
+include(../../../qmake/PlatformLibraries.pri)
 
 QT += widgets network core5compat
 
 DEFINES += SYSTEMINFOPLUGIN_LIBRARY
-TARGET = $$replaceLibName(systeminfoplugin)
+TARGET = $$add_plugin_library(systeminfoplugin)
 
 LIBS += \
     -l$$replaceLibName(core) \
     -l$$replaceLibName(extensionsystem) \
     -l$$replaceLibName(utils)
+
+include(../../../qmake/VcpkgDeps.pri)
 
 SOURCES += \
     systeminfoplugin.cc \

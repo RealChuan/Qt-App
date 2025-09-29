@@ -105,7 +105,7 @@ obj-x86_64-linux-gnu/
 # Others
 .cache
 .vscode
-bin-*
 binaries
+output
 packet
 releases

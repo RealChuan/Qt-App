@@ -1,42 +1,40 @@
-win32{
-    contains(QT_ARCH, i386) {
-        vcpkg_path = C:/vcpkg/installed/x86-windows
-    } else:contains(QT_ARCH, arm64) {
-        vcpkg_path = C:/vcpkg/installed/arm64-windows
-    } else {
-        vcpkg_path = C:/vcpkg/installed/x64-windows
-    }
+# VcpkgDeps.pri - vcpkg 依赖配置
+
+# 包含架构检测
+include(ArchDetect.pri)
+
+# 设置平台特定的 vcpkg 路径
+win32 {
+    vcpkg_path = C:/vcpkg/installed/$$TARGET_ARCH-windows-static-md
 }
 
-macx{
-    contains(QMAKE_APPLE_DEVICE_ARCHS, arm64) {
-        vcpkg_path = /usr/local/share/vcpkg/installed/arm64-osx
-    } else {
-        vcpkg_path = /usr/local/share/vcpkg/installed/x64-osx
-    }
+macx {
+    vcpkg_path = /usr/local/share/vcpkg/installed/$$TARGET_ARCH-osx
 }
 
-unix:!macx{
-    contains(QT_ARCH, arm64) {
-        vcpkg_path = /usr/local/share/vcpkg/installed/arm64-linux
-    }else{
-        vcpkg_path = /usr/local/share/vcpkg/installed/x64-linux
-    }
+unix:!macx {
+    vcpkg_path = /usr/local/share/vcpkg/installed/$$TARGET_ARCH-linux
 }
 
-message("QT_ARCH: "$$QT_ARCH)
-message("vcpkg_path: "$$vcpkg_path)
+# 输出 vcpkg 路径信息
+message("Using vcpkg path: $$vcpkg_path")
 
+# 设置调试后缀和库路径
 CONFIG(debug, debug|release) {
     suffix = d
     LIBS += -L$$vcpkg_path/debug/lib
-}else{
+} else {
+    suffix =
     LIBS += -L$$vcpkg_path/lib
 }
 
+# Breakpad 库
 LIBS += -llibbreakpad_client$$suffix -llibbreakpad$$suffix
+
+# Crashpad 库
 LIBS += -lvcpkg_crashpad_client_common -lvcpkg_crashpad_client -lvcpkg_crashpad_util -lvcpkg_crashpad_base
 
+# 包含路径
 INCLUDEPATH += \
     $$vcpkg_path/include \
     $$vcpkg_path/include/crashpad

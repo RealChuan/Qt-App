@@ -1,4 +1,4 @@
-name: QMake build
+name: QMake Build
 
 on: 
   push:
@@ -7,30 +7,35 @@ on:
         - 'docs/**'
         - 'packaging/**'
         - 'translations/**'
-        - '.clang-*'
-        - '.gitignore'
-        - 'CMake*'
-        - 'LICENSE'
-        - 'README*'
-        - 'vcpkg.json'
+        - '**/CMakeLists.txt'
+        - '**/*.md'
+        - '**/*.txt'
+        - '**/.clang-*'
+        - '**/.gitignore'
+        - '**/LICENSE*'
+        - '**/README*'
+        - 'vcpkg.json'    
   pull_request:
     paths-ignore:
         - 'cmake/**' 
         - 'docs/**'
         - 'packaging/**'
         - 'translations/**'
-        - '.clang-*'
-        - '.gitignore'
-        - 'CMake*'
-        - 'LICENSE'
-        - 'README*'
-        - 'vcpkg.json'
+        - '**/CMakeLists.txt'
+        - '**/*.md'
+        - '**/*.txt'
+        - '**/.clang-*'
+        - '**/.gitignore'
+        - '**/LICENSE*'
+        - '**/README*'
+        - 'vcpkg.json'  
 
 env:
   MACOSX_DEPLOYMENT_TARGET: 12.0
+  BUILD_DIR: build
 
 jobs:
-  Build:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -53,49 +58,46 @@ jobs:
       - uses: ./.github/actions/install-dependencies
 
       - uses: RealChuan/install-jom@main
-
-      - name: mkdir build
+        
+      - name: Create build directory
         shell: bash
-        run: |
-          mkdir build
+        run: mkdir -p ${{ env.BUILD_DIR }}
 
-      - name: msvc-build
+      - name: Build windows
         if: runner.os == 'Windows'
+        working-directory: ${{ env.BUILD_DIR }}
         shell: pwsh
         run: |
           ..\packaging\windows\Enter-VsDevShell.ps1
-          & qmake ./../.
+          & qmake ..\.
           & jom
-        working-directory: build
-      - name: ubuntu-build
+        
+      - name: Build linux
         if: runner.os == 'Linux'
+        working-directory: ${{ env.BUILD_DIR }}
         shell: bash
         run: |
-          qmake ./../.
+          qmake ../.
           make -j $(nproc)
-        working-directory: build
-      - name: macos-build
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          qmake QMAKE_APPLE_DEVICE_ARCHS="${{ matrix.arch }}" ./../.
-          make -j $(sysctl -n hw.ncpu)
-        working-directory: build
 
-      - name: List binaries & resources (Linux/Win)
-        if: runner.os == 'Linux' || runner.os == 'Windows'
-        shell: bash
-        run: |
-          ls -al 
-          ls -al resources
-          ls -al resources/themes
-        working-directory: bin-64/Release
-      
-      - name: List binaries & resources (Mac)
+      - name: Build macos
         if: runner.os == 'macOS'
+        working-directory: ${{ env.BUILD_DIR }}
         shell: bash
         run: |
-          ls -al Qt-App.app/Contents/MacOS
-          ls -al Qt-App.app/Contents/Resources
-          ls -al Qt-App.app/Contents/Resources/themes
-        working-directory: bin-64/Release
+          qmake QMAKE_APPLE_DEVICE_ARCHS="${{ matrix.arch }}" ../.
+          make -j $(sysctl -n hw.ncpu)
+
+      - name: Display binary directory tree (Win)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd output/
+          cmd /c tree /f
+
+      - name: Display binary directory tree (Linux/Mac)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          cd output/
+          tree

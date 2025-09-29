@@ -1,9 +1,9 @@
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += core
 
 DEFINES += AGGREGATION_LIBRARY
-TARGET = $$replaceLibName(aggregation)
+TARGET = $$add_platform_library(aggregation)
 
 HEADERS += \
     aggregate.h \

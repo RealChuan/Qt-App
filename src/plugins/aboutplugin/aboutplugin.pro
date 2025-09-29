@@ -1,15 +1,16 @@
-include(../plugins.pri)
-include(../../3rdparty/3rdparty.pri)
+include(../../../qmake/PlatformLibraries.pri)
 
 QT += widgets network core5compat
 
 DEFINES += ABOUTPLUGIN_LIBRARY
-TARGET = $$replaceLibName(aboutplugin)
+TARGET = $$add_plugin_library(aboutplugin)
 
 LIBS += \
     -l$$replaceLibName(core) \
     -l$$replaceLibName(extensionsystem) \
     -l$$replaceLibName(utils)
+
+include(../../../qmake/VcpkgDeps.pri)
 
 SOURCES += \
     aboutplugin.cc \

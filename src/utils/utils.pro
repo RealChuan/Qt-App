@@ -1,5 +1,5 @@
-include(../slib.pri)
-include(../3rdparty/3rdparty.pri)
+include(../../qmake/PlatformLibraries.pri)
+
 include(mimetypes2/mimetypes.pri)
 include(fsengine/fsengine.pri)
 include(theme/theme.pri)
@@ -8,11 +8,13 @@ include(tooltip/tooltip.pri)
 QT += widgets core5compat concurrent network core-private
 
 DEFINES += UTILS_LIBRARY
-TARGET = $$replaceLibName(utils)
+TARGET = $$add_platform_library(utils)
 
 LIBS += \
     -l$$replaceLibName(spinner) \
     -l$$replaceLibName(tasking)
+
+include(../../qmake/VcpkgDeps.pri)
 
 win32 {
     LIBS += \

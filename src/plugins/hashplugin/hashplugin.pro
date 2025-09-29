@@ -1,10 +1,9 @@
-include(../plugins.pri)
-include(../../3rdparty/3rdparty.pri)
+include(../../../qmake/PlatformLibraries.pri)
 
 QT += widgets network core5compat
 
 DEFINES += HASHPLUGIN_LIBRARY
-TARGET = $$replaceLibName(hashplugin)
+TARGET = $$add_plugin_library(hashplugin)
 
 LIBS += \
     -l$$replaceLibName(core) \
@@ -12,6 +11,8 @@ LIBS += \
     -l$$replaceLibName(widgets) \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
+
+include(../../../qmake/VcpkgDeps.pri)
 
 HEADERS += \
     cpubenchthread.hpp \

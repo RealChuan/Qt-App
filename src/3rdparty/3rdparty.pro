@@ -1,8 +1,8 @@
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 include(qtsingleapplication/qtsingleapplication.pri)
 
 DEFINES += THRIDPARTY_LIBRARY
-TARGET = $$replaceLibName(thirdparty)
+TARGET = $$add_platform_library(thirdparty)
 
 LIBS += \
     -l$$replaceLibName(utils)

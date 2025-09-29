@@ -1,9 +1,9 @@
-include(../../slib.pri)
+include(../../../qmake/PlatformLibraries.pri)
 
 QT += widgets 
 
 DEFINES += SPINNER_LIBRARY
-TARGET = $$replaceLibName(spinner)
+TARGET = $$add_platform_library(spinner)
 
 RESOURCES += \
     spinner.qrc

@@ -1,16 +1,17 @@
-include(../lib.pri)
-include(../3rdparty/3rdparty.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += widgets core5compat network
 
 DEFINES += EXTENSIONSYSTEM_LIBRARY
-TARGET = $$replaceLibName(extensionsystem)
+TARGET = $$add_shared_library(extensionsystem)
 
 LIBS += \
     -l$$replaceLibName(aggregation) \
     -l$$replaceLibName(utils) \
     -l$$replaceLibName(tasking) \
     -l$$replaceLibName(spinner)
+
+include(../../qmake/VcpkgDeps.pri)
 
 HEADERS += \
     extensionsystem_global.h \

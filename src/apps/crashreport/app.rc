@@ -20,14 +20,14 @@ VS_VERSION_INFO VERSIONINFO
 			BLOCK "000404b0"
 			BEGIN
 				VALUE "CompanyName", "The Youth.\0"
-				VALUE "FileDescription", "Qt-App\0"
+				VALUE "FileDescription", "CrashReport\0"
 				VALUE "FileVersion", "0.1.1.0\0"
 				VALUE "LegalCopyright", "Copyright (C) 2025 Youth.\0"
-				VALUE "OriginalFilename", "Qt-App\0"
-				VALUE "ProductName", "Qt-App\0"
+				VALUE "OriginalFilename", "CrashReport\0"
+				VALUE "ProductName", "CrashReport\0"
 				VALUE "ProductVersion", "0.1.1.0\0"
-				VALUE "InternalName", "Qt-App\0"
-				VALUE "Comments", "Qt-App\0"
+				VALUE "InternalName", "CrashReport\0"
+				VALUE "Comments", "CrashReport\0"
 				VALUE "LegalTrademarks", "Youth\0"
 			END
 		END

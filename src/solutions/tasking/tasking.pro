@@ -1,9 +1,9 @@
-include(../../slib.pri)
+include(../../../qmake/PlatformLibraries.pri)
 
 QT += network concurrent
 
 DEFINES += TASKING_LIBRARY
-TARGET = $$replaceLibName(tasking)
+TARGET = $$add_platform_library(tasking)
 
 HEADERS += \
     barrier.h \

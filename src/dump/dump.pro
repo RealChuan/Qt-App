@@ -1,11 +1,12 @@
-include(../3rdparty/3rdparty.pri)
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 DEFINES += DUMP_LIBRARY
-TARGET = $$replaceLibName(dump)
+TARGET = $$add_platform_library(dump)
 
 LIBS += \
     -l$$replaceLibName(utils)
+
+include(../../qmake/VcpkgDeps.pri)
 
 SOURCES += \
     breakpad.cc \
