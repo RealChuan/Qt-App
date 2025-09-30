@@ -30,11 +30,11 @@ function(configure_vcpkg_toolchain)
 
   # 平台特定的vcpkg路径
   if(CMAKE_HOST_WIN32)
-    set(VCPKG_DEFAULT_PATH "C:/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(VCPKG_ROOT "C:/vcpkg")
   else()
-    set(VCPKG_DEFAULT_PATH
-        "/usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(VCPKG_ROOT "/usr/local/share/vcpkg")
   endif()
+  set(VCPKG_DEFAULT_PATH "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 
   # 检查工具链文件是否存在
   if(EXISTS "${VCPKG_DEFAULT_PATH}")
@@ -49,3 +49,8 @@ function(configure_vcpkg_toolchain)
 endfunction()
 
 configure_vcpkg_toolchain()
+
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+  get_filename_component(VCPKG_ROOT "${CMAKE_TOOLCHAIN_FILE}/../../.." ABSOLUTE)
+  message(STATUS "Vcpkg root: ${VCPKG_ROOT}")
+endif()

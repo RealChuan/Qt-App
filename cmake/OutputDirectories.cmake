@@ -2,20 +2,20 @@
 # Output Directory Configuration
 # =============================================================================
 
-function(setup_output_directories)
-  # 确定架构目录名
-  if(TARGET_ARCH STREQUAL "x86_64")
-    set(ARCH_DIR "x64")
-  elseif(TARGET_ARCH STREQUAL "arm64")
-    set(ARCH_DIR "arm64")
-  elseif(TARGET_ARCH STREQUAL "universal")
-    set(ARCH_DIR "universal")
-  elseif(TARGET_ARCH STREQUAL "x86")
-    set(ARCH_DIR "x86")
-  else()
-    set(ARCH_DIR "unknown")
-  endif()
+# 确定架构目录名
+if(TARGET_ARCH STREQUAL "x86_64")
+  set(ARCH_DIR "x64")
+elseif(TARGET_ARCH STREQUAL "arm64")
+  set(ARCH_DIR "arm64")
+elseif(TARGET_ARCH STREQUAL "universal")
+  set(ARCH_DIR "universal")
+elseif(TARGET_ARCH STREQUAL "x86")
+  set(ARCH_DIR "x86")
+else()
+  set(ARCH_DIR "unknown")
+endif()
 
+function(setup_output_directories)
   # 基础输出路径
   set(BASE_OUTPUT_DIR "${PROJECT_SOURCE_DIR}/binaries/${ARCH_DIR}")
 
