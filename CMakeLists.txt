@@ -44,18 +44,8 @@ add_subdirectory(examples)
 
 add_translations(${PROJECT_NAME})
 
-set(deploy_tool_options_arg "")
-if(WIN32)
-  set(deploy_tool_options_arg "--plugindir" ".")
-endif()
-qt_generate_deploy_app_script(
-  TARGET
-  ${PROJECT_NAME}
-  OUTPUT_SCRIPT
-  deploy_script
-  DEPLOY_TOOL_OPTIONS
-  DEPLOY_TOOL_OPTIONS
-  ${deploy_tool_options_arg})
+qt_generate_deploy_app_script(TARGET ${PROJECT_NAME} OUTPUT_SCRIPT
+                              deploy_script)
 install(SCRIPT ${deploy_script})
 
 include(cmake/CMakeDebugInfo.cmake)

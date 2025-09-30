@@ -61,7 +61,7 @@ defineReplace(add_plugin_library) {
     
     win32 {
         DESTDIR = $$LIBRARY_OUTPUT_DIRECTORY
-        DLLDESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/plugins
+        DLLDESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/plugins/$$getProjectNameLower()
         export(DESTDIR)
         export(DLLDESTDIR)
     }

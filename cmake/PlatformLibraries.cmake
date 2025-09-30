@@ -74,20 +74,11 @@ function(add_platform_plugin target_name)
   string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWERCASE)
 
   # 平台特定的复制路径
-  if(CMAKE_HOST_WIN32)
-    # Windows: 复制到 plugins/ 目录
-    set(PLUGIN_DEST_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins/")
-  elseif(CMAKE_HOST_APPLE)
+  if(CMAKE_HOST_APPLE)
     # macOS: 复制到 App Bundle 的 PlugIns 目录
-    if(DEFINED PROJECT_NAME)
-      set(PLUGIN_DEST_DIR
-          "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/PlugIns/${PROJECT_NAME_LOWERCASE}/"
-      )
-    else()
-      set(PLUGIN_DEST_DIR
-          "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/PlugIns/${PROJECT_NAME_LOWERCASE}/"
-      )
-    endif()
+    set(PLUGIN_DEST_DIR
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/PlugIns/${PROJECT_NAME_LOWERCASE}/"
+    )
   else()
     set(PLUGIN_DEST_DIR
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins/${PROJECT_NAME_LOWERCASE}/")

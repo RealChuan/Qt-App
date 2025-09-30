@@ -56,10 +56,7 @@ void setAppInfo()
     info.copyright = Utils::copyright;
     info.displayVersion = Utils::displayVersion;
     info.id = Utils::id;
-#if defined(Q_OS_WIN)
-    info.plugins = (appDirPath / "plugins").cleanPath();
-    info.resources = (appDirPath / "resources").cleanPath();
-#elif defined(Q_OS_MACOS)
+#ifdef Q_OS_MACOS
     info.plugins = (appDirPath / "../PlugIns" / QString(Utils::appName).toLower()).cleanPath();
     info.resources = (appDirPath / "../Resources").cleanPath();
 #else
