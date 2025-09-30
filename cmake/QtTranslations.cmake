@@ -73,10 +73,17 @@ function(add_translations TARGET_NAME)
     message(STATUS "Translation file: ${TS_FILENAME} -> ${QM_FILE}")
   endforeach()
 
+  install(
+    DIRECTORY "${TRANSLATIONS_OUTPUT_DIR}/"
+    DESTINATION "${TRANSLATION_INSTALL_DIR}"
+    FILES_MATCHING
+    PATTERN "*.qm")
+
   # 显示配置信息
   message(STATUS "Translations for ${TARGET_NAME}:")
   message(STATUS "  TS files: ${TS_FILES}")
   message(STATUS "  Output directory: ${TRANSLATIONS_OUTPUT_DIR}")
+  message(STATUS "  Install directory: ${TRANSLATION_INSTALL_DIR}")
 endfunction()
 
 # -----------------------------------------------------------------------------

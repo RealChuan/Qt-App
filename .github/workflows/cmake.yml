@@ -73,6 +73,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -G "${{ matrix.generators }}"
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
+          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}\install" -v
+          cmd /c tree /f ${{ github.workspace }}\install
       - name: Configure and build ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash

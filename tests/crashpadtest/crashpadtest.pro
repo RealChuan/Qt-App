@@ -10,7 +10,7 @@ TARGET = CrashpadTest
 
 LIBS += -l$$replaceLibName(dump)
 
-include(../../qmake/VcpkgDeps.pri)
+include(../../qmake/VcpkgToolchain.pri)
 
 SOURCES += \
         main.cc

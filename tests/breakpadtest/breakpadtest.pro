@@ -12,7 +12,7 @@ LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(utils)
 
-include(../../qmake/VcpkgDeps.pri)
+include(../../qmake/VcpkgToolchain.pri)
 
 SOURCES += \
         main.cc

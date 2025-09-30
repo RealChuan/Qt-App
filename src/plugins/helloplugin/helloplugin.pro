@@ -10,7 +10,7 @@ LIBS += \
     -l$$replaceLibName(extensionsystem) \
     -l$$replaceLibName(utils)
 
-include(../../../qmake/VcpkgDeps.pri)
+include(../../../qmake/VcpkgToolchain.pri)
 
 SOURCES += \
     helloplugin.cc \

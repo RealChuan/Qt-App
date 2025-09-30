@@ -17,7 +17,7 @@ LIBS += \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
 
-include(../../../qmake/VcpkgDeps.pri)
+include(../../../qmake/VcpkgToolchain.pri)
 
 DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 

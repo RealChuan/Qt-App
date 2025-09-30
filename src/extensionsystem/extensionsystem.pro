@@ -11,7 +11,7 @@ LIBS += \
     -l$$replaceLibName(tasking) \
     -l$$replaceLibName(spinner)
 
-include(../../qmake/VcpkgDeps.pri)
+include(../../qmake/VcpkgToolchain.pri)
 
 HEADERS += \
     extensionsystem_global.h \

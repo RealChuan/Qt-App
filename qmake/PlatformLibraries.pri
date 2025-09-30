@@ -1,7 +1,7 @@
 # PlatformLibraries.pri - 库项目配置
 
 # 包含编译器设置
-include(CompilerSettings.pri)
+include(ProjectSettings.pri)
 
 # 设置项目模板为库
 TEMPLATE = lib

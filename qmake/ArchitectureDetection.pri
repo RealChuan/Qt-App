@@ -1,4 +1,4 @@
-# qmake/ArchDetect.pri - 架构检测函数
+# ArchitectureDetection.pri - 架构检测函数
 
 # 函数：验证架构字符串是否有效
 defineTest(is_valid_architecture) {

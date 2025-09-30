@@ -14,7 +14,7 @@ LIBS += \
     -l$$replaceLibName(spinner) \
     -l$$replaceLibName(tasking)
 
-include(../../qmake/VcpkgDeps.pri)
+include(../../qmake/VcpkgToolchain.pri)
 
 win32 {
     LIBS += \

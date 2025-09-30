@@ -3,6 +3,17 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
+# 设置版本属性
+# -----------------------------------------------------------------------------
+function(set_target_version target_name)
+  if(DEFINED PROJECT_VERSION_MAJOR AND DEFINED PROJECT_VERSION)
+    set_target_properties(
+      ${target_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}
+                                VERSION ${PROJECT_VERSION})
+  endif()
+endfunction()
+
+# -----------------------------------------------------------------------------
 # 设置运行时输出目录函数（跨平台）
 # -----------------------------------------------------------------------------
 function(set_runtime_to_archive_dir target_name output_dir)
@@ -37,16 +48,13 @@ function(add_platform_library target_name)
       COMMAND
         ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${target_name}>
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<TARGET_FILE_NAME:${target_name}>)
+
+    install(TARGETS ${target_name} RUNTIME DESTINATION ${LIB_INSTALL_DIR})
   else()
     add_library(${target_name} STATIC ${ARGN})
   endif()
 
-  # 设置版本属性
-  if(DEFINED PROJECT_VERSION_MAJOR AND DEFINED PROJECT_VERSION)
-    set_target_properties(
-      ${target_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}
-                                VERSION ${PROJECT_VERSION})
-  endif()
+  set_target_version(${target_name})
 endfunction()
 
 # -----------------------------------------------------------------------------
@@ -61,12 +69,7 @@ function(add_platform_plugin target_name)
                                "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
   endif()
 
-  # 设置版本属性
-  if(DEFINED PROJECT_VERSION_MAJOR AND DEFINED PROJECT_VERSION)
-    set_target_properties(
-      ${target_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}
-                                VERSION ${PROJECT_VERSION})
-  endif()
+  set_target_version(${target_name})
 
   string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWERCASE)
 
@@ -97,6 +100,12 @@ function(add_platform_plugin target_name)
     COMMAND ${CMAKE_COMMAND} -E make_directory "${PLUGIN_DEST_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${target_name}>
             "${PLUGIN_DEST_DIR}/$<TARGET_FILE_NAME:${target_name}>")
+
+  install(
+    TARGETS ${target_name}
+    RUNTIME DESTINATION ${PLUGIN_INSTALL_DIR} # Windows: DLL
+    LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR} # Linux: .so, macOS: .dylib
+  )
 endfunction()
 
 # -----------------------------------------------------------------------------
@@ -117,10 +126,11 @@ function(add_shared_library target_name)
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<TARGET_FILE_NAME:${target_name}>)
   endif()
 
-  # 设置版本属性
-  if(DEFINED PROJECT_VERSION_MAJOR AND DEFINED PROJECT_VERSION)
-    set_target_properties(
-      ${target_name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}
-                                VERSION ${PROJECT_VERSION})
-  endif()
+  set_target_version(${target_name})
+
+  install(
+    TARGETS ${target_name}
+    RUNTIME DESTINATION ${LIB_INSTALL_DIR} # Windows: DLL
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR} # Linux: .so, macOS: .dylib
+  )
 endfunction()
