@@ -1,5 +1,4 @@
-#ifndef CRASHWIDGETS_HPP
-#define CRASHWIDGETS_HPP
+#pragma once
 
 #include <widgets/mainwidget.hpp>
 
@@ -25,5 +24,3 @@ private:
 };
 
 } // namespace Crash
-
-#endif // CRASHWIDGETS_HPP

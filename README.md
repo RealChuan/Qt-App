@@ -10,53 +10,32 @@
 
 Qt-App 是一个基于插件式架构开发的桌面应用程序框架，可用于快速构建功能丰富的跨平台桌面应用。其核心插件系统源自 [Qt Creator](https://github.com/qt-creator/qt-creator/tree/master/src/libs/extensionsystem)，并进行了适当修改。
 
-项目特点：
-
-- 🔌 采用插件化架构，支持功能模块的动态加载与管理
-- 📦 使用 [vcpkg](https://github.com/microsoft/vcpkg) 进行依赖管理
-- 🛠️ 同时支持 [CMake](.github/workflows/cmake.yml) 和 [QMake](.github/workflows/qmake.yml) 构建系统
-- 🍎 支持 Apple Silicon 原生编译
-- ⚡ 集成 GitHub Actions 自动化编译、打包和发布流程
-- 🚨 内置崩溃报告系统 (CrashReport)
+- 🔌 **插件化架构** - 支持功能模块的动态加载与灵活管理
+- 🛠️ **双构建系统支持** - 同时集成 [CMake](.github/workflows/cmake.yml) 与 [QMake](.github/workflows/qmake.yml)，适应不同开发需求
+- 📦 **统一依赖管理** - 基于 [vcpkg](https://github.com/microsoft/vcpkg) 管理项目依赖，简化环境配置
+- 🍎 **跨架构 macOS 支持** - 针对 Apple Silicon 和 Intel 架构，通过分别编译并合并为通用二进制文件
+- ⚡ **自动化 CI/CD** - 通过 GitHub Actions 实现自动编译、打包与发布
+- 🚨 **崩溃报告系统** - 内置 [CrashReport](src/apps/crashreport/) 机制，便于问题追踪与修复
 
 ## 项目预览
 
 ### 主应用程序
 
 <div align="center">
-<img src="docs/Qt-App.jpg" width="90%" height="90%">
+<img src="docs/images/app.png" width="90%" height="90%">
 </div>
 
 ### 崩溃报告程序
 
 <div align="center">
-<img src="docs/CrashReport.jpg" width="50%" height="50%">
+<img src="docs/images/crash-report.png" width="50%" height="50%">
 </div>
 
 ## 编译与使用
 
-### 使用 [CMake](.github/workflows/cmake.yml) 构建
+### [CMake](.github/workflows/cmake.yml) 构建
 
-```bash
-# 配置项目
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[vcpkg root]/scripts/buildsystems/vcpkg.cmake
-
-# 编译项目
-cmake --build build
-
-# 生成翻译文件
-cmake --build build --target Qt-App_lupdate
-```
-
-### 使用 [QMake](.github/workflows/qmake.yml) 构建
-
-```bash
-# 生成 Makefile
-qmake Qt-App.pro
-
-# 编译项目
-make -j$(nproc)
-```
+### [QMake](.github/workflows/qmake.yml) 构建
 
 ## 插件开发
 
@@ -71,10 +50,33 @@ Qt-App 使用基于 Qt Creator 的插件系统，开发者可以轻松创建自�
 
 项目支持多语言国际化，翻译文件位于 `translations/` 目录：
 
-- 生成翻译文件：`cmake --build build --target Qt-App_lupdate`
-- 发布翻译文件：`cmake --build build --target Qt-App_lrelease`
+### 翻译文件管理
 
+- **生成翻译文件**：`cmake --build build --target Qt-App_lupdate`
+- **发布翻译文件**：`cmake --build build --target Qt-App_lrelease`
+
+### 实时翻译支持
+>
 > 注意：当前更改翻译设置后需要重启程序才能生效
+
+如需实现实时翻译切换，可在代码中添加语言变更事件处理：
+
+```cpp
+void Widget::changeEvent(QEvent *e)
+{
+   QWidget::changeEvent(e);
+   switch (e->type()) {
+   case QEvent::LanguageChange:
+      comboBox->setItemText(0, tr("Hello"));
+      label->setText(tr("Hello")); // 代码添加的文字
+      ui->retranslateUi(this);     // 有UI文件情况下
+      break;
+   default: break;
+   }
+}
+```
+
+更多国际化技巧请参考：[QT实用小技巧](https://realchuan.github.io/2021/10/12/QT%E5%AE%9E%E7%94%A8%E5%B0%8F%E6%8A%80%E5%B7%A7%EF%BC%88%E6%83%B3%E5%88%B0%E5%B0%B1%E6%9B%B4%E6%96%B0%EF%BC%89/)
 
 ## 打包与分发
 
@@ -115,59 +117,24 @@ Qt-App 使用基于 Qt Creator 的插件系统，开发者可以轻松创建自�
 
 4. **Unix 系统**: 建议使用静态链接避免动态库依赖问题，或正确设置 RPATH
 
-### 依赖管理
+### 依赖管理与跨平台构建
 
-1. **vcpkg 限制**: 目前 vcpkg 单独支持 x64-osx 和 arm64-osx 架构，需要明确指定：
-   - CMake: `-DCMAKE_OSX_ARCHITECTURES=x86_64` 或 `-DCMAKE_OSX_ARCHITECTURES=arm64`
-   - QMake: `QMAKE_APPLE_DEVICE_ARCHS=x86_64` 或 `QMAKE_APPLE_DEVICE_ARCHS=arm64`
+由于 [vcpkg](https://github.com/microsoft/vcpkg) 暂不支持 Apple Universal 二进制编译，macOS 平台需要分别编译不同架构版本：
 
-2. **Crashpad 权限**: 在 Unix 系统下需要确保 `crashpad_handler` 有执行权限：
+**macOS 跨架构构建方案：**
 
-   ```bash
-   chmod +x crashpad_handler
-   ```
+- 分别编译 x86_64 和 arm64 版本
+- 使用 `lipo` 工具合并为通用二进制文件，具体实现可参考[merge_universal_app](packaging/macos/universal/merge_universal_app.sh)
 
-## 目录结构详解
+**架构指定方法：**
 
-```
-Qt-App/
-├── cmake/               # CMake 实用函数封装
-├── docs/                # 文档和图片资源
-├── examples/            # 示例代码
-│   └── i18n/            # 国际化示例
-├── packaging/           # 打包和发布配置
-│   ├── debian/          # Debian 官方打包（dpkg-buildpackage）
-│   ├── macos/           # DMG/PKG 安装包制作
-│   ├── ubuntu/          # Ubuntu/Debian 快速打包（dpkg -b）
-│   └── windows/         # Inno Setup 安装程序制作
-├── src/                 # 源代码
-│   ├── 3rdparty/        # 第三方库
-│   │   ├── qtsingleapplication/  # Qt 单实例应用支持
-│   │   └── ui_watchdog/ # UI 看门狗组件
-│   ├── aggregation/     # 聚合功能模块
-│   ├── apps/            # 应用程序入口
-│   │   ├── app/         # 主应用程序
-│   │   └── crashreport/ # 崩溃报告程序
-│   ├── core/            # 核心基础模块
-│   ├── dump/            # 崩溃捕捉功能
-│   │   ├── breakpad/    # Google Breakpad 封装
-│   │   └── crashpad/    # Google Crashpad 封装
-│   ├── extensionsystem/ # 插件系统（源自 Qt Creator）
-│   ├── plugins/         # 功能插件
-│   │   ├── aboutplugin/     # 关于插件
-│   │   ├── coreplugin/      # 核心插件（主界面、菜单等）
-│   │   ├── guiplugin/       # GUI 组件插件
-│   │   ├── hashplugin/      # 哈希算法插件
-│   │   ├── helloplugin/     # Hello 测试插件
-│   │   └── systeminfoplugin/# 系统信息插件
-│   ├── resource/        # 资源文件（图标、样式表等）
-│   ├── solutions/       # 解决方案组件
-│   │   ├── spinner/     # 加载指示器
-│   │   ├── tasking/     # 任务处理
-│   │   └── terminal/    # 终端模拟
-│   ├── utils/           # 工具函数库
-│   └── widgets/         # 自定义界面组件
-├── tests/               # 测试代码
-├── translations/        # 国际化翻译文件
-└── 配置文件等
-```
+- **CMake**: 使用 `-DCMAKE_OSX_ARCHITECTURES=x86_64` 或 `-DCMAKE_OSX_ARCHITECTURES=arm64`
+- **QMake**: 使用 `QMAKE_APPLE_DEVICE_ARCHS=x86_64` 或 `QMAKE_APPLE_DEVICE_ARCHS=arm64`
+
+**其他注意事项：**
+
+- **Crashpad 权限**: 在 Unix 系统下需要确保 `crashpad_handler` 有执行权限：
+
+  ```bash
+  chmod +x crashpad_handler
+  ```
