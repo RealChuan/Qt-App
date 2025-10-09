@@ -5,8 +5,7 @@
 
 #include "filepath.h"
 #include "qtcassert.h"
-// #include "stylehelper.h"
-// #include "theme/theme.h"
+#include "stylehelper.h"
 #include "utilstr.h"
 
 #ifdef QT_WIDGETS_LIB
@@ -18,15 +17,18 @@
 #include <QDir>
 #include <QFontMetrics>
 #include <QJsonArray>
+#include <QJsonObject>
 #include <QJsonValue>
 #include <QLocale>
 #include <QPalette>
 #include <QRegularExpression>
 #include <QSet>
+#include <QStack>
 #include <QTextDocument>
 #include <QTextList>
 #include <QTime>
 
+#include <algorithm>
 #include <limits.h>
 
 namespace Utils {
@@ -75,12 +77,72 @@ UTILS_EXPORT QString commonPrefix(const QStringList &strings)
     return strings.at(0).left(commonLength);
 }
 
+UTILS_EXPORT void insertSorted(QStringList *list, const QString &value)
+{
+    const auto it = std::lower_bound(list->begin(), list->end(), value);
+    if (it == list->end())
+        list->append(value);
+    else if (*it > value)
+        list->insert(it, value);
+}
+
 UTILS_EXPORT QString stripAccelerator(const QString &text)
 {
     QString res = text;
     for (int index = res.indexOf('&'); index != -1; index = res.indexOf('&', index + 1))
         res.remove(index, 1);
     return res;
+}
+
+static bool isJsonWhitespace(char ch)
+{
+    return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r';
+}
+
+static bool isNotJsonWhitespace(char ch)
+{
+    return !isJsonWhitespace(ch);
+}
+
+UTILS_EXPORT QByteArray removeExtraCommasFromJson(const QByteArray &json)
+{
+    QByteArray result;
+    result.reserve(json.size());
+
+    enum State { Normal, InString, Escape };
+
+    State state = Normal;
+
+    for (const char c : json) {
+        result.append(c);
+
+        switch (state) {
+        case Normal:
+            if (c == '"') {
+                state = InString;
+            } else if (c == '}' || c == ']') {
+                auto firstNonWhitespace = std::find_if(result.rbegin() + 1,
+                                                       result.rend(),
+                                                       isNotJsonWhitespace);
+
+                if (firstNonWhitespace != result.rend() && *firstNonWhitespace == ',')
+                    result.erase(firstNonWhitespace.base() - 1);
+            }
+            break;
+
+        case InString:
+            if (c == '\\') {
+                state = Escape;
+            } else if (c == '"') {
+                state = Normal;
+            }
+            break;
+
+        case Escape: state = InString; break;
+        }
+    }
+
+    return result;
 }
 
 UTILS_EXPORT QByteArray removeCommentsFromJson(const QByteArray &input)
@@ -131,6 +193,46 @@ UTILS_EXPORT QByteArray removeCommentsFromJson(const QByteArray &input)
     }
 
     return output;
+}
+
+UTILS_EXPORT QByteArray cleanJson(const QByteArray &json)
+{
+    return removeExtraCommasFromJson(removeCommentsFromJson(json));
+}
+
+UTILS_EXPORT void applyJsonPatch(QJsonValue &target, const QJsonValue &patch)
+{
+    if (patch.isNull())
+        return;
+
+    if (patch.type() != target.type()) {
+        target = patch;
+        return;
+    }
+
+    if (patch.isObject()) {
+        QJsonObject targetObject = target.toObject();
+        QJsonObject patchObject = patch.toObject();
+
+        for (auto itPatchChild = patchObject.constBegin(); itPatchChild != patchObject.constEnd();
+             ++itPatchChild) {
+            QJsonValue targetChildValue = targetObject.value(itPatchChild.key());
+            applyJsonPatch(targetChildValue, itPatchChild.value());
+            targetObject.insert(itPatchChild.key(), targetChildValue);
+        }
+
+        target = targetObject;
+    } else if (patch.isArray()) {
+        QJsonArray targetArray = target.toArray();
+        const QJsonArray patchArray = patch.toArray();
+
+        for (const QJsonValue &patchValue : patchArray)
+            targetArray.append(patchValue);
+
+        target = targetArray;
+    } else {
+        target = patch;
+    }
 }
 
 UTILS_EXPORT bool readMultiLineString(const QJsonValue &value, QString *out)

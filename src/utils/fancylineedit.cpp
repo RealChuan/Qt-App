@@ -93,7 +93,6 @@ private:
 };
 Q_GLOBAL_STATIC(CompletionShortcut, completionShortcut)
 
-
 // --------- FancyLineEditPrivate
 class FancyLineEditPrivate : public QObject
 {
@@ -136,8 +135,8 @@ FancyLineEditPrivate::FancyLineEditPrivate(FancyLineEdit *parent)
     : QObject(parent)
     , m_lineEdit(parent)
     , m_completionShortcut(completionShortcut()->key(), parent)
-    , m_okTextColor(creatorColor(Theme::TextColorNormal))
-    , m_errorTextColor(creatorColor(Theme::TextColorError))
+    , m_okTextColor("ff000000")
+    , m_errorTextColor("ffff0000")
     , m_placeholderTextColor(QApplication::palette().color(QPalette::PlaceholderText))
     , m_spinner(new SpinnerSolution::Spinner(SpinnerSolution::SpinnerSize::Small, m_lineEdit))
 {
@@ -149,8 +148,10 @@ FancyLineEditPrivate::FancyLineEditPrivate(FancyLineEdit *parent)
     });
 
     m_completionShortcut.setContext(Qt::WidgetShortcut);
-    connect(completionShortcut(), &CompletionShortcut::keyChanged,
-            &m_completionShortcut, &QShortcut::setKey);
+    connect(completionShortcut(),
+            &CompletionShortcut::keyChanged,
+            &m_completionShortcut,
+            &QShortcut::setKey);
 
     for (int i = 0; i < 2; ++i) {
         m_iconbutton[i] = new FancyIconButton(parent);
@@ -189,26 +190,20 @@ bool FancyLineEditPrivate::eventFilter(QObject *obj, QEvent *event)
             execMenuAtWidget(m_menu[buttonIndex], m_iconbutton[buttonIndex]);
             return true;
         }
-    default:
-        break;
+    default: break;
     }
     return QObject::eventFilter(obj, event);
 }
 
-
 // --------- FancyLineEdit
-FancyLineEdit::FancyLineEdit(QWidget *parent) :
-    CompletingLineEdit(parent),
-    d(new FancyLineEditPrivate(this))
+FancyLineEdit::FancyLineEdit(QWidget *parent)
+    : CompletingLineEdit(parent)
+    , d(new FancyLineEditPrivate(this))
 {
     updateMargins();
 
-    connect(d->m_iconbutton[Left], &QAbstractButton::clicked, this, [this] {
-        iconClicked(Left);
-    });
-    connect(d->m_iconbutton[Right], &QAbstractButton::clicked, this, [this] {
-        iconClicked(Right);
-    });
+    connect(d->m_iconbutton[Left], &QAbstractButton::clicked, this, [this] { iconClicked(Left); });
+    connect(d->m_iconbutton[Right], &QAbstractButton::clicked, this, [this] { iconClicked(Right); });
     connect(this, &QLineEdit::textChanged, this, &FancyLineEdit::validate);
     connect(&d->m_completionShortcut, &QShortcut::activated, this, [this] {
         if (!completer())
@@ -282,8 +277,10 @@ void FancyLineEdit::updateMargins()
         rightMargin = qMax(24, rightMargin);
     }
 
-    QMargins margins((d->m_iconEnabled[realLeft] ? leftMargin : 0), 0,
-                     (d->m_iconEnabled[realRight] ? rightMargin : 0), 0);
+    QMargins margins((d->m_iconEnabled[realLeft] ? leftMargin : 0),
+                     0,
+                     (d->m_iconEnabled[realRight] ? rightMargin : 0),
+                     0);
 
     setTextMargins(margins);
 }
@@ -326,13 +323,13 @@ QIcon FancyLineEdit::buttonIcon(Side side) const
 
 void FancyLineEdit::setButtonMenu(Side side, QMenu *buttonMenu)
 {
-     d->m_menu[side] = buttonMenu;
-     d->m_iconbutton[side]->setIconOpacity(1.0);
- }
+    d->m_menu[side] = buttonMenu;
+    d->m_iconbutton[side]->setIconOpacity(1.0);
+}
 
 QMenu *FancyLineEdit::buttonMenu(Side side) const
 {
-    return  d->m_menu[side];
+    return d->m_menu[side];
 }
 
 bool FancyLineEdit::hasMenuTabFocusTrigger(Side side) const
@@ -354,8 +351,9 @@ bool FancyLineEdit::hasAutoHideButton(Side side) const
     return d->m_iconbutton[side]->hasAutoHide();
 }
 
-void FancyLineEdit::setHistoryCompleter(
-    const Key &historyKey, bool restoreLastItemFromHistory, int maxLines)
+void FancyLineEdit::setHistoryCompleter(const Key &historyKey,
+                                        bool restoreLastItemFromHistory,
+                                        int maxLines)
 {
     QTC_ASSERT(!d->m_historyCompleter, return);
     d->m_historyCompleter = new HistoryCompleter(historyKey, maxLines, this);
@@ -367,8 +365,11 @@ void FancyLineEdit::setHistoryCompleter(
     // being emitted and more updates finally calling setText() (again).
     // To make sure we report the "final" content delay the addEntry()
     // "a bit".
-    connect(this, &QLineEdit::editingFinished,
-            this, &FancyLineEdit::onEditingFinished, Qt::QueuedConnection);
+    connect(this,
+            &QLineEdit::editingFinished,
+            this,
+            &FancyLineEdit::onEditingFinished,
+            Qt::QueuedConnection);
 }
 
 void FancyLineEdit::onEditingFinished()
@@ -414,7 +415,7 @@ void FancyLineEdit::setAutoHideButton(Side side, bool h)
 {
     d->m_iconbutton[side]->setAutoHide(h);
     if (h)
-        d->m_iconbutton[side]->setIconOpacity(text().isEmpty() ?  0.0 : 1.0);
+        d->m_iconbutton[side]->setIconOpacity(text().isEmpty() ? 0.0 : 1.0);
     else
         d->m_iconbutton[side]->setIconOpacity(1.0);
 }
@@ -635,7 +636,8 @@ void FancyLineEdit::validate()
     }
 
     if (d->m_validationFunction.index() == 2) {
-        SimpleSynchronousValidationFunction &validationFunction = std::get<2>(d->m_validationFunction);
+        SimpleSynchronousValidationFunction &validationFunction = std::get<2>(
+            d->m_validationFunction);
         if (!validationFunction)
             return;
 
@@ -678,7 +680,8 @@ FancyIconButton::FancyIconButton(QWidget *parent)
 void FancyIconButton::paintEvent(QPaintEvent *)
 {
     const qreal pixelRatio = window()->windowHandle()->devicePixelRatio();
-    const QPixmap iconPixmap = icon().pixmap(sizeHint(), pixelRatio,
+    const QPixmap iconPixmap = icon().pixmap(sizeHint(),
+                                             pixelRatio,
                                              isEnabled() ? QIcon::Normal : QIcon::Disabled);
     QStylePainter painter(this);
     QRect pixmapRect(QPoint(), iconPixmap.size() / iconPixmap.devicePixelRatio());

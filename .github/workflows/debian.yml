@@ -58,9 +58,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.PACKET_DIR }}
         run: |
-          cmake -P ./../fonts.cmake
-          ls -al
-          ls -al ./fonts
+          cmake -DVERBOSE=1 -P ./../fonts.cmake
 
       - name: Generate Debian package
         shell: bash

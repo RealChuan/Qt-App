@@ -2,7 +2,6 @@ include(../../qmake/PlatformLibraries.pri)
 
 include(mimetypes2/mimetypes.pri)
 include(fsengine/fsengine.pri)
-include(theme/theme.pri)
 include(tooltip/tooltip.pri)
 
 QT += widgets core5compat concurrent network core-private

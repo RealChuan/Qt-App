@@ -6,8 +6,8 @@
 #include "icon.h"
 #include "utilsicons.h"
 
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 
 namespace Utils {
 
@@ -15,8 +15,7 @@ constexpr int iconSize = 16;
 
 InfoLabel::InfoLabel(QWidget *parent)
     : InfoLabel({}, Information, parent)
-{
-}
+{}
 
 InfoLabel::InfoLabel(const QString &text, InfoType type, QWidget *parent)
     : ElidingLabel(text, parent)
@@ -53,20 +52,16 @@ QSize InfoLabel::minimumSizeHint() const
     return baseHint;
 }
 
-static Theme::Color fillColorForType(InfoLabel::InfoType type)
+static QColor fillColorForType(InfoLabel::InfoType type)
 {
     using namespace Utils;
     switch (type) {
-    case InfoLabel::Warning:
-        return Theme::IconsWarningColor;
-    case InfoLabel::Ok:
-        return Theme::IconsRunColor;
+    case InfoLabel::Warning: return "ffecbc1c";
+    case InfoLabel::Ok: return "ff6da838";
     case InfoLabel::Error:
-    case InfoLabel::NotOk:
-        return Theme::IconsErrorColor;
+    case InfoLabel::NotOk: return "ffdf4f4f";
     case InfoLabel::Information:
-    default:
-        return Theme::IconsInfoColor;
+    default: return "ff3099dc";
     }
 }
 
@@ -107,20 +102,23 @@ void InfoLabel::paintEvent(QPaintEvent *event)
         return ElidingLabel::paintEvent(event);
 
     const bool centerIconVertically = wordWrap() || elideMode() == Qt::ElideNone;
-    const QRect iconRect(0, centerIconVertically ? 0 : ((height() - iconSize) / 2),
-                         iconSize, iconSize);
+    const QRect iconRect(0,
+                         centerIconVertically ? 0 : ((height() - iconSize) / 2),
+                         iconSize,
+                         iconSize);
 
     QPainter p(this);
     if (m_filled && isEnabled()) {
         p.save();
         p.setOpacity(0.175);
-        p.fillRect(rect(), creatorColor(fillColorForType(m_type)));
+        p.fillRect(rect(), fillColorForType(m_type));
         p.restore();
     }
     const QIcon &icon = iconForType(m_type);
     const QIcon::Mode mode = !this->isEnabled() ? QIcon::Disabled : QIcon::Normal;
-    const QPixmap iconPx =
-            icon.pixmap(QSize(iconSize, iconSize) * devicePixelRatio(), devicePixelRatio(), mode);
+    const QPixmap iconPx = icon.pixmap(QSize(iconSize, iconSize) * devicePixelRatio(),
+                                       devicePixelRatio(),
+                                       mode);
     p.drawPixmap(iconRect, iconPx);
     ElidingLabel::paintEvent(event);
 }

@@ -4,7 +4,6 @@
 #include "icon.h"
 #include "algorithm.h"
 #include "qtcassert.h"
-// #include "theme/theme.h"
 #include "stylehelper.h"
 #include "utilsicons.h"
 
@@ -42,7 +41,7 @@ static MasksAndColors masksAndColors(const QList<IconMaskAndColor> &icon, int dp
     MasksAndColors result;
     for (const IconMaskAndColor &i : icon) {
         const QString &fileName = i.first.toUrlishString();
-        const QColor color = creatorColor(i.second);
+        const QColor color(i.second);
         const QString dprFileName = StyleHelper::availableImageResolutions(i.first.toUrlishString())
                                             .contains(dpr)
                                         ? StyleHelper::imageFileWithResolution(fileName, dpr)
@@ -118,19 +117,6 @@ static QPixmap masksToIcon(const MasksAndColors &masks,
         p.drawPixmap(0, 0, maskToColorAndAlpha((*maskImage).first, (*maskImage).second));
     }
 
-    if (style & Icon::DropShadow && creatorTheme()->flag(Theme::ToolBarIconShadow)) {
-        const QPixmap shadowMask = maskToColorAndAlpha(combinedMask, Qt::black);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationOver);
-        p.setOpacity(0.08);
-        p.drawPixmap(QPointF(0, -0.501), shadowMask);
-        p.drawPixmap(QPointF(-0.501, 0), shadowMask);
-        p.drawPixmap(QPointF(0.5, 0), shadowMask);
-        p.drawPixmap(QPointF(0.5, 0.5), shadowMask);
-        p.drawPixmap(QPointF(-0.501, 0.5), shadowMask);
-        p.setOpacity(0.3);
-        p.drawPixmap(0, 1, shadowMask);
-    }
-
     p.end();
 
     return result;
@@ -144,27 +130,10 @@ Icon::Icon(const QList<IconMaskAndColor> &args, Icon::IconStyleOptions style)
 {}
 
 Icon::Icon(const FilePath &imageFileName)
-    : m_iconSourceList({{imageFileName, Theme::Color(-1)}})
+    : m_iconSourceList({{imageFileName, Qt::white}})
 {}
 
 using OptMasksAndColors = std::optional<MasksAndColors>;
-OptMasksAndColors highlightMasksAndColors(const MasksAndColors &defaultState,
-                                          const QList<IconMaskAndColor> &masks)
-{
-    MasksAndColors highlighted = defaultState;
-    bool colorsReplaced = false;
-    int index = 0;
-    for (const IconMaskAndColor &mask : masks) {
-        const Theme::Color highlight = Theme::highlightFor(mask.second);
-        if (highlight != mask.second) {
-            highlighted[index].second = creatorColor(highlight);
-            colorsReplaced = true;
-            continue;
-        }
-        ++index;
-    }
-    return colorsReplaced ? std::make_optional(highlighted) : std::nullopt;
-}
 
 QIcon Icon::icon() const
 {
@@ -184,17 +153,9 @@ QIcon Icon::icon() const
         const MasksAndColors masks = masksAndColors(m_iconSourceList, dpr);
         const QPixmap combinedMask = Utils::combinedMask(masks, m_style);
         m_lastIcon.addPixmap(masksToIcon(masks, combinedMask, m_style), QIcon::Normal, QIcon::Off);
-        const QColor disabledColor = creatorColor(Theme::IconsDisabledColor);
+        const QColor disabledColor("88a0a0a0");
         const QPixmap disabledIcon = maskToColorAndAlpha(combinedMask, disabledColor);
-        if (const OptMasksAndColors activeMasks = highlightMasksAndColors(masks, m_iconSourceList);
-            activeMasks.has_value()) {
-            const QPixmap activePixmap = masksToIcon(*activeMasks, combinedMask, m_style);
-            m_lastIcon.addPixmap(activePixmap, QIcon::Active, QIcon::On);
-            m_lastIcon.addPixmap(disabledIcon, QIcon::Disabled, QIcon::On);
-            m_lastIcon.addPixmap(disabledIcon, QIcon::Disabled, QIcon::Off);
-        } else {
-            m_lastIcon.addPixmap(disabledIcon, QIcon::Disabled);
-        }
+        m_lastIcon.addPixmap(disabledIcon, QIcon::Disabled);
     }
     return m_lastIcon;
 }
@@ -210,9 +171,8 @@ QPixmap Icon::pixmap(QIcon::Mode iconMode) const
         const MasksAndColors masks = masksAndColors(m_iconSourceList,
                                                     qRound(qApp->devicePixelRatio()));
         const QPixmap combinedMask = Utils::combinedMask(masks, m_style);
-        return iconMode == QIcon::Disabled
-                   ? maskToColorAndAlpha(combinedMask, creatorColor(Theme::IconsDisabledColor))
-                   : masksToIcon(masks, combinedMask, m_style);
+        return iconMode == QIcon::Disabled ? maskToColorAndAlpha(combinedMask, "88a0a0a0")
+                                           : masksToIcon(masks, combinedMask, m_style);
     }
 }
 
@@ -225,17 +185,14 @@ FilePath Icon::imageFilePath() const
 QIcon Icon::sideBarIcon(const Icon &classic, const Icon &flat)
 {
     QIcon result;
-    if (creatorTheme()->flag(Theme::FlatSideBarIcons)) {
-        result = flat.icon();
-    } else {
-        const QPixmap pixmap = classic.pixmap();
-        result.addPixmap(pixmap);
-        // Ensure that the icon contains a disabled state of that size, since
-        // Since we have icons with mixed sizes (e.g. DEBUG_START), and want to
-        // avoid that QIcon creates scaled versions of missing QIcon::Disabled
-        // sizes.
-        result.addPixmap(StyleHelper::disabledSideBarIcon(pixmap), QIcon::Disabled);
-    }
+
+    const QPixmap pixmap = classic.pixmap();
+    result.addPixmap(pixmap);
+    // Ensure that the icon contains a disabled state of that size, since
+    // Since we have icons with mixed sizes (e.g. DEBUG_START), and want to
+    // avoid that QIcon creates scaled versions of missing QIcon::Disabled
+    // sizes.
+    result.addPixmap(StyleHelper::disabledSideBarIcon(pixmap), QIcon::Disabled);
     return result;
 }
 
@@ -267,28 +224,6 @@ QIcon Icon::fromTheme(const QString &name)
     QIcon icon = QIcon::fromTheme(name);
     if (name == "go-next") {
         cache.insert(name, !icon.isNull() ? icon : QIcon(":/utils/images/arrow.png"));
-    } else if (name == "document-open") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::OPENFILE.icon());
-    } else if (name == "edit-copy") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::COPY.icon());
-    } else if (name == "document-new") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::NEWFILE.icon());
-    } else if (name == "document-save") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::SAVEFILE.icon());
-    } else if (name == "edit-undo") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::UNDO.icon());
-    } else if (name == "edit-redo") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::REDO.icon());
-    } else if (name == "edit-cut") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::CUT.icon());
-    } else if (name == "edit-paste") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::PASTE.icon());
-    } else if (name == "zoom-in") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::ZOOMIN_TOOLBAR.icon());
-    } else if (name == "zoom-out") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::ZOOMOUT_TOOLBAR.icon());
-    } else if (name == "zoom-original") {
-        cache.insert(name, !icon.isNull() ? icon : Icons::EYE_OPEN_TOOLBAR.icon());
     } else if (name == "edit-clear") {
         cache.insert(name, !icon.isNull() ? icon : Icons::EDIT_CLEAR.icon());
     } else if (name == "edit-clear-locationbar-rtl") {

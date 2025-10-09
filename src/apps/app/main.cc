@@ -161,11 +161,7 @@ auto main(int argc, char *argv[]) -> int
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
     Utils::setPixmapCacheLimit();
-#ifdef Q_OS_MACOS
-    Utils::loadFonts(QString("%1/../Resources/fonts").arg(app.applicationDirPath()));
-#else
-    Utils::loadFonts(QString("%1/fonts").arg(app.applicationDirPath()));
-#endif
+    Utils::loadFonts((Utils::appInfo().resources / "fonts").toUserOutput());
     setQss();
 
     // Make sure we honor the system's proxy settings

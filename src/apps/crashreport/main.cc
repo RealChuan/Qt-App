@@ -87,7 +87,7 @@ auto main(int argc, char *argv[]) -> int
 #ifdef Q_OS_MACOS
     Utils::loadFonts(QString("%1/../Resources/fonts").arg(app.applicationDirPath()));
 #else
-    Utils::loadFonts(QString("%1/fonts").arg(app.applicationDirPath()));
+    Utils::loadFonts(QString("%1/resources/fonts").arg(app.applicationDirPath()));
 #endif
     setQss();
 

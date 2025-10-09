@@ -9,9 +9,9 @@
 
 #include <utils/algorithm.h>
 #include <utils/categorysortfiltermodel.h>
-#include <utils/utilsicons.h>
 #include <utils/itemviews.h>
 #include <utils/qtcassert.h>
+#include <utils/utilsicons.h>
 
 #include <QDebug>
 #include <QDir>
@@ -61,7 +61,12 @@ namespace ExtensionSystem {
 
 namespace Internal {
 
-enum Columns { NameColumn, LoadedColumn, VersionColumn, VendorColumn, };
+enum Columns {
+    NameColumn,
+    LoadedColumn,
+    VersionColumn,
+    VendorColumn,
+};
 
 enum IconIndex { OkIcon, ErrorIcon, NotLoadedIcon };
 
@@ -90,7 +95,8 @@ class PluginItem : public TreeItem
 {
 public:
     PluginItem(PluginSpec *spec, PluginData *data)
-        : m_spec(spec), m_data(data)
+        : m_spec(spec)
+        , m_data(data)
     {}
 
     QVariant data(int column, int role) const override
@@ -107,8 +113,8 @@ public:
 
                 if (decoration.isEmpty())
                     return displayName;
-                return QString::fromLatin1("%1 (%2)")
-                    .arg(displayName, decoration.join(QLatin1Char(',')));
+                return QString::fromLatin1("%1 (%2)").arg(displayName,
+                                                          decoration.join(QLatin1Char(',')));
             }
             if (role == SortRole)
                 return displayName;
@@ -158,7 +164,8 @@ public:
 
         case VersionColumn:
             if (role == Qt::DisplayRole || role == SortRole)
-                return QString::fromLatin1("%1 (%2)").arg(m_spec->version(), m_spec->compatVersion());
+                return QString::fromLatin1("%1 (%2)").arg(m_spec->version(),
+                                                          m_spec->compatVersion());
             break;
 
         case VendorColumn:
@@ -177,10 +184,7 @@ public:
         return false;
     }
 
-    bool isEnabled() const
-    {
-        return m_spec->isAvailableForHostPlatform() && !m_spec->isRequired();
-    }
+    bool isEnabled() const { return m_spec->isAvailableForHostPlatform() && !m_spec->isRequired(); }
 
     Qt::ItemFlags flags(int column) const override
     {
@@ -245,8 +249,9 @@ public:
     bool setData(int column, const QVariant &data, int role) override
     {
         if (column == LoadedColumn && role == Qt::CheckStateRole) {
-            const PluginSpecs affectedPlugins
-                = Utils::filtered(m_plugins, [](PluginSpec *spec) { return !spec->isRequired(); });
+            const PluginSpecs affectedPlugins = Utils::filtered(m_plugins, [](PluginSpec *spec) {
+                return !spec->isRequired();
+            });
             if (m_data->setPluginsEnabled(toSet(affectedPlugins), data.toBool())) {
                 update();
                 return true;
@@ -269,20 +274,21 @@ public:
     PluginData *m_data; // Not owned.
 };
 
-} // Internal
+} // namespace Internal
 
 using namespace ExtensionSystem::Internal;
 
 PluginData::PluginData(QWidget *parent, PluginView *owner)
-    : m_parent(parent), m_pluginView(owner)
+    : m_parent(parent)
+    , m_pluginView(owner)
 {
     m_model = new TreeModel<TreeItem, CollectionItem, PluginItem>(parent);
-    m_model->setHeader({ Tr::tr("Name"), Tr::tr("Load"), Tr::tr("Version"), Tr::tr("Vendor") });
+    m_model->setHeader({Tr::tr("Name"), Tr::tr("Load"), Tr::tr("Version"), Tr::tr("Vendor")});
 
     m_sortModel = new CategorySortFilterModel(parent);
     m_sortModel->setSourceModel(m_model);
     m_sortModel->setSortRole(SortRole);
-    m_sortModel->setFilterKeyColumn(-1/*all*/);
+    m_sortModel->setFilterKeyColumn(-1 /*all*/);
 }
 
 /*!
@@ -290,7 +296,8 @@ PluginData::PluginData(QWidget *parent, PluginView *owner)
     from a plugin manager.
 */
 PluginView::PluginView(QWidget *parent)
-    : QWidget(parent), m_data(this, this)
+    : QWidget(parent)
+    , m_data(this, this)
 {
     m_categoryView = new TreeView(this);
     m_categoryView->setAlternatingRowColors(true);
@@ -310,13 +317,18 @@ PluginView::PluginView(QWidget *parent)
     header->setSortIndicator(NameColumn, Qt::AscendingOrder);
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    connect(PluginManager::instance(), &PluginManager::pluginsChanged,
-            this, &PluginView::updatePlugins);
+    connect(PluginManager::instance(),
+            &PluginManager::pluginsChanged,
+            this,
+            &PluginView::updatePlugins);
 
-    connect(m_categoryView, &QAbstractItemView::activated, this,
-            [this](const QModelIndex &idx) { emit pluginActivated(pluginForIndex(idx)); });
+    connect(m_categoryView, &QAbstractItemView::activated, this, [this](const QModelIndex &idx) {
+        emit pluginActivated(pluginForIndex(idx));
+    });
 
-    connect(m_categoryView->selectionModel(), &QItemSelectionModel::currentChanged, this,
+    connect(m_categoryView->selectionModel(),
+            &QItemSelectionModel::currentChanged,
+            this,
             [this](const QModelIndex &idx) { emit currentPluginChanged(pluginForIndex(idx)); });
 
     updatePlugins();
@@ -350,7 +362,7 @@ PluginSpec *PluginView::pluginForIndex(const QModelIndex &index) const
 {
     const QModelIndex &sourceIndex = m_data.m_sortModel->mapToSource(index);
     PluginItem *item = m_data.m_model->itemForIndexAtLevel<2>(sourceIndex);
-    return item ? item->m_spec: nullptr;
+    return item ? item->m_spec : nullptr;
 }
 
 void PluginView::updatePlugins()
@@ -358,8 +370,7 @@ void PluginView::updatePlugins()
     // Model.
     m_data.m_model->clear();
 
-    const QHash<QString, PluginSpecs> pluginCollections
-        = PluginManager::pluginCollections();
+    const QHash<QString, PluginSpecs> pluginCollections = PluginManager::pluginCollections();
     std::vector<CollectionItem *> collections;
     const auto end = pluginCollections.cend();
     for (auto it = pluginCollections.cbegin(); it != end; ++it) {
@@ -389,9 +400,8 @@ bool PluginData::setPluginsEnabled(const QSet<PluginSpec *> &plugins, bool enabl
 
     const QSet<PluginSpec *> affectedPlugins = plugins + *additionalPlugins;
     for (PluginSpec *spec : affectedPlugins) {
-        PluginItem *item = m_model->findItemAtLevel<2>([spec](PluginItem *item) {
-                return item->m_spec == spec;
-        });
+        PluginItem *item = m_model->findItemAtLevel<2>(
+            [spec](PluginItem *item) { return item->m_spec == spec; });
         QTC_ASSERT(item, continue);
         if (m_affectedPlugins.find(spec) == m_affectedPlugins.end())
             m_affectedPlugins[spec] = spec->isEnabledBySettings();

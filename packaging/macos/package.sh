@@ -13,7 +13,6 @@ packet_dir="${project_dir}/packaging/packet"
 releases_dir="${project_dir}/packaging/releases"
 
 chmod -R +x ${packet_dir}/${app_name}.app/Contents/MacOS
-mv -vf "${packet_dir}/fonts" "${packet_dir}/${app_name}.app/Contents/Resources/"
 
 macdeployqt "${packet_dir}/${app_name}.app" \
 	-executable="${packet_dir}/${app_name}.app/Contents/MacOS/CrashReport" \

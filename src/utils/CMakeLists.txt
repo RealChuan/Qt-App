@@ -25,9 +25,6 @@ set(PROJECT_SOURCES
     mimetypes2/mimetypeparser_p.h
     mimetypes2/mimetypeparser.cpp
     mimetypes2/mimeutils.cpp
-    theme/theme_p.h
-    theme/theme.cpp
-    theme/theme.h
     tooltip/effects.h
     tooltip/tips.cpp
     tooltip/tips.h
@@ -163,8 +160,7 @@ set(PROJECT_SOURCES
     widgetmanager.hpp)
 
 if(CMAKE_HOST_APPLE)
-  list(APPEND PROJECT_SOURCES theme/theme_mac.mm theme/theme_mac.h
-       fileutils_mac.mm fileutils_mac.h)
+  list(APPEND PROJECT_SOURCES fileutils_mac.mm fileutils_mac.h)
 endif()
 
 qt_add_resources(RESOURCE_SOURCES utils.qrc)

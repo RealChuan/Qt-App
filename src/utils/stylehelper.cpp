@@ -4,7 +4,6 @@
 #include "stylehelper.h"
 
 #include "algorithm.h"
-// #include "theme/theme.h"
 #include "hostosinfo.h"
 #include "qtcassert.h"
 
@@ -136,6 +135,7 @@ QColor StyleHelper::toolbarBaseColor(bool lightColored)
 {
     return StyleHelper::baseColor(lightColored);
 }
+
 QColor StyleHelper::highlightColor(bool lightColored)
 {
     QColor result = baseColor(lightColored);

@@ -72,7 +72,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "..\packet\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyAppExeName}')
 Source: "..\packet\{#MyCrashAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyCrashAppExeName}')
-Source: "..\packet\fonts\*"; DestDir: "{app}\fonts"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\plugins\*"; DestDir: "{app}\plugins"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\resources\*"; DestDir: "{app}\resources"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion createallsubdirs recursesubdirs

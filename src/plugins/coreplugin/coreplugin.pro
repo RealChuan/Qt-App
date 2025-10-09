@@ -16,21 +16,18 @@ include(../../../qmake/VcpkgToolchain.pri)
 
 HEADERS += \
     configwidget.h \
-    coreconstants.h \
     coreplugin.hpp \
     coreplugintr.h \
     icore.h \
     mainwindow.h \
-    plugindialog.h \
-    themechooser.h
+    plugindialog.h
 
 SOURCES += \
     configwidget.cpp \
     coreplugin.cpp \
     icore.cpp \
     mainwindow.cpp \
-    plugindialog.cpp \
-    themechooser.cpp
+    plugindialog.cpp
 
 DISTFILES += \
     coreplugin.json

@@ -6,7 +6,6 @@
 #include "utils_global.h"
 
 #include "filepath.h"
-#include "theme/theme.h"
 
 #include <QIcon>
 #include <QList>
@@ -20,7 +19,7 @@ QT_END_NAMESPACE
 
 namespace Utils {
 
-using IconMaskAndColor = QPair<FilePath, Theme::Color>;
+using IconMaskAndColor = QPair<FilePath, QColor>;
 
 // Returns a recolored icon with shadow and custom disabled state for a
 // series of grayscalemask|Theme::Color mask pairs
