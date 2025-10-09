@@ -12,7 +12,7 @@ LIBS += \
     -l$$replaceLibName(resource) \
     -l$$replaceLibName(utils)
 
-include(../../../qmake/VcpkgDeps.pri)
+include(../../../qmake/VcpkgToolchain.pri)
 
 HEADERS += \
     cpubenchthread.hpp \

@@ -5,7 +5,7 @@ inputs:
   vcpkg_libs:
     description: 'vcpkg libraries to install'
     required: false
-    default: 'breakpad crashpad tl-expected'
+    default: 'breakpad crashpad openssl tl-expected'
     type: string
   qt_modules:
     description: 'Qt modules to install'
@@ -15,7 +15,7 @@ inputs:
   qt_ver:
     description: 'Qt version to install'
     required: false
-    default: '6.9.2'
+    default: '6.10.0'
     type: string
 
 runs:
@@ -92,6 +92,13 @@ runs:
         wget -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" \
           -O /usr/local/bin/linuxdeployqt
         sudo chmod +x /usr/local/bin/linuxdeployqt
+
+    - name: Build libtiff.so.5 on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        chmod +x packaging/ubuntu/build_libtiff.sh
+        packaging/ubuntu/build_libtiff.sh
  
     - name: Install Qt
       uses: jurplel/install-qt-action@v4

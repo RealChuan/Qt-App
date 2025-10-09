@@ -6,7 +6,7 @@ TARGET = $$add_platform_library(dump)
 LIBS += \
     -l$$replaceLibName(utils)
 
-include(../../qmake/VcpkgDeps.pri)
+include(../../qmake/VcpkgToolchain.pri)
 
 SOURCES += \
     breakpad.cc \

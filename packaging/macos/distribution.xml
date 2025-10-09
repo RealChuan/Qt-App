@@ -15,7 +15,7 @@
     <!-- ==================== 最小系统版本 ==================== -->
     <volume-check>
         <allowed-os-versions>
-            <os-version min="12.0"/>              
+            <os-version min="13.0"/>              
         </allowed-os-versions>
     </volume-check>
     <!-- ==================== 欢迎 & 结束页 ==================== -->

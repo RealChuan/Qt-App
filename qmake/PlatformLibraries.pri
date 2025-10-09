@@ -1,7 +1,7 @@
 # PlatformLibraries.pri - 库项目配置
 
 # 包含编译器设置
-include(CompilerSettings.pri)
+include(ProjectSettings.pri)
 
 # 设置项目模板为库
 TEMPLATE = lib
@@ -61,7 +61,7 @@ defineReplace(add_plugin_library) {
     
     win32 {
         DESTDIR = $$LIBRARY_OUTPUT_DIRECTORY
-        DLLDESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/plugins
+        DLLDESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/plugins/$$getProjectNameLower()
         export(DESTDIR)
         export(DLLDESTDIR)
     }

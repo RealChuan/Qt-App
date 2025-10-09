@@ -33,6 +33,9 @@ add_custom_command(
           "${THEMES_DEST_DIR}"
   VERBATIM)
 
+install(DIRECTORY "${THEMES_SOURCE_DIR}" DESTINATION "${RESOURCE_INSTALL_DIR}")
+
 message(STATUS "Resource library configuration:")
 message(STATUS "  - Themes source: ${THEMES_SOURCE_DIR}")
-message(STATUS "  - Themes destination: ${THEMES_DEST_DIR}")
+message(STATUS "  - Build themes destination: ${THEMES_DEST_DIR}")
+message(STATUS "  - Install themes destination: ${RESOURCE_INSTALL_DIR}/themes")

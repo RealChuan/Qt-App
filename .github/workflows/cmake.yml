@@ -29,7 +29,7 @@ on:
       - '**/README*'
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: '12.0'
+  MACOSX_DEPLOYMENT_TARGET: '13.0'
   PACKET_DIR: packaging/packet
   RELEASES_DIR: packaging/releases
   BUILD_DIR: build
@@ -73,6 +73,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -G "${{ matrix.generators }}"
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
+          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}\install" -v
+          cmd /c tree /f ${{ github.workspace }}\install
       - name: Configure and build ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash

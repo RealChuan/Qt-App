@@ -18,7 +18,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={#MyAppId}
+AppId={{{#MyAppId}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ; AppVerName={#MyAppName} {#MyAppVersion}
@@ -73,15 +73,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "..\packet\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyAppExeName}')
 Source: "..\packet\{#MyCrashAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyCrashAppExeName}')
 Source: "..\packet\fonts\*"; DestDir: "{app}\fonts"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\generic\*"; DestDir: "{app}\generic"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\networkinformation\*"; DestDir: "{app}\networkinformation"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\plugins\*"; DestDir: "{app}\plugins"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\resources\*"; DestDir: "{app}\resources"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\packet\tls\*"; DestDir: "{app}\tls"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\aggregation.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\core.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -91,6 +84,8 @@ Source: "..\packet\dump.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\dxil.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\extensionsystem.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\libcrypto-3-x64.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\libssl-3-x64.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\opengl32sw.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\Qt6Core5Compat.dll"; DestDir: "{app}"; Flags: ignoreversion

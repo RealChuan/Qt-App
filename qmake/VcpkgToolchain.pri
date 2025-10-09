@@ -1,7 +1,7 @@
-# VcpkgDeps.pri - vcpkg 依赖配置
+# VcpkgToolchain.pri - vcpkg 依赖配置
 
 # 包含架构检测
-include(ArchDetect.pri)
+include(ArchitectureDetection.pri)
 
 # 设置平台特定的 vcpkg 路径
 win32 {

@@ -8,20 +8,34 @@
 option(PROJECT_DEBUG_INFO "Print detailed CMake configuration information" ON)
 
 # -----------------------------------------------------------------------------
-# 调试信息显示函数
+# 通用工具函数
 # -----------------------------------------------------------------------------
-function(show_cmake_debug_info)
-  if(NOT PROJECT_DEBUG_INFO)
-    return()
+function(get_current_timestamp output_var)
+  string(TIMESTAMP timestamp "%Y-%m-%d %H:%M:%S")
+  set(${output_var}
+      ${timestamp}
+      PARENT_SCOPE)
+endfunction()
+
+function(get_system_bitness output_var)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(${output_var}
+        "64-bit"
+        PARENT_SCOPE)
+  else()
+    set(${output_var}
+        "32-bit"
+        PARENT_SCOPE)
   endif()
+endfunction()
 
-  # 获取当前时间戳
-  string(TIMESTAMP CURRENT_TIME "%Y-%m-%d %H:%M:%S")
-
-  message(STATUS "")
-  message(STATUS "┌───────────── CMake Configuration Debug Info ─────────────┐")
+# -----------------------------------------------------------------------------
+# 系统信息显示函数
+# -----------------------------------------------------------------------------
+function(show_system_info)
+  get_current_timestamp(CURRENT_TIME)
   message(STATUS "│ Timestamp       : ${CURRENT_TIME}")
-  message(STATUS "├─────────────────── System Information ───────────────────┤")
+
   message(STATUS "│ CMake Version   : ${CMAKE_VERSION}")
   message(STATUS "│ Generator       : ${CMAKE_GENERATOR}")
 
@@ -37,12 +51,7 @@ function(show_cmake_debug_info)
     STATUS "│ System          : ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION}")
   message(STATUS "│ Architecture    : ${CMAKE_SYSTEM_PROCESSOR}")
 
-  # 32/64位检测
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITNESS "64-bit")
-  else()
-    set(BITNESS "32-bit")
-  endif()
+  get_system_bitness(BITNESS)
   message(STATUS "│ Bitness         : ${BITNESS}")
 
   # 检测是否为交叉编译
@@ -54,9 +63,12 @@ function(show_cmake_debug_info)
   else()
     message(STATUS "│ Cross-compiling : NO")
   endif()
+endfunction()
 
-  message(
-    STATUS "├──────────────────── Compiler Information ─────────────────┤")
+# -----------------------------------------------------------------------------
+# 编译器信息显示函数
+# -----------------------------------------------------------------------------
+function(show_compiler_info)
   message(STATUS "│ C Compiler      : ${CMAKE_C_COMPILER}")
   message(
     STATUS
@@ -71,9 +83,12 @@ function(show_cmake_debug_info)
       "│ CXX Standard    : ${CMAKE_CXX_STANDARD} (Required: ${CMAKE_CXX_STANDARD_REQUIRED})"
   )
   message(STATUS "│ CXX Extensions  : ${CMAKE_CXX_EXTENSIONS}")
+endfunction()
 
-  message(
-    STATUS "├───────────────────── Build Configuration ─────────────────┤")
+# -----------------------------------------------------------------------------
+# 构建配置信息显示函数
+# -----------------------------------------------------------------------------
+function(show_build_config_info)
   message(STATUS "│ Build Type      : ${CMAKE_BUILD_TYPE}")
 
   # 多配置检测
@@ -83,15 +98,26 @@ function(show_cmake_debug_info)
 
   message(STATUS "│ C Flags         : ${CMAKE_C_FLAGS}")
   message(STATUS "│ CXX Flags       : ${CMAKE_CXX_FLAGS}")
-  message(STATUS "│ Exe Linker Flags: ${CMAKE_EXE_LINKER_FLAGS}")
-  message(STATUS "│ Shared Linker   : ${CMAKE_SHARED_LINKER_FLAGS}")
-  message(STATUS "│ Static Linker   : ${CMAKE_STATIC_LINKER_FLAGS}")
 
-  message(
-    STATUS "├────────────────────── Directory Layout ───────────────────┤")
+  if(CMAKE_EXE_LINKER_FLAGS)
+    message(STATUS "│ Exe Linker Flags: ${CMAKE_EXE_LINKER_FLAGS}")
+  endif()
+
+  if(CMAKE_SHARED_LINKER_FLAGS)
+    message(STATUS "│ Shared Linker   : ${CMAKE_SHARED_LINKER_FLAGS}")
+  endif()
+
+  if(CMAKE_STATIC_LINKER_FLAGS)
+    message(STATUS "│ Static Linker   : ${CMAKE_STATIC_LINKER_FLAGS}")
+  endif()
+endfunction()
+
+# -----------------------------------------------------------------------------
+# 目录布局信息显示函数
+# -----------------------------------------------------------------------------
+function(show_directory_layout_info)
   message(STATUS "│ Source Directory: ${CMAKE_SOURCE_DIR}")
   message(STATUS "│ Binary Directory: ${CMAKE_BINARY_DIR}")
-  message(STATUS "│ Install Prefix  : ${CMAKE_INSTALL_PREFIX}")
 
   # 显示项目特定输出目录
   if(DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -103,9 +129,37 @@ function(show_cmake_debug_info)
   if(DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     message(STATUS "│ Archive Output  : ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
   endif()
+endfunction()
 
-  message(
-    STATUS "├───────────────────────── Features ────────────────────────┤")
+# -----------------------------------------------------------------------------
+# 安装配置信息显示函数
+# -----------------------------------------------------------------------------
+function(show_install_config_info)
+  if(NOT INSTALL_CONFIG_LOADED)
+    message(STATUS "│ Install Config   : Not loaded")
+    return()
+  endif()
+
+  message(STATUS "│ Install Prefix   : ${CMAKE_INSTALL_PREFIX}")
+  message(STATUS "│ Main App Dir     : ${MAIN_APP_INSTALL_DIR}")
+  message(STATUS "│ Tool Dir         : ${TOOL_INSTALL_DIR}")
+  message(STATUS "│ Library Dir      : ${LIB_INSTALL_DIR}")
+  message(STATUS "│ Plugin Dir       : ${PLUGIN_INSTALL_DIR}")
+  message(STATUS "│ Resource Dir     : ${RESOURCE_INSTALL_DIR}")
+  message(STATUS "│ Translation Dir  : ${TRANSLATION_INSTALL_DIR}")
+
+  # 显示平台特定的额外信息
+  if(APPLE)
+    message(STATUS "│ macOS Bundle     : ${MACOSX_BUNDLE_BUNDLE_NAME}.app")
+    message(STATUS "│ Bundle ID        : ${MACOSX_BUNDLE_GUI_IDENTIFIER}")
+    message(STATUS "│ Bundle Version   : ${MACOSX_BUNDLE_SHORT_VERSION_STRING}")
+  endif()
+endfunction()
+
+# -----------------------------------------------------------------------------
+# 特性信息显示函数
+# -----------------------------------------------------------------------------
+function(show_features_info)
   message(STATUS "│ Build Shared Libs: ${BUILD_SHARED_LIBS}")
   message(STATUS "│ Export Compile Cmds: ${CMAKE_EXPORT_COMPILE_COMMANDS}")
 
@@ -123,10 +177,12 @@ function(show_cmake_debug_info)
     check_cxx_compiler_flag(-fstack-protector-strong HAS_STACK_PROTECTOR)
     message(STATUS "│ Stack Protector : ${HAS_STACK_PROTECTOR}")
   endif()
+endfunction()
 
-  message(
-    STATUS "├────────────────────── Project Specific ───────────────────┤")
-
+# -----------------------------------------------------------------------------
+# 项目特定信息显示函数
+# -----------------------------------------------------------------------------
+function(show_project_specific_info)
   # 显示项目特定变量
   if(DEFINED PROJECT_NAME)
     message(STATUS "│ Project Name    : ${PROJECT_NAME}")
@@ -164,6 +220,52 @@ function(show_cmake_debug_info)
       message(STATUS "│   ${VAR}")
     endforeach()
   endif()
+endfunction()
+
+# -----------------------------------------------------------------------------
+# 主调试信息显示函数
+# -----------------------------------------------------------------------------
+function(show_cmake_debug_info)
+  if(NOT PROJECT_DEBUG_INFO)
+    return()
+  endif()
+
+  message(STATUS "")
+  message(STATUS "┌───────────── CMake Configuration Debug Info ─────────────┐")
+
+  # 系统信息
+  message(STATUS "├─────────────────── System Information ───────────────────┤")
+  show_system_info()
+
+  # 编译器信息
+  message(
+    STATUS "├──────────────────── Compiler Information ─────────────────┤")
+  show_compiler_info()
+
+  # 构建配置
+  message(
+    STATUS "├───────────────────── Build Configuration ─────────────────┤")
+  show_build_config_info()
+
+  # 目录布局
+  message(
+    STATUS "├────────────────────── Directory Layout ───────────────────┤")
+  show_directory_layout_info()
+
+  # 安装配置
+  message(
+    STATUS "├───────────────────── Install Configuration ───────────────┤")
+  show_install_config_info()
+
+  # 特性信息
+  message(
+    STATUS "├───────────────────────── Features ────────────────────────┤")
+  show_features_info()
+
+  # 项目特定信息
+  message(
+    STATUS "├────────────────────── Project Specific ───────────────────┤")
+  show_project_specific_info()
 
   message(
     STATUS "└────────────────────────────────────────────────────────────┘")
@@ -181,12 +283,67 @@ function(show_debug_info_if_requested)
 endfunction()
 
 # -----------------------------------------------------------------------------
+# 单独显示某个信息块的函数（用于调试）
+# -----------------------------------------------------------------------------
+function(show_specific_debug_info)
+  cmake_parse_arguments(
+    ARG "SYSTEM;COMPILER;BUILD;DIRECTORY;INSTALL;FEATURES;PROJECT" "" ""
+    ${ARGN})
+
+  if(NOT PROJECT_DEBUG_INFO)
+    return()
+  endif()
+
+  if(ARG_SYSTEM)
+    message(STATUS "=== System Information ===")
+    show_system_info()
+  endif()
+
+  if(ARG_COMPILER)
+    message(STATUS "=== Compiler Information ===")
+    show_compiler_info()
+  endif()
+
+  if(ARG_BUILD)
+    message(STATUS "=== Build Configuration ===")
+    show_build_config_info()
+  endif()
+
+  if(ARG_DIRECTORY)
+    message(STATUS "=== Directory Layout ===")
+    show_directory_layout_info()
+  endif()
+
+  if(ARG_INSTALL)
+    message(STATUS "=== Install Configuration ===")
+    show_install_config_info()
+  endif()
+
+  if(ARG_FEATURES)
+    message(STATUS "=== Features ===")
+    show_features_info()
+  endif()
+
+  if(ARG_PROJECT)
+    message(STATUS "=== Project Specific ===")
+    show_project_specific_info()
+  endif()
+endfunction()
+
+# -----------------------------------------------------------------------------
 # 测试函数（仅用于调试本模块）
 # -----------------------------------------------------------------------------
 function(test_debug_info_module)
   message(STATUS "Testing CMakeDebugInfo module...")
   set(PROJECT_DEBUG_INFO ON)
+
+  # 测试完整信息
+  message(STATUS "=== Testing Complete Debug Info ===")
   show_cmake_debug_info()
+
+  # 测试单独模块
+  message(STATUS "=== Testing Individual Modules ===")
+  show_specific_debug_info(SYSTEM COMPILER)
 endfunction()
 
 # -----------------------------------------------------------------------------

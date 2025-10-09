@@ -16,7 +16,7 @@ LIBS += \
     -l$$replaceLibName(tasking) \
     -l$$replaceLibName(spinner)
 
-include(../../../qmake/VcpkgDeps.pri)
+include(../../../qmake/VcpkgToolchain.pri)
 
 DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 

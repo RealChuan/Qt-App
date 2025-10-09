@@ -13,13 +13,12 @@ elseif(CMAKE_HOST_APPLE)
                MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
                MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
                MACOSX_BUNDLE_COPYRIGHT "(C) 2025 Youth"
-               MACOSX_BUNDLE_GUI_IDENTIFIER "com.Youth.${PROJECT_NAME}"
+               MACOSX_BUNDLE_GUI_IDENTIFIER "com.${PROJECT_NAME}.app"
                MACOSX_BUNDLE_ICON_FILE "app.icns"
                MACOSX_BUNDLE_INFO_STRING "APPL???")
   set_source_files_properties(app.icns PROPERTIES MACOSX_PACKAGE_LOCATION
                                                   Resources)
   set_source_files_properties(PkgInfo PROPERTIES MACOSX_PACKAGE_LOCATION .)
-  add_dependencies(${PROJECT_NAME} CrashReport)
 elseif(CMAKE_HOST_LINUX)
   qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
 endif()
@@ -52,35 +51,58 @@ if(NOT EXISTS "${crash_handler_path}")
 endif()
 
 if(CMAKE_HOST_APPLE)
-  set(BUNDLE_CONTENTS_DIR
+  set(CRASHPAD_TARGET_DIR
       "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/MacOS")
-
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMENT "Configuring macOS application bundle with crashpad"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${BUNDLE_CONTENTS_DIR}"
-    COMMAND
-      ${CMAKE_COMMAND} -E copy "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CrashReport"
-      "${BUNDLE_CONTENTS_DIR}/CrashReport"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
-            "${BUNDLE_CONTENTS_DIR}"
-    COMMAND chmod +x "${BUNDLE_CONTENTS_DIR}/crashpad_handler"
-    VERBATIM)
 else()
+  set(CRASHPAD_TARGET_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
+
+message(STATUS "Crashpad target directory: ${CRASHPAD_TARGET_DIR}")
+
+add_custom_command(
+  TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMENT "Copying crashpad handler to ${CRASHPAD_TARGET_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${CRASHPAD_TARGET_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
+          "${CRASHPAD_TARGET_DIR}"
+  VERBATIM)
+
+if(UNIX)
   add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-    COMMENT "Configuring crashpad handler for ${CMAKE_SYSTEM_NAME}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    COMMENT "Setting execute permissions for crashpad_handler"
+    COMMAND chmod +x "${CRASHPAD_TARGET_DIR}/crashpad_handler"
     VERBATIM)
-  if(CMAKE_HOST_LINUX)
-    add_custom_command(
-      TARGET ${PROJECT_NAME}
-      POST_BUILD
-      COMMENT "Setting execute permissions for crashpad_handler on Linux"
-      COMMAND chmod +x "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/crashpad_handler"
-      VERBATIM)
-  endif()
+endif()
+
+install(
+  TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION ${MAIN_APP_INSTALL_DIR}
+  BUNDLE DESTINATION ${MAIN_APP_INSTALL_DIR})
+
+if(CMAKE_HOST_WIN32)
+  install(DIRECTORY "${crash_handler_path}/" DESTINATION ${TOOL_INSTALL_DIR})
+else()
+  install(
+    DIRECTORY "${crash_handler_path}/"
+    DESTINATION ${TOOL_INSTALL_DIR}
+    # 设置权限
+    FILE_PERMISSIONS
+      OWNER_READ
+      OWNER_WRITE
+      OWNER_EXECUTE
+      GROUP_READ
+      GROUP_EXECUTE
+      WORLD_READ
+      WORLD_EXECUTE
+    DIRECTORY_PERMISSIONS
+      OWNER_READ
+      OWNER_WRITE
+      OWNER_EXECUTE
+      GROUP_READ
+      GROUP_EXECUTE
+      WORLD_READ
+      WORLD_EXECUTE)
 endif()
