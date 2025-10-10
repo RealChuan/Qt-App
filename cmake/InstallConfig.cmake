@@ -32,7 +32,8 @@ if(APPLE)
   set(PLUGIN_INSTALL_DIR
       "${PROJECT_NAME}.app/Contents/PlugIns/${PROJECT_NAME_LOWERCASE}")
   set(RESOURCE_INSTALL_DIR "${PROJECT_NAME}.app/Contents/Resources")
-  set(TRANSLATION_INSTALL_DIR "${PROJECT_NAME}.app/Contents/translations")
+  set(TRANSLATION_INSTALL_DIR
+      "${PROJECT_NAME}.app/Contents/Resources/translations")
 elseif(WIN32)
   # Windows安装路径
   set(CMAKE_INSTALL_BINDIR ".") # 可执行文件和DLL在根目录

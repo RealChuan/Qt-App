@@ -92,6 +92,11 @@ function(add_platform_plugin target_name)
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${target_name}>
             "${PLUGIN_DEST_DIR}/$<TARGET_FILE_NAME:${target_name}>")
 
+  if(CMAKE_HOST_LINUX)
+    set_target_properties(${target_name} PROPERTIES INSTALL_RPATH
+                                                    "$ORIGIN/../../lib")
+  endif()
+
   install(
     TARGETS ${target_name}
     RUNTIME DESTINATION ${PLUGIN_INSTALL_DIR} # Windows: DLL

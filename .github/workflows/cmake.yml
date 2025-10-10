@@ -73,8 +73,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -G "${{ matrix.generators }}"
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
-          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}\install" -v
-          cmd /c tree /f ${{ github.workspace }}\install
+
       - name: Configure and build ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
@@ -85,6 +84,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -G "${{ matrix.generators }}"
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
+
       - name: Configure and build macos
         if: startsWith(matrix.os, 'macos')
         shell: bash
@@ -97,6 +97,21 @@ jobs:
             -G "${{ matrix.generators }}"
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
 
+      - name: Run Installation Test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\packaging\windows\Enter-VsDevShell.ps1
+          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}\install" -v
+          cmd /c tree /f "${{ github.workspace }}\install"
+
+      - name: Run Installation Test (Unix-like)
+        if: runner.os == 'macOS' || runner.os == 'Linux'
+        shell: bash
+        run: |
+          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}/install" -v
+          tree "${{ github.workspace }}/install"
+        
       - name: Prepare packaging directory
         shell: bash
         run: |
