@@ -3,7 +3,6 @@
 app_name="Qt-App"
 
 cd "$(dirname "$0")"
-cd ..
 source utils.sh
 
 cd ../..
@@ -27,16 +26,18 @@ ls -al
 cd ..
 
 cd ${project_dir}
-chmod -R +x ${project_dir}/packaging/macos/universal
+chmod -R +x ${project_dir}/packaging/macos/app_arch_tools
 
-${project_dir}/packaging/macos/universal/merge_universal_app.sh \
+${project_dir}/packaging/macos/app_arch_tools/merge_universal_app.sh \
 	-x ${packet_dir}/macos*x86*/${app_name}.app \
 	-a ${packet_dir}/macos*arm64*/${app_name}.app \
 	-o ${packet_dir}/${app_name}.app
 
-${project_dir}/packaging/macos/universal/verify_universal_app.sh \
+${project_dir}/packaging/macos/app_arch_tools/verify_app_architecture.sh \
 	${packet_dir}/${app_name}.app \
-	-v -s
+	-a universal -v -s
+
+tree "${packet_dir}/${app_name}.app"
 
 # package with 7z
 zip_path="${releases_dir}/${app_name}.7z"

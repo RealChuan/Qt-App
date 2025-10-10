@@ -21,6 +21,21 @@ macdeployqt "${packet_dir}/${app_name}.app" \
 rm -f ${packet_dir}/${app_name}.app/Contents/Frameworks/*plugin*.dylib
 tree "${packet_dir}/${app_name}.app"
 
+tmp_app_dir="${packet_dir}/${app_name}_tmp.app"
+rm -rf ${tmp_app_dir}
+chmod -R +x ${project_dir}/packaging/macos/app_arch_tools
+${project_dir}/packaging/macos/app_arch_tools/separate_universal_app.sh \
+	-i "${packet_dir}/${app_name}.app" \
+	-o "${tmp_app_dir}"
+rm -rf "${packet_dir}/${app_name}.app"
+mv "${tmp_app_dir}" "${packet_dir}/${app_name}.app"
+
+${project_dir}/packaging/macos/app_arch_tools/verify_app_architecture.sh \
+	"${packet_dir}/${app_name}.app" \
+	-a any -v -s
+
+tree "${packet_dir}/${app_name}.app"
+
 # package with 7z
 zip_path="${releases_dir}/${app_name}.7z"
 7z a -t7z -mx=9 -mmt "${zip_path}" "${packet_dir}/${app_name}.app"

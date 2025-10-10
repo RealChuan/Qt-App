@@ -151,6 +151,11 @@ jobs:
         with: 
           fetch-depth: 1
 
+      - name: Install dependencies
+        shell: bash
+        run: |
+          brew install tree
+
       - name: Create releases directory
         shell: bash
         run: |
@@ -164,8 +169,8 @@ jobs:
       - name: Create universal macos Package
         shell: bash
         run: |
-          chmod -R +x packaging/macos/universal
-          packaging/macos/universal/package.sh
+          chmod +x packaging/macos/package_universal.sh
+          packaging/macos/package_universal.sh
 
       - name: Verify universal bundle
         shell: bash
@@ -173,7 +178,7 @@ jobs:
           echo "Package directory contents:"
           ls -la "${{ env.PACKET_DIR }}/"
           echo "Release directory contents:"
-          ls -la "${{ env.RELEASES_DIR }}/"
+          tree "${{ env.RELEASES_DIR }}/"
 
       - name: Upload universal artifact
         uses: actions/upload-artifact@v4
