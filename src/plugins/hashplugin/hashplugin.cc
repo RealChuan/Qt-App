@@ -22,12 +22,17 @@ class HashPlugin : public ExtensionSystem::IPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "hashplugin.json")
-public:
+
+    ~HashPlugin() override = default;
+
     Utils::Result<> initialize(const QStringList &arguments) override
     {
-        addObject(new HashPluginWidget(this));
+        m_hashPluginWidgetPtr.reset(new HashPluginWidget(this));
+        Core::addCoreWidget(m_hashPluginWidgetPtr.data());
         return Utils::ResultOk;
     }
+
+    QScopedPointer<HashPluginWidget> m_hashPluginWidgetPtr;
 };
 
 } // namespace Plugin

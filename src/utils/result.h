@@ -8,12 +8,59 @@
 #include "expected.h"
 #include "qtcassert.h"
 
+#include <QObject>
+#include <QPointer>
 #include <QString>
 
 namespace Utils {
 
+#ifdef Q_QDOC
+template<typename T = void>
+class Result
+{};
+#endif
+
 template<typename T = void>
 using Result = Utils::expected<T, QString>;
+
+template<typename T = void>
+class Continuation
+{
+public:
+    Continuation() = default;
+
+    Continuation(const std::function<void(const Result<T> &)> &callback)
+        : m_unguarded(true)
+        , m_callback(callback)
+    {
+        QTC_CHECK(callback);
+    }
+
+    Continuation(QObject *guard, const std::function<void(const Result<T> &)> &callback)
+        : m_guarded(true)
+        , m_guard(guard)
+        , m_callback(callback)
+    {
+        QTC_CHECK(guard);
+        QTC_CHECK(callback);
+    }
+
+    void operator()(const Result<T> &result) const
+    {
+        if (m_unguarded || (m_guarded && m_guard)) {
+            QTC_ASSERT(m_callback, return);
+            m_callback(result);
+        }
+    }
+
+    QObject *guard() const { return m_guard.get(); }
+
+private:
+    bool m_guarded = false;
+    bool m_unguarded = false;
+    QPointer<QObject> m_guard;
+    std::function<void(const Result<T> &)> m_callback;
+};
 
 UTILS_EXPORT extern const Result<> ResultOk;
 
@@ -31,7 +78,7 @@ public:
     ResultError(ResultSpecialErrorCode code, const QString &errorMessage = {});
 
     template<typename T>
-    operator Result<T>()
+    operator Result<T>() const
     {
         return tl::make_unexpected(m_error);
     }

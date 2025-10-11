@@ -508,7 +508,7 @@ private:
             // the *storage or storage-> operators.
             sequential,
             storage,
-            NetworkQueryTask(onFirstSetup, onFirstDone, CallDoneIf::Success),
+            NetworkQueryTask(onFirstSetup, onFirstDone, CallDone::OnSuccess),
             ConcurrentCallTask<QImage>(onSecondSetup)
         };
     \endcode
@@ -717,7 +717,7 @@ private:
 */
 
 /*!
-    \fn template <typename Adapter> template <typename SetupHandler = TaskSetupHandler, typename DoneHandler = TaskDoneHandler> CustomTask<Adapter>::CustomTask(SetupHandler &&setup = TaskSetupHandler(), DoneHandler &&done = TaskDoneHandler(), CallDoneIf callDoneIf = CallDoneIf::SuccessOrError)
+    \fn template <typename Adapter> template <typename SetupHandler = TaskSetupHandler, typename DoneHandler = TaskDoneHandler> CustomTask<Adapter>::CustomTask(SetupHandler &&setup = TaskSetupHandler(), DoneHandler &&done = TaskDoneHandler(), CallDoneFlags callDone = CallDone::Always)
 
     Constructs a \c CustomTask instance and attaches the \a setup and \a done handlers to the task.
     When the running task tree is about to start the task,
@@ -756,8 +756,8 @@ private:
 
     The \a done handler is of the \l TaskDoneHandler type.
     By default, the \a done handler is invoked whenever the task finishes.
-    Pass a non-default value for the \a callDoneIf argument when you want the handler to be called
-    only on a successful or failed execution.
+    Pass a non-default value for the \a callDone argument when you want the handler to be called
+    only on a successful, failed, or canceled execution.
 
     \sa TaskSetupHandler, TaskDoneHandler
 */
@@ -1095,19 +1095,24 @@ private:
 */
 
 /*!
-    \enum Tasking::CallDoneIf
+    \enum Tasking::CallDone
 
     This enum is an optional argument for the \l onGroupDone() element or custom task's constructor.
     It instructs the task tree on when the group's or task's done handler should be invoked.
 
-    \value SuccessOrError
-           The done handler is always invoked.
-    \value Success
+    \value Never
+           The done handler is never invoked.
+    \value OnSuccess
            The done handler is invoked only after successful execution,
            that is, when DoneWith::Success.
-    \value Error
+    \value OnError
            The done handler is invoked only after failed execution,
-           that is, when DoneWith::Error or when DoneWith::Cancel.
+           that is, when DoneWith::Error.
+    \value OnCancel
+           The done handler is invoked only after canceled execution,
+           that is, when DoneWith::Cancel.
+    \value Always
+           The done handler is always invoked.
 */
 
 /*!
@@ -1185,12 +1190,12 @@ private:
 */
 
 /*!
-    \fn template <typename Handler> GroupItem onGroupDone(Handler &&handler, CallDoneIf callDoneIf = CallDoneIf::SuccessOrError)
+    \fn template <typename Handler> GroupItem onGroupDone(Handler &&handler, CallDoneFlags callDone = CallDone::Always)
 
     Constructs a group's element holding the group done handler.
     By default, the \a handler is invoked whenever the group finishes.
-    Pass a non-default value for the \a callDoneIf argument when you want the handler to be called
-    only on a successful or failed execution.
+    Pass a non-default value for the \a callDone argument when you want the handler to be called
+    only on a successful, failed, or canceled execution.
     Depending on the group's workflow policy, this handler may also be called
     when the running group is canceled (e.g. when stopOnError element was used).
 
@@ -1298,7 +1303,7 @@ Group operator>>(const For &forItem, const Do &doItem)
 
 Group operator>>(const When &whenItem, const Do &doItem)
 {
-    const SingleBarrier barrier;
+    const StoredBarrier barrier;
 
     return {
         barrier,
@@ -1341,6 +1346,11 @@ static DoneResult toDoneResult(DoneWith doneWith)
 static DoneWith toDoneWith(DoneResult result)
 {
     return result == DoneResult::Success ? DoneWith::Success : DoneWith::Error;
+}
+
+void TaskInterface::reportDone(DoneResult result)
+{
+    Q_EMIT done(result, QPrivateSignal());
 }
 
 class LoopThreadData
@@ -1468,7 +1478,7 @@ StorageBase::StorageBase(const StorageConstructor &ctor, const StorageDestructor
     : m_storageData(new StorageData{ctor, dtor})
 {}
 
-void *StorageBase::activeStorageVoid() const
+StoragePtr StorageBase::activeStorageVoid() const
 {
     return m_storageData->threadData().activeStorage();
 }
@@ -1501,8 +1511,8 @@ void GroupItem::addChildren(const GroupItems &children)
                           qWarning("Group done handler redefinition, overriding..."));
                 m_groupData.m_groupHandler.m_doneHandler
                     = child.m_groupData.m_groupHandler.m_doneHandler;
-                m_groupData.m_groupHandler.m_callDoneIf
-                    = child.m_groupData.m_groupHandler.m_callDoneIf;
+                m_groupData.m_groupHandler.m_callDoneFlags
+                    = child.m_groupData.m_groupHandler.m_callDoneFlags;
             }
             if (child.m_groupData.m_parallelLimit) {
                 QT_ASSERT(!m_groupData.m_parallelLimit,
@@ -1521,7 +1531,7 @@ void GroupItem::addChildren(const GroupItems &children)
             }
             break;
         case Type::TaskHandler:
-            QT_ASSERT(child.m_taskHandler.m_createHandler,
+            QT_ASSERT(child.m_taskHandler.m_taskAdapterConstructor,
                       qWarning("Task create handler can't be null, skipping..."); return);
             m_children.append(child);
             break;
@@ -1569,7 +1579,7 @@ Group ExecutableItem::withTimeout(milliseconds timeout,
         stopOnSuccessOrError,
         Group {
             finishAllAndError,
-            handler ? TimeoutTask(onSetup, [handler] { handler(); }, CallDoneIf::Success)
+            handler ? TimeoutTask(onSetup, [handler] { handler(); }, CallDone::OnSuccess)
                     : TimeoutTask(onSetup)
         },
         *this
@@ -1850,7 +1860,7 @@ public:
         , m_container(taskTreePrivate, task)
     {}
 
-    bool isTask() const { return bool(m_taskHandler.m_createHandler); }
+    bool isTask() const { return bool(m_taskHandler.m_taskAdapterConstructor); }
     int taskCount() const { return isTask() ? 1 : m_container.m_taskCount; }
 
     const GroupItem::TaskHandler m_taskHandler;
@@ -1914,8 +1924,8 @@ public:
               typename ReturnType = std::invoke_result_t<Handler, Args...>>
     ReturnType invokeHandler(Container *container, Handler &&handler, Args &&...args)
     {
-        QT_ASSERT(!m_guard.isLocked(), qWarning("Nested execution of handlers detected."
-            "This may happen when one task's handler has entered a nested event loop,"
+        QT_ASSERT(!m_guard.isLocked(), qWarning("Nested execution of handlers detected. "
+            "This may happen when one task's handler has entered a nested event loop, "
             "and other task finished during nested event loop's processing, "
             "causing stopping (canceling) the task executing the nested event loop. "
             "This includes the case when QCoreApplication::processEvents() was called from "
@@ -2029,21 +2039,35 @@ public:
     std::vector<std::unique_ptr<RuntimeIteration>> m_iterations; // Owning.
 };
 
+class TaskInterfaceAdapter : public QObject
+{
+public:
+    TaskInterfaceAdapter(const GroupItem::TaskHandler &taskHandler)
+        : m_taskAdapter(taskHandler.m_taskAdapterConstructor())
+        , m_taskAdapterDestructor(taskHandler.m_taskAdapterDestructor)
+    {}
+    ~TaskInterfaceAdapter() { m_taskAdapterDestructor(m_taskAdapter); }
+
+    TaskInterface m_taskInterface;
+    GroupItem::TaskAdapterPtr m_taskAdapter = nullptr; // Owning.
+    GroupItem::TaskAdapterDestructor m_taskAdapterDestructor;
+};
+
 class RuntimeTask
 {
 public:
     ~RuntimeTask()
     {
-        if (m_task) {
+        if (m_taskInterfaceAdapter) {
             // Ensures the running task's d'tor doesn't emit done() signal. QTCREATORBUG-30204.
-            QObject::disconnect(m_task.get(), &TaskInterface::done, nullptr, nullptr);
+            QObject::disconnect(&m_taskInterfaceAdapter->m_taskInterface, &TaskInterface::done, nullptr, nullptr);
         }
     }
 
     const TaskNode &m_taskNode; // Not owning.
     RuntimeIteration *m_parentIteration = nullptr; // Not owning.
     std::optional<RuntimeContainer> m_container = {}; // Owning.
-    std::unique_ptr<TaskInterface> m_task = {}; // Owning.
+    std::unique_ptr<TaskInterfaceAdapter> m_taskInterfaceAdapter = {}; // Owning.
     SetupResult m_setupResult = SetupResult::Continue;
 };
 
@@ -2272,33 +2296,27 @@ void TaskTreePrivate::startChildren(RuntimeContainer *container)
     const ContainerNode &containerNode = container->m_containerNode;
     const int childCount = int(containerNode.m_children.size());
 
-    if (container->m_iterationCount == 0) {
-        if (container->m_shouldIterate && !invokeLoopHandler(container)) {
-            if (isProgressive(container))
-                advanceProgress(containerNode.m_taskCount);
-            container->m_parentTask->m_setupResult = toSetupResult(container->m_successBit);
-            return;
-        }
-        container->m_iterations.emplace_back(
-            std::make_unique<RuntimeIteration>(container->m_iterationCount, container));
-        ++container->m_iterationCount;
-    }
-
     GuardLocker locker(container->m_startGuard);
 
     while (containerNode.m_parallelLimit == 0
            || container->m_runningChildren < containerNode.m_parallelLimit) {
         container->deleteFinishedIterations();
-        if (container->m_nextToStart == childCount) {
-            if (invokeLoopHandler(container)) {
+        const bool firstIteration = container->m_iterationCount == 0;
+        if (firstIteration || container->m_nextToStart == childCount) {
+            const bool skipHandler = firstIteration && !container->m_shouldIterate;
+            if (skipHandler || invokeLoopHandler(container)) {
                 container->m_nextToStart = 0;
-                container->m_iterations.emplace_back(
-                    std::make_unique<RuntimeIteration>(container->m_iterationCount, container));
+                if (containerNode.m_children.size() > 0) {
+                    container->m_iterations.emplace_back(
+                        std::make_unique<RuntimeIteration>(container->m_iterationCount, container));
+                }
                 ++container->m_iterationCount;
-            } else if (container->m_iterations.empty()) {
-                container->m_parentTask->m_setupResult = toSetupResult(container->m_successBit);
-                return;
             } else {
+                if (container->m_iterations.empty()) {
+                    if (firstIteration && isProgressive(container))
+                        advanceProgress(containerNode.m_taskCount);
+                    container->m_parentTask->m_setupResult = toSetupResult(container->m_successBit);
+                }
                 return;
             }
         }
@@ -2365,18 +2383,26 @@ void TaskTreePrivate::stopContainer(RuntimeContainer *container)
     }
 }
 
-static bool shouldCall(CallDoneIf callDoneIf, DoneWith result)
+static CallDone toCallDone(DoneWith result)
 {
-    if (result == DoneWith::Success)
-        return callDoneIf != CallDoneIf::Error;
-    return callDoneIf != CallDoneIf::Success;
+    switch (result) {
+    case DoneWith::Success: return CallDone::OnSuccess;
+    case DoneWith::Error: return CallDone::OnError;
+    case DoneWith::Cancel: return CallDone::OnCancel;
+    }
+    return CallDone::Never;
+}
+
+bool shouldCallDone(CallDoneFlags callDone, DoneWith result)
+{
+    return callDone & toCallDone(result);
 }
 
 bool TaskTreePrivate::invokeDoneHandler(RuntimeContainer *container, DoneWith doneWith)
 {
     DoneResult result = toDoneResult(doneWith);
     const GroupItem::GroupHandler &groupHandler = container->m_containerNode.m_groupHandler;
-    if (groupHandler.m_doneHandler && shouldCall(groupHandler.m_callDoneIf, doneWith))
+    if (groupHandler.m_doneHandler && shouldCallDone(groupHandler.m_callDoneFlags, doneWith))
         result = invokeHandler(container, groupHandler.m_doneHandler, doneWith);
     container->m_callStorageDoneHandlersOnDestruction = true;
     return result == DoneResult::Success;
@@ -2416,9 +2442,9 @@ void TaskTreePrivate::startTask(const std::shared_ptr<RuntimeTask> &node)
     }
 
     const GroupItem::TaskHandler &handler = node->m_taskNode.m_taskHandler;
-    node->m_task.reset(handler.m_createHandler());
-    node->m_setupResult = handler.m_setupHandler
-        ? invokeHandler(node->m_parentIteration, handler.m_setupHandler, *node->m_task.get())
+    node->m_taskInterfaceAdapter.reset(new TaskInterfaceAdapter(handler));
+    node->m_setupResult = handler.m_taskAdapterSetupHandler
+        ? invokeHandler(node->m_parentIteration, handler.m_taskAdapterSetupHandler, node->m_taskInterfaceAdapter->m_taskAdapter)
         : SetupResult::Continue;
     if (node->m_setupResult != SetupResult::Continue) {
         if (node->m_parentIteration->m_isProgressive)
@@ -2426,12 +2452,11 @@ void TaskTreePrivate::startTask(const std::shared_ptr<RuntimeTask> &node)
         node->m_parentIteration->removeChild(node.get());
         return;
     }
-    QObject::connect(node->m_task.get(), &TaskInterface::done,
+    QObject::connect(&node->m_taskInterfaceAdapter->m_taskInterface, &TaskInterface::done,
                      q, [this, node](DoneResult doneResult) {
         const bool result = invokeTaskDoneHandler(node.get(), toDoneWith(doneResult));
         node->m_setupResult = toSetupResult(result);
-        QObject::disconnect(node->m_task.get(), &TaskInterface::done, q, nullptr);
-        node->m_task.release()->deleteLater();
+        node->m_taskInterfaceAdapter.release()->deleteLater();
         RuntimeIteration *parentIteration = node->m_parentIteration;
         if (parentIteration->m_container->isStarting())
             return;
@@ -2439,32 +2464,34 @@ void TaskTreePrivate::startTask(const std::shared_ptr<RuntimeTask> &node)
         parentIteration->removeChild(node.get());
         childDone(parentIteration, result);
         bumpAsyncCount();
-    });
-    node->m_task->start();
+    }, Qt::SingleShotConnection);
+    handler.m_taskAdapterStarter(node->m_taskInterfaceAdapter->m_taskAdapter,
+                                 &node->m_taskInterfaceAdapter->m_taskInterface);
 }
 
 void TaskTreePrivate::stopTask(RuntimeTask *node)
 {
-    if (!node->m_task) {
-        if (!node->m_container)
-            return;
-        stopContainer(&*node->m_container);
-        node->m_container->updateSuccessBit(false);
-        invokeDoneHandler(&*node->m_container, DoneWith::Cancel);
+    if (node->m_taskInterfaceAdapter) {
+        invokeTaskDoneHandler(node, DoneWith::Cancel);
+        node->m_taskInterfaceAdapter.reset();
         return;
     }
 
-    invokeTaskDoneHandler(node, DoneWith::Cancel);
-    node->m_task.reset();
+    if (!node->m_container)
+        return;
+
+    stopContainer(&*node->m_container);
+    node->m_container->updateSuccessBit(false);
+    invokeDoneHandler(&*node->m_container, DoneWith::Cancel);
 }
 
 bool TaskTreePrivate::invokeTaskDoneHandler(RuntimeTask *node, DoneWith doneWith)
 {
     DoneResult result = toDoneResult(doneWith);
     const GroupItem::TaskHandler &handler = node->m_taskNode.m_taskHandler;
-    if (handler.m_doneHandler && shouldCall(handler.m_callDoneIf, doneWith)) {
-        result = invokeHandler(node->m_parentIteration,
-                               handler.m_doneHandler, *node->m_task.get(), doneWith);
+    if (handler.m_taskAdapterDoneHandler && shouldCallDone(handler.m_callDoneFlags, doneWith)) {
+        result = invokeHandler(node->m_parentIteration, handler.m_taskAdapterDoneHandler,
+                               node->m_taskInterfaceAdapter->m_taskAdapter, doneWith);
     }
     if (node->m_parentIteration->m_isProgressive)
         advanceProgress(1);
@@ -2925,8 +2952,8 @@ bool TaskTreePrivate::invokeTaskDoneHandler(RuntimeTask *node, DoneWith doneWith
             const Group root {
                 // [7] runtime: task tree creates an instance of CopyStorage when root is entered
                 storage,
-                ConcurrentCallTask<QByteArray>(onLoaderSetup, onLoaderDone, CallDoneIf::Success),
-                ConcurrentCallTask<void>(onSaverSetup, onSaverDone, CallDoneIf::Success)
+                ConcurrentCallTask<QByteArray>(onLoaderSetup, onLoaderDone, CallDone::OnSuccess),
+                ConcurrentCallTask<void>(onSaverSetup, onSaverDone, CallDone::OnSuccess)
             };
             return root;
         }
@@ -3109,8 +3136,9 @@ bool TaskTreePrivate::invokeTaskDoneHandler(RuntimeTask *node, DoneWith doneWith
 
     \sa setRecipe(), start()
 */
-TaskTree::TaskTree()
-    : d(new TaskTreePrivate(this))
+TaskTree::TaskTree(QObject *parent)
+    : QObject(parent)
+    , d(new TaskTreePrivate(this))
 {}
 
 /*!
@@ -3122,7 +3150,7 @@ TaskTree::TaskTree()
 
     \sa setRecipe(), start()
 */
-TaskTree::TaskTree(const Group &recipe) : TaskTree()
+TaskTree::TaskTree(const Group &recipe, QObject *parent) : TaskTree(parent)
 {
     setRecipe(recipe);
 }
@@ -3501,7 +3529,7 @@ int TaskTree::progressValue() const
 
         const Group root {
             storage,
-            ConcurrentCallTask(onLoaderSetup, onLoaderDone, CallDoneIf::Success)
+            ConcurrentCallTask(onLoaderSetup, onLoaderDone, CallDone::OnSuccess)
         };
 
         TaskTree taskTree(root);
@@ -3546,15 +3574,12 @@ void TaskTree::setupStorageHandler(const StorageBase &storage,
     }
 }
 
-TaskTreeTaskAdapter::TaskTreeTaskAdapter()
+void TaskTreeTaskAdapter::operator()(TaskTree *task, TaskInterface *iface)
 {
-    connect(task(), &TaskTree::done, this,
-            [this](DoneWith result) { emit done(toDoneResult(result)); });
-}
-
-void TaskTreeTaskAdapter::start()
-{
-    task()->start();
+    QObject::connect(task, &TaskTree::done, iface, [iface](DoneWith result) {
+        iface->reportDone(toDoneResult(result));
+    });
+    task->start();
 }
 
 using TimeoutCallback = std::function<void()>;
@@ -3644,22 +3669,17 @@ static int scheduleTimeout(milliseconds timeout, QObject *context, const Timeout
     return timerId;
 }
 
-TimeoutTaskAdapter::TimeoutTaskAdapter()
-{
-    *task() = milliseconds::zero();
-}
-
 TimeoutTaskAdapter::~TimeoutTaskAdapter()
 {
     if (m_timerId)
         removeTimerId(*m_timerId);
 }
 
-void TimeoutTaskAdapter::start()
+void TimeoutTaskAdapter::operator()(std::chrono::milliseconds *task, TaskInterface *iface)
 {
-    m_timerId = scheduleTimeout(*task(), this, [this] {
+    m_timerId = scheduleTimeout(*task, iface, [this, iface] {
         m_timerId.reset();
-        emit done(DoneResult::Success);
+        iface->reportDone(DoneResult::Success);
     });
 }
 

@@ -233,5 +233,6 @@ UTILS_EXPORT double luminance(const QColor &color);
 UTILS_EXPORT bool isReadableOn(const QColor &background, const QColor &foreground);
 // returns a foreground color readable on background (desiredForeground if already readable or adaption fails)
 UTILS_EXPORT QColor ensureReadableOn(const QColor &background, const QColor &desiredForeground);
-
+// modifies widget's palette QPalette::Base to color, leaves other colors of palette untouched
+UTILS_EXPORT void modifyPaletteBase(QWidget *widget, const QColor &color);
 } // namespace Utils::StyleHelper

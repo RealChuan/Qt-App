@@ -243,13 +243,14 @@ TempFileSaver::~TempFileSaver()
 namespace FileUtils {
 
 #ifdef QT_GUI_LIB
-CopyAskingForOverwrite::CopyAskingForOverwrite(const std::function<void (FilePath)> &postOperation)
+CopyAskingForOverwrite::CopyAskingForOverwrite(const std::function<bool (FilePath)> &postOperation)
     : m_postOperation(postOperation)
 {}
 
 CopyHelper CopyAskingForOverwrite::operator()()
 {
-    CopyHelper helperFunction = [this](const FilePath &src, const FilePath &dest, QString *error) {
+    CopyHelper helperFunction =
+            [this](const FilePath &src, const FilePath &dest) -> Result<CopyResult> {
         bool copyFile = true;
         if (dest.exists()) {
             if (m_skipAll)
@@ -261,9 +262,11 @@ CopyHelper CopyAskingForOverwrite::operator()()
                     Tr::tr("Overwrite existing file \"%1\"?").arg(dest.toUserOutput()),
                     QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No
                             | QMessageBox::NoToAll | QMessageBox::Cancel);
-                if (res == QMessageBox::Cancel) {
-                    return false;
-                } else if (res == QMessageBox::No) {
+
+                if (res == QMessageBox::Cancel)
+                    return CopyResult::Canceled;
+
+                if (res == QMessageBox::No) {
                     copyFile = false;
                 } else if (res == QMessageBox::NoToAll) {
                     m_skipAll = true;
@@ -280,17 +283,16 @@ CopyHelper CopyAskingForOverwrite::operator()()
         if (copyFile) {
             dest.parentDir().ensureWritableDir();
             if (!src.copyFile(dest)) {
-                if (error) {
-                    *error = Tr::tr("Could not copy file \"%1\" to \"%2\".")
-                                 .arg(src.toUserOutput(), dest.toUserOutput());
-                }
-                return false;
+                return ResultError(Tr::tr("Could not copy file \"%1\" to \"%2\".")
+                                       .arg(src.toUserOutput(), dest.toUserOutput()));
             }
-            if (m_postOperation)
-                m_postOperation(dest);
+            if (m_postOperation) {
+                if (!m_postOperation(dest))
+                    return CopyResult::Canceled;
+            }
         }
         m_files.append(dest.absoluteFilePath());
-        return true;
+        return CopyResult::Done;
     };
     return helperFunction;
 }
@@ -303,48 +305,7 @@ FilePaths CopyAskingForOverwrite::files() const
 
 FilePath commonPath(const FilePaths &paths)
 {
-    if (paths.isEmpty())
-        return {};
-
-    if (paths.count() == 1)
-        return paths.constFirst();
-
-    const FilePath &first = paths.constFirst();
-    const FilePaths others = paths.mid(1);
-    FilePath result;
-
-    // Common scheme
-    const QStringView commonScheme = first.scheme();
-    auto sameScheme = [&commonScheme] (const FilePath &fp) {
-        return commonScheme == fp.scheme();
-    };
-    if (!allOf(others, sameScheme))
-        return result;
-    result.setParts(commonScheme, {}, {});
-
-    // Common host
-    const QStringView commonHost = first.host();
-    auto sameHost = [&commonHost] (const FilePath &fp) {
-        return commonHost == fp.host();
-    };
-    if (!allOf(others, sameHost))
-        return result;
-    result.setParts(commonScheme, commonHost, {});
-
-    // Common path
-    QString commonPath;
-    auto sameBasePath = [&commonPath] (const FilePath &fp) {
-        return QString(fp.path() + '/').startsWith(commonPath);
-    };
-    const QStringList pathSegments = first.path().split('/');
-    for (const QString &segment : pathSegments) {
-        commonPath += segment + '/';
-        if (!allOf(others, sameBasePath))
-            return result;
-        result.setParts(commonScheme, commonHost, commonPath.chopped(1));
-    }
-
-    return result;
+    return paths.commonPath();
 }
 
 #ifdef QT_WIDGETS_LIB
@@ -406,7 +367,7 @@ FilePaths getFilePaths(const QString &caption,
     QFileDialog dialog(dialogParent(), caption, dir.toFSPathString(), filter);
     dialog.setFileMode(fileMode);
 
-    if (forceNonNativeDialog)
+    if (forceNonNativeDialog || !dir.isLocal())
         options.setFlag(QFileDialog::DontUseNativeDialog);
 
     dialog.setOptions(options);
@@ -628,18 +589,14 @@ FilePathInfo filePathInfoFromTriple(const QString &infos, int modeBase)
     return {size, flags, dt};
 }
 
-bool copyRecursively(const FilePath &srcFilePath,
-                     const FilePath &tgtFilePath,
-                     QString *error,
-                     CopyHelper copyHelper)
+Result<CopyResult> copyRecursively(const FilePath &srcFilePath,
+                                   const FilePath &tgtFilePath,
+                                   const CopyHelper &copyHelper)
 {
     if (srcFilePath.isDir()) {
-        if (!tgtFilePath.ensureWritableDir()) {
-            if (error) {
-                *error = Tr::tr("Failed to create directory \"%1\".")
-                             .arg(tgtFilePath.toUserOutput());
-            }
-            return false;
+        if (Result<> res = tgtFilePath.ensureWritableDir(); !res) {
+            return ResultError(Tr::tr("Failed to create directory \"%1\": %2")
+                                    .arg(tgtFilePath.toUserOutput(), res.error()));
         }
         const QDir sourceDir(srcFilePath.toFSPathString());
         const QStringList fileNames = sourceDir.entryList(
@@ -647,14 +604,15 @@ bool copyRecursively(const FilePath &srcFilePath,
         for (const QString &fileName : fileNames) {
             const FilePath newSrcFilePath = srcFilePath / fileName;
             const FilePath newTgtFilePath = tgtFilePath / fileName;
-            if (!copyRecursively(newSrcFilePath, newTgtFilePath, error, copyHelper))
-                return false;
+            const Result<CopyResult> res =
+                copyRecursively(newSrcFilePath, newTgtFilePath, copyHelper);
+            if (!res || *res == CopyResult::Canceled)
+                return res;
         }
-    } else {
-        if (!copyHelper(srcFilePath, tgtFilePath, error))
-            return false;
+        return CopyResult::Done;
     }
-    return true;
+
+    return copyHelper(srcFilePath, tgtFilePath);
 }
 
 /*!
@@ -750,10 +708,7 @@ QString normalizedPathName(const QString &name)
 
 FilePath commonPath(const FilePath &oldCommonPath, const FilePath &filePath)
 {
-    FilePath newCommonPath = oldCommonPath;
-    while (!newCommonPath.isEmpty() && !filePath.isChildOf(newCommonPath))
-        newCommonPath = newCommonPath.parentDir();
-    return newCommonPath.canonicalPath();
+    return FilePaths{oldCommonPath, filePath}.commonPath();
 }
 
 FilePath homePath()
@@ -784,7 +739,7 @@ Result<FilePath> scratchBufferFilePath(const QString &pattern)
 
 FilePaths toFilePathList(const QStringList &paths)
 {
-    return transform(paths, &FilePath::fromString);
+    return FilePaths::fromStrings(paths);
 }
 
 qint64 bytesAvailableFromDFOutput(const QByteArray &dfOutput)

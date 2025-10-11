@@ -131,9 +131,10 @@ signals:
     // After emitting this signal the process enters NotRunning state.
     void done(const ProcessResultData &resultData);
 
-protected:
+public:
     static int controlSignalToInt(ControlSignal controlSignal);
 
+protected:
     ProcessSetupData m_setup;
 
 private:
@@ -149,6 +150,33 @@ private:
 
     friend class Process;
     friend class Internal::ProcessPrivate;
+};
+
+namespace Internal {
+class WrappedProcessInterfacePrivate;
+}
+
+class UTILS_EXPORT WrappedProcessInterface final : public ProcessInterface
+{
+public:
+    using WrapFunction = std::function<Result<CommandLine>(const ProcessSetupData &setupData,
+                                                           const QString &markerTemplate)>;
+    using ControlSignalFunction = std::function<void(ControlSignal controlSignal, qint64 remotePid)>;
+
+public:
+    WrappedProcessInterface(const WrapFunction &wrapFunction,
+                            const ControlSignalFunction &controlSignalFunction);
+    ~WrappedProcessInterface() override;
+
+    void emitDone(const ProcessResultData &resultData) { emit done(resultData); }
+
+public:
+    void start() final;
+    qint64 write(const QByteArray &data) final;
+    void sendControlSignal(ControlSignal controlSignal) final;
+
+private:
+    std::unique_ptr<Internal::WrappedProcessInterfacePrivate> d;
 };
 
 } // namespace Utils

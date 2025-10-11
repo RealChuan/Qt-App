@@ -22,12 +22,17 @@ class HelloPlugin : public ExtensionSystem::IPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "helloplugin.json")
-public:
+
+    ~HelloPlugin() override = default;
+
     Utils::Result<> initialize(const QStringList &arguments) override
     {
-        addObject(new HelloPluginWidget(this));
+        m_helloPluginWidgetPtr.reset(new HelloPluginWidget(this));
+        Core::addCoreWidget(m_helloPluginWidgetPtr.data());
         return Utils::ResultOk;
     }
+
+    QScopedPointer<HelloPluginWidget> m_helloPluginWidgetPtr;
 };
 
 } // namespace Plugin

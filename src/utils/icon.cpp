@@ -3,6 +3,7 @@
 
 #include "icon.h"
 #include "algorithm.h"
+#include "hostosinfo.h"
 #include "qtcassert.h"
 #include "stylehelper.h"
 #include "utilsicons.h"
@@ -40,9 +41,9 @@ static MasksAndColors masksAndColors(const QList<IconMaskAndColor> &icon, int dp
 {
     MasksAndColors result;
     for (const IconMaskAndColor &i : icon) {
-        const QString &fileName = i.first.toUrlishString();
+        const QString &fileName = i.first.toFSPathString();
         const QColor color(i.second);
-        const QString dprFileName = StyleHelper::availableImageResolutions(i.first.toUrlishString())
+        const QString dprFileName = StyleHelper::availableImageResolutions(i.first.toFSPathString())
                                             .contains(dpr)
                                         ? StyleHelper::imageFileWithResolution(fileName, dpr)
                                         : fileName;
@@ -141,7 +142,7 @@ QIcon Icon::icon() const
         return QIcon();
 
     if (m_style == None)
-        return QIcon(m_iconSourceList.constFirst().first.toUrlishString());
+        return QIcon(m_iconSourceList.constFirst().first.toFSPathString());
 
     const int maxDpr = qRound(qApp->devicePixelRatio());
     if (maxDpr == m_lastDevicePixelRatio)
@@ -166,7 +167,7 @@ QPixmap Icon::pixmap(QIcon::Mode iconMode) const
         return QPixmap();
     } else if (m_style == None) {
         return QPixmap(StyleHelper::dpiSpecificImageFile(
-            m_iconSourceList.constFirst().first.toUrlishString()));
+            m_iconSourceList.constFirst().first.toFSPathString()));
     } else {
         const MasksAndColors masks = masksAndColors(m_iconSourceList,
                                                     qRound(qApp->devicePixelRatio()));

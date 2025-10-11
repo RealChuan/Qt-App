@@ -7,7 +7,7 @@ namespace Core {
 class CoreWidget::CoreWidgetPrivate
 {
 public:
-    CoreWidgetPrivate(CoreWidget *q)
+    explicit CoreWidgetPrivate(CoreWidget *q)
         : q_ptr(q)
     {}
     ~CoreWidgetPrivate()
@@ -24,6 +24,7 @@ public:
 
     QPointer<QPushButton> buttonPtr;
     QPointer<QWidget> widgetPtr;
+    Type type = Type::Main;
 };
 
 CoreWidget::CoreWidget(QObject *parent)
@@ -33,14 +34,19 @@ CoreWidget::CoreWidget(QObject *parent)
 
 CoreWidget::~CoreWidget() {}
 
-QPushButton *CoreWidget::button() const
+auto CoreWidget::button() const -> QPushButton *
 {
     return d_ptr->buttonPtr.data();
 }
 
-QWidget *CoreWidget::widget() const
+auto CoreWidget::widget() const -> QWidget *
 {
     return d_ptr->widgetPtr.data();
+}
+
+auto CoreWidget::type() const -> Type
+{
+    return d_ptr->type;
 }
 
 void CoreWidget::setWidget(QWidget *widget)
@@ -50,8 +56,21 @@ void CoreWidget::setWidget(QWidget *widget)
 
 void CoreWidget::setButton(QPushButton *button, Type type)
 {
+    d_ptr->type = type;
+    button->setProperty("Type", type);
     d_ptr->buttonPtr = button;
-    d_ptr->buttonPtr->setProperty("Type", type);
+}
+
+static CoreWidgetList coreWidgets;
+
+void addCoreWidget(CoreWidget *widget)
+{
+    coreWidgets.append(widget);
+}
+
+auto getCoreWidgets() -> CoreWidgetList &
+{
+    return coreWidgets;
 }
 
 } // namespace Core

@@ -505,21 +505,6 @@ public:
     void setDecorated(bool on);
 };
 
-// class UTILS_EXPORT MarkdownBrowser : public Widget
-// {
-// public:
-//     using Implementation = Utils::MarkdownBrowser;
-//     using I = Building::BuilderItem<MarkdownBrowser>;
-
-//     MarkdownBrowser(std::initializer_list<I> items);
-
-//     QString toMarkdown() const;
-//     void setMarkdown(const QString &);
-//     void setBasePath(const Utils::FilePath &);
-//     void setEnableCodeCopyButton(bool enable);
-//     void setViewportMargins(int left, int top, int right, int bottom);
-// };
-
 class UTILS_EXPORT CanvasWidget : public QWidget
 {
 public:
@@ -546,14 +531,44 @@ public:
 
 // Special
 
+class UTILS_EXPORT Then
+{
+public:
+    Then(std::initializer_list<Layout::I> list)
+        : list(list)
+    {}
+
+    const QList<Layout::I> list;
+};
+
+class UTILS_EXPORT Else
+{
+public:
+    Else(std::initializer_list<Layout::I> list)
+        : list(list)
+    {}
+
+    const QList<Layout::I> list;
+};
+
 class UTILS_EXPORT If
 {
 public:
-    If(bool condition,
-       const std::initializer_list<Layout::I> ifcase,
-       const std::initializer_list<Layout::I> elsecase = {});
+    explicit If(bool condition);
 
-    const std::initializer_list<Layout::I> used;
+private:
+    friend class Then;
+    friend class Else;
+    friend UTILS_EXPORT void addToLayout(Layout *layout, const If &if_);
+
+    using Items = QList<Layout::I>;
+    If(bool condition, const Items &list);
+
+    friend UTILS_EXPORT If operator>>(const If &if_, const Then &then_);
+    friend UTILS_EXPORT If operator>>(const If &if_, const Else &else_);
+
+    const bool condition;
+    const QList<Layout::I> list;
 };
 
 //
@@ -666,6 +681,19 @@ void addToLayout(Layout *layout, const QList<T> &inner)
 {
     for (const auto &i : inner)
         addToLayout(layout, i);
+}
+
+template<typename T>
+concept WidgetFactory = (std::derived_from<std::remove_pointer_t<std::invoke_result_t<T>>, QWidget>
+                         && std::is_pointer_v<std::invoke_result_t<T>>);
+
+template<typename FUNC>
+    requires WidgetFactory<FUNC>
+void addToLayout(Layout *layout, FUNC factory)
+{
+    auto inner = factory();
+    if (inner)
+        addToLayout(layout, inner);
 }
 
 template<std::ranges::view T>

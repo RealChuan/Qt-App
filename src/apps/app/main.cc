@@ -9,6 +9,7 @@
 #include <utils/appinfo.h>
 #include <utils/hostosinfo.h>
 #include <utils/logasync.h>
+#include <utils/qtcsettings_p.h>
 #include <utils/singletonmanager.hpp>
 #include <utils/utils.hpp>
 #include <widgets/waitwidget.h>
@@ -172,27 +173,21 @@ auto main(int argc, char *argv[]) -> int
     waitWidgetPtr->show();
     app.processEvents();
 
-    auto *setting = new Utils::QtcSettings(Utils::configFilePath(), QSettings::IniFormat);
+    auto *userSettings = new Utils::QtcSettings(Utils::configFilePath(), QSettings::IniFormat);
     auto *installSettings = new Utils::QtcSettings(QSettings::IniFormat,
                                                    QSettings::SystemScope,
                                                    QLatin1String(Utils::organzationName),
                                                    QLatin1String(Utils::appName));
+    Utils::Internal::SettingsSetup::setupSettings(userSettings, installSettings);
+
     ExtensionSystem::PluginManager pluginManager;
     ExtensionSystem::PluginManager::setPluginIID(QLatin1String("Youth.Qt.plugin"));
-    ExtensionSystem::PluginManager::setInstallSettings(installSettings);
-    ExtensionSystem::PluginManager::setSettings(setting);
     ExtensionSystem::PluginManager::startProfiling();
     ExtensionSystem::PluginManager::removePluginsAfterRestart();
     // We need to install plugins before we scan for them.
     ExtensionSystem::PluginManager::installPluginsAfterRestart();
 
     ExtensionSystem::PluginManager::setPluginPaths({Utils::appInfo().plugins});
-
-    // Shutdown plugin manager on the exit
-    QObject::connect(&app,
-                     &SharedTools::QtSingleApplication::aboutToQuit,
-                     &pluginManager,
-                     &ExtensionSystem::PluginManager::shutdown);
 
     const auto plugins = ExtensionSystem::PluginManager::plugins();
 
@@ -232,22 +227,23 @@ auto main(int argc, char *argv[]) -> int
                      &pluginManager,
                      &ExtensionSystem::PluginManager::remoteArguments);
 
-    QObject::connect(&app,
-                     &SharedTools::QtSingleApplication::fileOpenRequest,
-                     coreplugin->plugin(),
-                     [coreplugin](const QString &file) {
-                         coreplugin->plugin()->remoteCommand({}, {}, {file});
-                     });
-
     // shutdown plugin manager on the exit
-    QObject::connect(&app,
-                     &QCoreApplication::aboutToQuit,
-                     &pluginManager,
-                     &ExtensionSystem::PluginManager::shutdown);
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &pluginManager, [] {
+        ExtensionSystem::PluginManager::shutdown();
+        Utils::Internal::SettingsSetup::destroySettings();
+    });
 
     waitWidgetPtr->fullProgressBar();
     app.processEvents();
     waitWidgetPtr->close();
+
+    if (Utils::HostOsInfo::isWindowsHost()) {
+        // Workaround for QTBUG-130696 and QTCREATORBUG-31890
+        QApplication::setEffectEnabled(Qt::UI_FadeMenu, false);
+
+        // Disable menu animation which just looks bad
+        QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
+    }
 
     auto exitCode = restarter.restartOrExit(app.exec());
     log->stop();

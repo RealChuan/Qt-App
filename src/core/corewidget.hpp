@@ -1,11 +1,12 @@
-#ifndef COREWIDGET_HPP
-#define COREWIDGET_HPP
+#pragma once
 
 #include "core_global.h"
 
+#include <QList>
 #include <QObject>
 
 class QPushButton;
+class QWidget;
 
 namespace Core {
 
@@ -20,6 +21,7 @@ public:
 
     [[nodiscard]] auto button() const -> QPushButton *;
     [[nodiscard]] auto widget() const -> QWidget *;
+    [[nodiscard]] auto type() const -> Type;
 
 protected:
     void setWidget(QWidget *widget);
@@ -30,6 +32,9 @@ private:
     QScopedPointer<CoreWidgetPrivate> d_ptr;
 };
 
-} // namespace Core
+using CoreWidgetList = QList<CoreWidget *>;
 
-#endif // COREWIDGET_HPP
+CORE_EXPORT void addCoreWidget(CoreWidget *widget);
+CORE_EXPORT auto getCoreWidgets() -> CoreWidgetList &;
+
+} // namespace Core

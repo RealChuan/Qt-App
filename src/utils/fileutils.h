@@ -29,27 +29,28 @@ QT_END_NAMESPACE
 namespace Utils {
 namespace FileUtils {
 
-using CopyHelper = std::function<bool(const FilePath &, const FilePath &, QString *)>;
+enum class CopyResult { Done, Canceled };
+using CopyHelper = std::function<Result<CopyResult>(const FilePath &, const FilePath &)>;
+
 #ifdef QT_GUI_LIB
 class UTILS_EXPORT CopyAskingForOverwrite
 {
 public:
-    explicit CopyAskingForOverwrite(const std::function<void(FilePath)> &postOperation = {});
+    explicit CopyAskingForOverwrite(const std::function<bool(FilePath)> &postOperation = {});
     CopyHelper operator()();
     FilePaths files() const;
 
 private:
     FilePaths m_files;
-    std::function<void(FilePath)> m_postOperation;
+    std::function<bool(FilePath)> m_postOperation;
     bool m_overwriteAll = false;
     bool m_skipAll = false;
 };
 #endif // QT_GUI_LIB
 
-UTILS_EXPORT bool copyRecursively(const FilePath &srcFilePath,
-                                  const FilePath &tgtFilePath,
-                                  QString *error,
-                                  CopyHelper helper);
+UTILS_EXPORT Result<CopyResult> copyRecursively(const FilePath &srcFilePath,
+                                                const FilePath &tgtFilePath,
+                                                const CopyHelper &helper);
 
 UTILS_EXPORT Result<> copyIfDifferent(const FilePath &srcFilePath, const FilePath &tgtFilePath);
 UTILS_EXPORT QString fileSystemFriendlyName(const QString &name);
@@ -57,11 +58,14 @@ UTILS_EXPORT int indexOfQmakeUnfriendly(const QString &name, int startpos = 0);
 UTILS_EXPORT QString qmakeFriendlyName(const QString &name);
 UTILS_EXPORT QString normalizedPathName(const QString &name);
 
+[[deprecated("Use FilePaths::commonPath")]]
 UTILS_EXPORT FilePath commonPath(const FilePath &oldCommonPath, const FilePath &fileName);
+[[deprecated("Use FilePaths::commonPath")]]
 UTILS_EXPORT FilePath commonPath(const FilePaths &paths);
 UTILS_EXPORT FilePath homePath();
 UTILS_EXPORT Result<FilePath> scratchBufferFilePath(const QString &pattern);
 
+[[deprecated("Use FilePaths::fromStrings")]]
 UTILS_EXPORT FilePaths toFilePathList(const QStringList &paths);
 
 UTILS_EXPORT qint64 bytesAvailableFromDFOutput(const QByteArray &dfOutput);
@@ -142,7 +146,7 @@ public:
 
     FilePath filePath() const { return m_filePath; }
     bool hasError() const { return !m_result; }
-    QString errorString() const { return m_result.error(); }
+    QString errorString() const { return m_result ? QString() : m_result.error(); }
     virtual Utils::Result<> finalize();
 
     bool write(QByteArrayView bytes);

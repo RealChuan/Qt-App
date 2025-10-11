@@ -6,11 +6,9 @@
 #include "algorithm.h"
 #include "devicefileaccess.h"
 #include "environment.h"
-#include "filestreamermanager.h"
 #include "fileutils.h"
 #include "hostosinfo.h"
 #include "qtcassert.h"
-#include "stringtable.h"
 #include "textcodec.h"
 #include "utilstr.h"
 
@@ -19,8 +17,10 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QFileInfo>
+#include <QLoggingCategory>
 #include <QRegularExpression>
 #include <QStringView>
+#include <QTemporaryDir>
 #include <QTemporaryFile>
 #include <QUrl>
 
@@ -34,6 +34,8 @@
 
 namespace Utils {
 
+Q_LOGGING_CATEGORY(fpLog, "qtc.filepath", QtWarningMsg);
+
 static DeviceFileHooks &deviceFileHooks()
 {
     static DeviceFileHooks theDeviceHooks;
@@ -46,6 +48,11 @@ void DeviceFileHooks::setupDeviceFileHooks(const DeviceFileHooks &hooks)
     QTC_ASSERT(!wasAlreadySet, return);
     wasAlreadySet = true;
     deviceFileHooks() = hooks;
+}
+
+static void logError(const QString &context, const QString &errorMsg)
+{
+    qCDebug(fpLog) << context << ":" << errorMsg;
 }
 
 static bool isWindowsDriveLetter(QChar ch)
@@ -255,7 +262,7 @@ bool FilePath::isRootPath() const
         return true;
     }
 
-    return *this == HostOsInfo::root();
+    return QDir(path()).isRoot();
 }
 
 bool FilePath::isResourceFile() const
@@ -355,16 +362,6 @@ Utils::Result<std::unique_ptr<FilePathWatcher>> FilePath::watch() const
 void FilePath::openTerminal(const Environment &env) const
 {
     deviceFileHooks().openTerminal(*this, env);
-}
-
-/*!
-    Returns a copy with interned data.
-*/
-FilePath FilePath::intern() const
-{
-    FilePath result = *this;
-    result.m_data = StringTable::insert(m_data);
-    return result;
 }
 
 /*!
@@ -628,7 +625,12 @@ Result<> FilePath::ensureWritableDir() const
 
 bool FilePath::ensureExistingFile() const
 {
-    return fileAccess()->ensureExistingFile(*this);
+    const Result<> res = fileAccess()->ensureExistingFile(*this);
+    if (!res) {
+        logError("ensureExistingFile", res.error());
+        return false;
+    }
+    return true;
 }
 
 /*!
@@ -641,7 +643,12 @@ bool FilePath::ensureExistingFile() const
 */
 std::optional<FilePath> FilePath::refersToExecutableFile(MatchScope matchScope) const
 {
-    return fileAccess()->refersToExecutableFile(*this, matchScope);
+    const auto res = fileAccess()->refersToExecutableFile(*this, matchScope);
+    if (!res) {
+        logError("refersToExecutableFile", res.error());
+        return {};
+    }
+    return *res;
 }
 
 Result<FilePath> FilePath::tmpDir() const
@@ -661,7 +668,7 @@ Result<FilePath> FilePath::tmpDir() const
         if (osType() != OsTypeWindows)
             return withNewPath("/tmp");
         return ResultError(
-            QString("Could not find temporary directory on device %1").arg(displayName()));
+            Tr::tr("Could not find temporary directory on device %1").arg(displayName()));
     }
 
     return FilePath::fromUserInput(QDir::tempPath());
@@ -675,15 +682,33 @@ Result<FilePath> FilePath::createTempFile() const
         if (file.open())
             return FilePath::fromString(file.fileName());
 
-        return ResultError(QString("Could not create temporary file: %1").arg(file.errorString()));
+        return ResultError(Tr::tr("Could not create temporary file: %1").arg(file.errorString()));
     }
 
     return fileAccess()->createTempFile(*this);
 }
 
+Result<FilePath> FilePath::createTempDir() const
+{
+    if (isLocal()) {
+        QTemporaryDir dir(path());
+        dir.setAutoRemove(false);
+        if (!dir.path().isEmpty())
+            return FilePath::fromString(dir.path());
+
+        return ResultError(
+            Tr::tr("Could not create temporary directory: %1").arg(dir.errorString()));
+    }
+
+    return fileAccess()->createTempDir(*this);
+}
+
 bool FilePath::hasHardLinks() const
 {
-    return fileAccess()->hasHardLinks(*this);
+    const Result<bool> res = fileAccess()->hasHardLinks(*this);
+    if (!res)
+        logError("hasHardlinks", res.error());
+    return res.has_value() ? res.value() : false;
 }
 
 /*!
@@ -696,7 +721,8 @@ bool FilePath::hasHardLinks() const
 */
 bool FilePath::createDir() const
 {
-    return fileAccess()->createDirectory(*this);
+    const Result<> res = fileAccess()->createDirectory(*this);
+    return res.has_value();
 }
 
 FilePaths FilePath::dirEntries(const FileFilter &filter, QDir::SortFlags sort) const
@@ -788,25 +814,6 @@ Result<qint64> FilePath::writeFileContents(const QByteArray &data) const
     return fileAccess()->writeFileContents(*this, data);
 }
 
-FileStreamHandle FilePath::asyncCopy(const FilePath &target,
-                                     QObject *context,
-                                     const CopyContinuation &cont) const
-{
-    return FileStreamerManager::copy(*this, target, context, cont);
-}
-
-FileStreamHandle FilePath::asyncRead(QObject *context, const ReadContinuation &cont) const
-{
-    return FileStreamerManager::read(*this, context, cont);
-}
-
-FileStreamHandle FilePath::asyncWrite(const QByteArray &data,
-                                      QObject *context,
-                                      const WriteContinuation &cont) const
-{
-    return FileStreamerManager::write(*this, data, context, cont);
-}
-
 bool FilePath::isLocal() const
 {
     return m_schemeLen == 0 || scheme() == u"file";
@@ -831,15 +838,21 @@ bool FilePath::isSameFile(const FilePath &other) const
     if (!isSameDevice(other))
         return false;
 
-    const QByteArray fileId = fileAccess()->fileId(*this);
-    const QByteArray otherFileId = fileAccess()->fileId(other);
-    if (fileId.isEmpty() || otherFileId.isEmpty())
+    const Result<QByteArray> fileId = fileAccess()->fileId(*this);
+    if (!fileId) {
+        logError("isSameFile", fileId.error());
+        return false;
+    }
+    const Result<QByteArray> otherFileId = fileAccess()->fileId(other);
+    if (!otherFileId) {
+        logError("isSameFile", otherFileId.error());
+        return false;
+    }
+
+    if (fileId->isEmpty() || otherFileId->isEmpty())
         return false;
 
-    if (fileId == otherFileId)
-        return true;
-
-    return false;
+    return *fileId == *otherFileId;
 }
 
 static FilePaths appendExeExtensions(const FilePath &executable, FilePath::MatchScope matchScope)
@@ -894,7 +907,12 @@ bool FilePath::isSameExecutable(const FilePath &other) const
 */
 FilePath FilePath::symLinkTarget() const
 {
-    return fileAccess()->symLinkTarget(*this);
+    const Result<FilePath> res = fileAccess()->symLinkTarget(*this);
+    if (!res) {
+        logError("symLinkTarget", res.error());
+        return {};
+    }
+    return *res;
 }
 
 FilePath FilePath::withExecutableSuffix() const
@@ -917,6 +935,20 @@ static bool startsWithWindowsDriveLetter(QStringView path)
     if (path.size() > 2 && startsWithWindowsDriveLetterAndSlash(path))
         return true;
     return path.size() == 2 && path[1] == ':' && isWindowsDriveLetter(path[0]);
+}
+
+// This is a compromise across platforms. It will mis-classify "C:/..." as absolute
+// paths on non-Windows, and QRC paths ":abc..." (wrongly) as non-absolute.
+
+static bool isAbsolutePathHelper(QStringView path)
+{
+    if (path.startsWith('/'))
+        return true;
+    if (startsWithWindowsDriveLetterAndSlash(path))
+        return true;
+    if (path.startsWith(u":/")) // QRC
+        return true;
+    return false;
 }
 
 int FilePath::rootLength(const QStringView path)
@@ -1094,7 +1126,21 @@ QString doCleanPath(const QString &input_)
             --prefixLen;
     }
 
-    QString path = normalizePathSegmentHelper(input.mid(prefixLen));
+    // We need to preserve a leading ./ for remote paths.
+    bool reAddDotSlash = false;
+
+    QString path = input.mid(prefixLen);
+    if (shLen > 0 && path.startsWith("./"))
+        reAddDotSlash = true;
+
+    path = normalizePathSegmentHelper(path);
+
+    if (reAddDotSlash) {
+        if (!path.startsWith("./"))
+            path.prepend("./");
+        else
+            QTC_CHECK(false);
+    }
 
     // Strip away last slash except for root directories
     if (path.size() > 1 && path.endsWith(u'/'))
@@ -1117,10 +1163,11 @@ FilePath FilePath::parentDir() const
     if (basePath.isEmpty())
         return {};
 
-    const QString path = basePath + QLatin1String("/..");
+    const QString path = basePath
+                         + (basePath.endsWith('/') ? QLatin1String("..") : QLatin1String("/.."));
     const QString parent = doCleanPath(path);
     if (parent == path)
-        return {};
+        return *this;
 
     return withNewPath(parent);
 }
@@ -1351,7 +1398,13 @@ FilePathInfo FilePath::filePathInfo() const
     const Result<DeviceFileAccess *> access = getFileAccess(*this);
     if (!access)
         return {};
-    return (*access)->filePathInfo(*this);
+
+    const Result<FilePathInfo> res = (*access)->filePathInfo(*this);
+    if (!res) {
+        logError("filePathInfo", res.error());
+        return {};
+    }
+    return *res;
 }
 
 /*!
@@ -1366,7 +1419,12 @@ bool FilePath::exists() const
     if (!access)
         return false;
 
-    return (*access)->exists(*this);
+    const Result<bool> res = (*access)->exists(*this);
+    if (!res) {
+        logError("exists", res.error());
+        return false;
+    }
+    return *res;
 }
 
 /*!
@@ -1381,7 +1439,12 @@ bool FilePath::isExecutableFile() const
     if (!access)
         return false;
 
-    return (*access)->isExecutableFile(*this);
+    const Result<bool> res = (*access)->isExecutableFile(*this);
+    if (!res) {
+        logError("isExecutableFile", res.error());
+        return false;
+    }
+    return *res;
 }
 
 /*!
@@ -1396,7 +1459,12 @@ bool FilePath::isWritableDir() const
     if (!access)
         return false;
 
-    return (*access)->isWritableDirectory(*this);
+    const Result<bool> res = (*access)->isWritableDirectory(*this);
+    if (!res) {
+        logError("isWritableDir", res.error());
+        return false;
+    }
+    return *res;
 }
 
 /*!
@@ -1411,7 +1479,12 @@ bool FilePath::isWritableFile() const
     if (!access)
         return false;
 
-    return (*access)->isWritableFile(*this);
+    const Result<bool> res = (*access)->isWritableFile(*this);
+    if (!res) {
+        logError("isWritableFile", res.error());
+        return false;
+    }
+    return *res;
 }
 
 bool FilePath::isReadableFile() const
@@ -1423,7 +1496,12 @@ bool FilePath::isReadableFile() const
     if (!access)
         return false;
 
-    return (*access)->isReadableFile(*this);
+    const Result<bool> res = (*access)->isReadableFile(*this);
+    if (!res) {
+        logError("isReadableFile", res.error());
+        return false;
+    }
+    return *res;
 }
 
 bool FilePath::isReadableDir() const
@@ -1435,7 +1513,12 @@ bool FilePath::isReadableDir() const
     if (!access)
         return false;
 
-    return (*access)->isReadableDirectory(*this);
+    const Result<bool> res = (*access)->isReadableDirectory(*this);
+    if (!res) {
+        logError("isReadableDir", res.error());
+        return false;
+    }
+    return *res;
 }
 
 bool FilePath::isFile() const
@@ -1447,7 +1530,12 @@ bool FilePath::isFile() const
     if (!access)
         return false;
 
-    return (*access)->isFile(*this);
+    const Result<bool> res = (*access)->isFile(*this);
+    if (!res) {
+        logError("isFile", res.error());
+        return false;
+    }
+    return *res;
 }
 
 bool FilePath::isDir() const
@@ -1459,7 +1547,12 @@ bool FilePath::isDir() const
     if (!access)
         return false;
 
-    return (*access)->isDirectory(*this);
+    const Result<bool> res = (*access)->isDirectory(*this);
+    if (!res) {
+        logError("isDir", res.error());
+        return false;
+    }
+    return *res;
 }
 
 bool FilePath::isSymLink() const
@@ -1471,7 +1564,12 @@ bool FilePath::isSymLink() const
     if (!access)
         return false;
 
-    return (*access)->isSymLink(*this);
+    const Result<bool> res = (*access)->isSymLink(*this);
+    if (!res) {
+        logError("isSymLink", res.error());
+        return false;
+    }
+    return *res;
 }
 
 /*!
@@ -1541,17 +1639,50 @@ FilePath FilePath::fromSettings(const QVariant &variant)
 
 FilePaths FilePath::fromSettingsList(const QVariant &variant)
 {
-    return transform(variant.toList(), &FilePath::fromSettings);
+    return FilePaths::fromSettings(variant);
 }
 
 QVariant FilePath::toSettingsList(const FilePaths &filePaths)
 {
-    return transform(filePaths, &FilePath::toSettings);
+    return filePaths.toSettings();
 }
 
 QVariant FilePath::toSettings() const
 {
     return toUrlishString();
+}
+
+FilePaths FilePaths::fromSettings(const QVariant &variant)
+{
+    return FilePaths(transform(variant.toList(), &FilePath::fromSettings));
+}
+
+QVariant FilePaths::toSettings() const
+{
+    return transform(*this, &FilePath::toSettings);
+}
+
+FilePaths FilePaths::fromStrings(const QStringList &fileNames)
+{
+    return transform(fileNames, &FilePath::fromString);
+}
+
+FilePaths FilePaths::resolvePaths(const FilePath &anchor, const QStringList &fileNames)
+{
+    FilePaths result;
+    for (const QString &fileName : fileNames)
+        result.append(anchor.resolvePath(fileName));
+    return result;
+}
+
+QStringList FilePaths::toFsPathStrings() const
+{
+    return transform(*this, &FilePath::toFSPathString);
+}
+
+QString FilePaths::toUserOutput(const QString &separator) const
+{
+    return transform(*this, &FilePath::toUserOutput).join(separator);
 }
 
 /*!
@@ -1694,16 +1825,24 @@ static QString calcRelativePath(QStringView absolutePath, QStringView absoluteAn
     The debug output will be "../b/ar/file.txt".
 */
 
-FilePath FilePath::relativePathFromDir(const FilePath &anchor) const
+QString FilePath::relativePathFromDir(const FilePath &anchorDir) const
 {
-    QTC_ASSERT(isSameDevice(anchor), return *this);
+    QTC_ASSERT(isSameDevice(anchorDir), return path());
 
     const FilePath absPath = absoluteFilePath();
-    const FilePath absoluteAnchorPath = anchor.absoluteFilePath();
+    const FilePath absoluteAnchorPath = anchorDir.absoluteFilePath();
 
     QString relativeFilePath = calcRelativePath(absPath.pathView(), absoluteAnchorPath.pathView());
 
-    return FilePath::fromString(relativeFilePath);
+    return relativeFilePath;
+}
+
+QString FilePath::relativeNativePathFromDir(const FilePath &anchorDir) const
+{
+    QString rel = relativePathFromDir(anchorDir);
+    if (osType() == OsTypeWindows)
+        rel.replace('/', '\\');
+    return rel;
 }
 
 /*!
@@ -1872,6 +2011,11 @@ static FilePaths dirsFromPath(const FilePath &anchor,
     return directories;
 }
 
+FilePath FilePath::searchInPath() const
+{
+    return searchInPath({});
+}
+
 FilePath FilePath::searchInPath(const FilePaths &additionalDirs,
                                 PathAmending amending,
                                 const FilePathPredicate &filter,
@@ -1884,6 +2028,11 @@ FilePath FilePath::searchInPath(const FilePaths &additionalDirs,
     return searchInDirectories(directories, filter, matchScope);
 }
 
+FilePaths FilePath::searchAllInPath() const
+{
+    return searchAllInPath({});
+}
+
 FilePaths FilePath::searchAllInPath(const FilePaths &additionalDirs,
                                     PathAmending amending,
                                     const FilePathPredicate &filter,
@@ -1891,6 +2040,47 @@ FilePaths FilePath::searchAllInPath(const FilePaths &additionalDirs,
 {
     const FilePaths directories = dirsFromPath(*this, additionalDirs, amending);
     return searchAllInDirectories(directories, filter, matchScope);
+}
+
+FilePath FilePath::searchHereAndInParents(const QString &fileName, QDir::Filter type) const
+{
+    return searchHereAndInParents(QStringList{fileName}, type);
+}
+
+FilePath FilePath::searchHereAndInParents(const QStringList &fileNames, QDir::Filter type) const
+{
+    const bool wantFile = type == QDir::Files;
+    const bool wantDir = type == QDir::Dirs;
+    QTC_ASSERT(wantFile || wantDir, return {});
+
+    FilePath file;
+    const auto constraint = [wantFile, wantDir, &fileNames, &file](const FilePath &dir) {
+        for (const QString &fileName : fileNames) {
+            const FilePath candidate = dir.pathAppended(fileName);
+            if ((wantFile && candidate.isFile()) || (wantDir && file.isDir())) {
+                file = candidate;
+                return IterationPolicy::Stop;
+            }
+        }
+        return IterationPolicy::Continue;
+    };
+    searchHereAndInParents(constraint);
+    return file;
+}
+
+void FilePath::searchHereAndInParents(
+    const std::function<IterationPolicy(const FilePath &)> &constraint) const
+{
+    QTC_ASSERT(!isEmpty(), return);
+
+    FilePath dir = *this;
+    if (!isDir())
+        dir = dir.parentDir();
+
+    for (const FilePath &parent : PathAndParents(dir)) {
+        if (constraint(parent) == IterationPolicy::Stop)
+            break;
+    }
 }
 
 Environment FilePath::deviceEnvironment() const
@@ -1964,8 +2154,10 @@ FilePath FilePath::pathAppended(const QString &path) const
     QString other = path;
     other.replace('\\', '/');
 
+    // FIXME: This should possibly be a QTC_UNEXPECTED later
+    // but triggers too often currently.
     if (isEmpty())
-        return FilePath::fromString(other);
+        return withNewPath(other);
 
     QString p = this->path();
     join(p, other);
@@ -1994,20 +2186,33 @@ std::optional<FilePath> FilePath::prefixRemoved(const QString &str) const
 
 QDateTime FilePath::lastModified() const
 {
-    return fileAccess()->lastModified(*this);
+    const Result<QDateTime> res = fileAccess()->lastModified(*this);
+    if (!res) {
+        logError("lastModified", res.error());
+        return {};
+    }
+    return *res;
 }
 
 QFile::Permissions FilePath::permissions() const
 {
-    return fileAccess()->permissions(*this);
+    const Result<QFile::Permissions> res = fileAccess()->permissions(*this);
+    if (!res) {
+        logError("permissions", res.error());
+        return {};
+    }
+    return *res;
 }
 
-bool FilePath::setPermissions(QFile::Permissions permissions) const
+Result<> FilePath::setPermissions(QFile::Permissions permissions) const
 {
-    return fileAccess()->setPermissions(*this, permissions);
+    const Result<> res = fileAccess()->setPermissions(*this, permissions);
+    if (!res)
+        logError("setPermissions", res.error());
+    return res;
 }
 
-bool FilePath::makeWritable() const
+Result<> FilePath::makeWritable() const
 {
     return setPermissions(permissions() | QFile::WriteUser);
 }
@@ -2065,6 +2270,23 @@ Result<> FilePath::copyFile(const FilePath &target) const
     return fileAccess()->copyFile(*this, target);
 }
 
+/*!
+    Creates a symbolic link \a symLink pointing to this file path.
+
+    \note On Windows, this function will not work unless you have admin rights
+          or developer mode is enabled.
+*/
+Result<> FilePath::createSymLink(const FilePath &symLink) const
+{
+    if (!isSameDevice(symLink)) {
+        return ResultError(
+            Tr::tr("Cannot create symbolic link to \"%1\" at \"%2\": Paths do not refer to the "
+                   "same device.")
+                .arg(toUserOutput(), symLink.toUserOutput()));
+    }
+    return fileAccess()->createSymLink(*this, symLink);
+}
+
 Result<> FilePath::renameFile(const FilePath &target) const
 {
     if (isSameDevice(target))
@@ -2090,32 +2312,62 @@ Result<> FilePath::renameFile(const FilePath &target) const
 
 qint64 FilePath::fileSize() const
 {
-    return fileAccess()->fileSize(*this);
+    const Result<qint64> res = fileAccess()->fileSize(*this);
+    if (!res) {
+        logError("fileSize", res.error());
+        return {};
+    }
+    return *res;
 }
 
 QString FilePath::owner() const
 {
-    return fileAccess()->owner(*this);
+    const Result<QString> res = fileAccess()->owner(*this);
+    if (!res) {
+        logError("owner", res.error());
+        return {};
+    }
+    return *res;
 }
 
 uint FilePath::ownerId() const
 {
-    return fileAccess()->ownerId(*this);
+    const Result<uint> res = fileAccess()->ownerId(*this);
+    if (!res) {
+        logError("ownerId", res.error());
+        return {};
+    }
+    return *res;
 }
 
 QString FilePath::group() const
 {
-    return fileAccess()->group(*this);
+    const Result<QString> res = fileAccess()->group(*this);
+    if (!res) {
+        logError("group", res.error());
+        return {};
+    }
+    return *res;
 }
 
 uint FilePath::groupId() const
 {
-    return fileAccess()->groupId(*this);
+    const Result<uint> res = fileAccess()->groupId(*this);
+    if (!res) {
+        logError("groupId", res.error());
+        return {};
+    }
+    return *res;
 }
 
 qint64 FilePath::bytesAvailable() const
 {
-    return fileAccess()->bytesAvailable(*this);
+    const Result<qint64> res = fileAccess()->bytesAvailable(*this);
+    if (!res) {
+        logError("bytesAvailable", res.error());
+        return {};
+    }
+    return *res;
 }
 
 /*!
@@ -2132,7 +2384,7 @@ qint64 FilePath::bytesAvailable() const
 */
 bool FilePath::isNewerThan(const QDateTime &timeStamp) const
 {
-    if (!exists() || lastModified() >= timeStamp)
+    if (!exists() || lastModified() > timeStamp)
         return true;
     if (isDir()) {
         const FilePaths dirContents = dirEntries(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
@@ -2182,14 +2434,14 @@ QChar FilePath::pathListSeparator() const
     return osType() == OsTypeWindows ? u';' : u':';
 }
 
-TextCodec FilePath::processStdOutCodec() const
+TextEncoding FilePath::processStdOutEncoding() const
 {
-    return fileAccess()->processStdOutCodec(*this);
+    return fileAccess()->processStdOutEncoding(*this);
 }
 
-TextCodec FilePath::processStdErrCodec() const
+TextEncoding FilePath::processStdErrEncoding() const
 {
-    return fileAccess()->processStdErrCodec(*this);
+    return fileAccess()->processStdErrEncoding(*this);
 }
 
 /*!
@@ -2208,10 +2460,25 @@ FilePath FilePath::resolveSymlinks() const
     FilePath current = *this;
     int links = 16;
     while (links--) {
-        const FilePath target = current.symLinkTarget();
-        if (target.isEmpty())
+        const QList<QStringView> components = current.pathComponents();
+        FilePath pathToTest;
+        bool resolved = false;
+        for (const QStringView &component : components) {
+            if (pathToTest.isEmpty())
+                pathToTest = current.withNewPath(component.toString());
+            else
+                pathToTest = pathToTest / component.toString();
+            if (!resolved) {
+                const FilePath target = pathToTest.symLinkTarget();
+                if (!target.isEmpty()) {
+                    resolved = true;
+                    pathToTest = target;
+                }
+            }
+        }
+        if (!resolved)
             return current;
-        current = target;
+        current = pathToTest;
     }
     return current;
 }
@@ -2315,18 +2582,35 @@ QString FilePath::shortNativePath() const
 /*!
     \brief Checks whether the path is relative.
 
-    Returns true if the path is relative.
+    Returns true if the path starts neither with a slash, nor with a letter
+    and a colon, nor with a colon and a slash.
+
+    \note This is independent of the platform on which \QC currently runs,
+    so this does not necessarily match the platform's definition of
+    a relative path. Use with care, and try to avoid.
+
+    \sa isAbsolutePath()
 */
 bool FilePath::isRelativePath() const
 {
-    const QStringView p = pathView();
-    if (p.startsWith('/'))
-        return false;
-    if (startsWithWindowsDriveLetterAndSlash(p))
-        return false;
-    if (p.startsWith(u":/")) // QRC
-        return false;
-    return true;
+    return !isAbsolutePath();
+}
+
+/*!
+    \brief Checks whether the path is absolute.
+
+    Returns true if the path starts with a slash, or with a letter and a colon,
+    or with a colon and a slash.
+
+    \note This is independent of the platform on which \QC currently runs,
+    so this does not necessarily match the platform's definition of
+    an absolute path. Use with care, and try to avoid.
+
+    \sa isRelativePath().
+*/
+bool FilePath::isAbsolutePath() const
+{
+    return isAbsolutePathHelper(pathView());
 }
 
 /*!
@@ -2346,11 +2630,16 @@ FilePath FilePath::resolvePath(const FilePath &tail) const
 /*!
     \brief Appends the \a tail to this, if the tail is a relative path.
 
-    Returns the tail if the tail is absolute, otherwise this + tail.
+    Returns this with new path tail if the tail is absolute, otherwise this + tail.
 */
 FilePath FilePath::resolvePath(const QString &tail) const
 {
-    return resolvePath(FilePath::fromUserInput(tail));
+    if (tail.isEmpty())
+        return *this;
+    const FilePath clean = FilePath::fromUserInput(tail);
+    if (clean.isAbsolutePath())
+        return withNewPath(clean.path());
+    return pathAppended(clean.path()).cleanPath();
 }
 
 Result<FilePath> FilePath::localSource() const
@@ -2402,6 +2691,53 @@ QString FilePath::withTildeHomePath() const
         return '~' + outPath.mid(homePath.size());
 
     return toUrlishString();
+}
+
+FilePath FilePaths::commonPath() const
+{
+    if (isEmpty())
+        return {};
+
+    if (count() == 1)
+        return constFirst();
+
+    const FilePath &first = constFirst();
+    const FilePaths others = mid(1);
+    FilePath result;
+
+    // Common scheme
+    const QStringView commonScheme = first.scheme();
+    auto sameScheme = [&commonScheme](const FilePath &fp) { return commonScheme == fp.scheme(); };
+    if (!allOf(others, sameScheme))
+        return result;
+    result.setParts(commonScheme, {}, {});
+
+    // Common host
+    const QStringView commonHost = first.host();
+    auto sameHost = [&commonHost](const FilePath &fp) { return commonHost == fp.host(); };
+    if (!allOf(others, sameHost))
+        return result;
+    result.setParts(commonScheme, commonHost, {});
+
+    // Common path
+    QString commonPath;
+    auto sameBasePath = [&commonPath](const FilePath &fp) {
+        return QString(fp.path() + '/').startsWith(commonPath);
+    };
+    const QStringList pathSegments = first.path().split('/');
+    for (const QString &segment : pathSegments) {
+        commonPath += segment + '/';
+        if (!allOf(others, sameBasePath))
+            return result;
+        result.setParts(commonScheme, commonHost, commonPath.chopped(1));
+    }
+
+    return result;
+}
+
+void FilePaths::sort()
+{
+    std::sort(begin(), end(), std::less<FilePath>());
 }
 
 QTextStream &operator<<(QTextStream &s, const FilePath &fn)
@@ -2576,55 +2912,6 @@ UTILS_EXPORT QDebug operator<<(QDebug dbg, const FilePath &c)
     return dbg << c.toUrlishString();
 }
 
-class TemporaryFilePathPrivate
-{
-public:
-    FilePath templatePath;
-    FilePath filePath;
-    bool autoRemove = true;
-};
-
-Result<std::unique_ptr<TemporaryFilePath>> TemporaryFilePath::create(const FilePath &templatePath)
-{
-    Result<FilePath> result = templatePath.createTempFile();
-    if (!result)
-        return ResultError(result.error());
-    return std::unique_ptr<TemporaryFilePath>(new TemporaryFilePath(templatePath, *result));
-}
-
-TemporaryFilePath::TemporaryFilePath(const FilePath &templatePath, const FilePath &filePath)
-    : d(std::make_unique<TemporaryFilePathPrivate>())
-{
-    d->templatePath = templatePath;
-    d->filePath = filePath;
-}
-
-TemporaryFilePath::~TemporaryFilePath()
-{
-    if (d->autoRemove)
-        d->filePath.removeFile();
-}
-
-void TemporaryFilePath::setAutoRemove(bool autoRemove)
-{
-    d->autoRemove = autoRemove;
-}
-
-bool TemporaryFilePath::autoRemove() const
-{
-    return d->autoRemove;
-}
-
-FilePath TemporaryFilePath::templatePath() const
-{
-    return d->templatePath;
-}
-
-FilePath TemporaryFilePath::filePath() const
-{
-    return d->filePath;
-}
-
 FilePaths firstPaths(const FilePairs &pairs)
 {
     return transform(pairs, &FilePair::first);
@@ -2633,6 +2920,70 @@ FilePaths firstPaths(const FilePairs &pairs)
 FilePaths secondPaths(const FilePairs &pairs)
 {
     return transform(pairs, &FilePair::second);
+}
+
+PathAndParents::PathAndParents(const FilePath &p)
+    : m_path(p)
+{}
+
+PathAndParents::PathAndParents(const FilePath &p, const FilePath &last)
+    : m_path(p)
+    , m_lastPath(last)
+{
+    QTC_CHECK(last.isEmpty() || p == last || p.isChildOf(last));
+}
+
+PathAndParents::iterator PathAndParents::begin() const
+{
+    return iterator(m_path);
+}
+
+PathAndParents::iterator PathAndParents::end() const
+{
+    if (m_lastPath.isEmpty())
+        return iterator(FilePath());
+
+    const FilePath &endPath = m_lastPath.parentDir();
+    if (endPath == m_lastPath) // Did the user specify "root" as the last path?
+        return iterator(FilePath());
+    QTC_ASSERT(m_path == m_lastPath || m_path.isChildOf(m_lastPath), return iterator(FilePath()));
+    return iterator(endPath);
+}
+
+PathAndParents::iterator::iterator(const FilePath &p)
+    : current(p)
+{}
+
+PathAndParents::iterator &PathAndParents::iterator::operator++()
+{
+    const FilePath newParent = current.parentDir();
+    if (newParent == current)
+        current = FilePath(); // Reached the root, stop iterating.
+    else
+        current = newParent;
+    return *this;
+}
+
+PathAndParents::iterator PathAndParents::iterator::operator++(int)
+{
+    iterator temp = *this;
+    ++*this;
+    return temp;
+}
+
+bool PathAndParents::iterator::operator!=(const iterator &other) const
+{
+    return !(*this == other);
+}
+
+bool PathAndParents::iterator::operator==(const iterator &other) const
+{
+    return current == other.current;
+}
+
+const FilePath &PathAndParents::iterator::operator*() const
+{
+    return current;
 }
 
 } // namespace Utils

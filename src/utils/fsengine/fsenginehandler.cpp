@@ -51,7 +51,6 @@ public:
     bool setSize(qint64 size) final;
     bool caseSensitive() const final;
     bool isRelativePath() const final;
-    QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const final;
     FileFlags fileFlags(FileFlags type) const final;
     bool setPermissions(uint perms) final;
     QByteArray id() const final;
@@ -278,22 +277,6 @@ bool FSEngineImpl::isRelativePath() const
     return false;
 }
 
-QStringList FSEngineImpl::entryList(QDir::Filters filters, const QStringList &filterNames) const
-{
-    QStringList result;
-    m_filePath.iterateDirectory(
-        [&result](const FilePath &p, const FilePathInfo &fi) {
-            result.append(p.toFSPathString());
-            g_filePathInfoCache
-                .cache(p,
-                       new FilePathInfoCache::CachedData{fi,
-                                                         QDateTime::currentDateTime().addSecs(60)});
-            return IterationPolicy::Continue;
-        },
-        {filterNames, filters});
-    return result;
-}
-
 QAbstractFileEngine::FileFlags FSEngineImpl::fileFlags(FileFlags type) const
 {
     Q_UNUSED(type)
@@ -316,29 +299,22 @@ QString FSEngineImpl::fileName(FileName file) const
     case QAbstractFileEngine::AbsoluteName:
     case QAbstractFileEngine::DefaultName:
         return m_filePath.toFSPathString();
-        break;
     case QAbstractFileEngine::BaseName:
         if (m_filePath.fileName().isEmpty())
             return m_filePath.host().toString();
         return m_filePath.fileName();
-        break;
     case QAbstractFileEngine::PathName:
     case QAbstractFileEngine::AbsolutePathName:
         return m_filePath.parentDir().toFSPathString();
-        break;
     case QAbstractFileEngine::CanonicalName:
         return m_filePath.canonicalPath().toFSPathString();
-        break;
     case QAbstractFileEngine::CanonicalPathName:
         return m_filePath.canonicalPath().parentDir().toFSPathString();
-        break;
     default:
     // case QAbstractFileEngine::LinkName:
     // case QAbstractFileEngine::BundleName:
     // case QAbstractFileEngine::JunctionName:
         return {};
-        break;
-
     }
 
     return QAbstractFileEngine::fileName(file);

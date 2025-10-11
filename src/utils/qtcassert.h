@@ -34,3 +34,4 @@ UTILS_EXPORT void dumpBacktrace(int maxdepth);
     do { \
     } while (0)
 #define QTC_GUARD(cond) ((Q_LIKELY(cond)) ? true : (QTC_ASSERT_STRING(#cond), false))
+#define QTC_UNEXPECTED(cond) ((Q_UNLIKELY(cond)) ? (QTC_ASSERT_STRING(#cond), true) : false)

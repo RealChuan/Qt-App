@@ -7,7 +7,9 @@
 
 #include "tasktree.h"
 
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent/QtConcurrentRun>
+#include <QtCore/QFuture>
+#include <QtCore/QFutureWatcher>
 
 QT_BEGIN_NAMESPACE
 
@@ -18,31 +20,25 @@ namespace Tasking {
 // Possibly, it could be placed inside Qt::Concurrent library, as a wrapper around
 // QtConcurrent::run() call.
 
-template <typename ResultType>
+template<typename ResultType>
 class ConcurrentCall
 {
     Q_DISABLE_COPY_MOVE(ConcurrentCall)
 
 public:
     ConcurrentCall() = default;
-    template <typename Function, typename ...Args>
+    template<typename Function, typename... Args>
     void setConcurrentCallData(Function &&function, Args &&...args)
     {
         wrapConcurrent(std::forward<Function>(function), std::forward<Args>(args)...);
     }
     void setThreadPool(QThreadPool *pool) { m_threadPool = pool; }
-    ResultType result() const
-    {
-        return m_future.resultCount() ? m_future.result() : ResultType();
-    }
-    QList<ResultType> results() const
-    {
-        return m_future.results();
-    }
+    ResultType result() const { return m_future.resultCount() ? m_future.result() : ResultType(); }
+    QList<ResultType> results() const { return m_future.results(); }
     QFuture<ResultType> future() const { return m_future; }
 
 private:
-    template <typename Function, typename ...Args>
+    template<typename Function, typename... Args>
     void wrapConcurrent(Function &&function, Args &&...args)
     {
         m_startHandler = [this, function = std::forward<Function>(function), args...] {
@@ -51,17 +47,20 @@ private:
         };
     }
 
-    template <typename Function, typename ...Args>
+    template<typename Function, typename... Args>
     void wrapConcurrent(std::reference_wrapper<const Function> &&wrapper, Args &&...args)
     {
-        m_startHandler = [this, wrapper = std::forward<std::reference_wrapper<const Function>>(wrapper), args...] {
+        m_startHandler = [this,
+                          wrapper = std::forward<std::reference_wrapper<const Function>>(wrapper),
+                          args...] {
             QThreadPool *threadPool = m_threadPool ? m_threadPool : QThreadPool::globalInstance();
-            return QtConcurrent::run(threadPool, std::forward<const Function>(wrapper.get()),
+            return QtConcurrent::run(threadPool,
+                                     std::forward<const Function>(wrapper.get()),
                                      args...);
         };
     }
 
-    template <typename T>
+    template<typename T>
     friend class ConcurrentCallTaskAdapter;
 
     std::function<QFuture<ResultType>()> m_startHandler;
@@ -69,37 +68,40 @@ private:
     QFuture<ResultType> m_future;
 };
 
-template <typename ResultType>
-class ConcurrentCallTaskAdapter final : public TaskAdapter<ConcurrentCall<ResultType>>
+template<typename ResultType>
+class ConcurrentCallTaskAdapter final
 {
 public:
-    ~ConcurrentCallTaskAdapter() {
+    ~ConcurrentCallTaskAdapter()
+    {
         if (m_watcher) {
             m_watcher->cancel();
             m_watcher->waitForFinished();
         }
     }
 
-    void start() final {
-        if (!this->task()->m_startHandler) {
-            emit this->done(DoneResult::Error); // TODO: Add runtime assert
+    void operator()(ConcurrentCall<ResultType> *task, TaskInterface *iface)
+    {
+        if (!task->m_startHandler) {
+            iface->reportDone(DoneResult::Error); // TODO: Add runtime assert
             return;
         }
         m_watcher.reset(new QFutureWatcher<ResultType>);
-        this->connect(m_watcher.get(), &QFutureWatcherBase::finished, this, [this] {
-            emit this->done(toDoneResult(!m_watcher->isCanceled()));
+        QObject::connect(m_watcher.get(), &QFutureWatcherBase::finished, iface, [this, iface] {
+            iface->reportDone(toDoneResult(!m_watcher->isCanceled()));
             m_watcher.release()->deleteLater();
         });
-        this->task()->m_future = this->task()->m_startHandler();
-        m_watcher->setFuture(this->task()->m_future);
+        task->m_future = task->m_startHandler();
+        m_watcher->setFuture(task->m_future);
     }
 
 private:
     std::unique_ptr<QFutureWatcher<ResultType>> m_watcher;
 };
 
-template <typename T>
-using ConcurrentCallTask = CustomTask<ConcurrentCallTaskAdapter<T>>;
+template<typename ResultType>
+using ConcurrentCallTask
+    = CustomTask<ConcurrentCall<ResultType>, ConcurrentCallTaskAdapter<ResultType>>;
 
 } // namespace Tasking
 

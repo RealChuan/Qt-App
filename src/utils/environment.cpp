@@ -47,6 +47,7 @@ Environment::Environment(const NameValuePairs &nameValues)
 
 Environment::Environment(const NameValueDictionary &dict)
 {
+    m_dict.m_osType = dict.osType();
     m_changeItems.append(dict);
 }
 
@@ -267,8 +268,7 @@ void Environment::setPathListValue(const QString &varName, const FilePaths &path
 
 QString Environment::valueFromPathList(const FilePaths &paths, OsType osType)
 {
-    return transform(paths, &FilePath::toUserOutput)
-        .join(OsSpecificAspects::pathListSeparator(osType));
+    return paths.toUserOutput(OsSpecificAspects::pathListSeparator(osType));
 }
 
 FilePaths Environment::pathListFromValue(const QString &value, OsType osType)

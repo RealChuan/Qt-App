@@ -5,166 +5,161 @@
 
 #include "qtcassert.h"
 
-#include <QTextCodec>
+#include <QHash>
+
+#include <set>
 
 namespace Utils {
 
-TextCodec::TextCodec() = default;
+// TextEncoding
 
-TextCodec::TextCodec(QTextCodec *codec)
-    : m_codec(codec)
+static QByteArray canonicalName(const QByteArray &input)
+{
+    QTC_ASSERT(!input.isEmpty(), return input);
+
+    // Avoid construction of too many QStringDecoders to get canonical names.
+    static QHash<QByteArray, QByteArray> s_canonicalNames {
+        // FIXME: We can save a few more cycles by pre-populatong the well-known ones
+        // here once the transition off QTextCodec is finished. For now leave it in
+        // to exercise the code paths below for better test coverage.
+        // {"utf-8", "UTF-8" },
+        // {"UTF-8", "UTF-8" },
+        // {"iso-8859-1", "ISO-8859-1"},
+        // {"ISO-8859-1", "ISO-8859-1"},
+    };
+
+    const auto it = s_canonicalNames.find(input);
+    if (it != s_canonicalNames.end())
+        return *it;
+
+    if (input == "System") {
+        QStringDecoder systemDecoder(QStringConverter::System);
+        QTC_CHECK(systemDecoder.isValid());
+        const QByteArray systemCanonicalized = systemDecoder.name();
+        QTC_CHECK(!systemCanonicalized.isEmpty());
+        s_canonicalNames.insert(input, systemCanonicalized);
+        return systemCanonicalized;
+    }
+
+    const QStringDecoder builtinDecoder(input);
+    if (builtinDecoder.isValid()) {
+        const QByteArray builtinCanonicalized = builtinDecoder.name();
+        if (!builtinCanonicalized.isEmpty()) {
+            s_canonicalNames.insert(input, builtinCanonicalized);
+            return builtinCanonicalized;
+        }
+    }
+
+    QTC_CHECK(false);
+    return {};
+}
+
+TextEncoding::TextEncoding() = default;
+
+TextEncoding::TextEncoding(const QByteArray &name)
+    : m_name(canonicalName(name))
 {}
 
-QByteArray TextCodec::name() const
+TextEncoding::TextEncoding(QStringConverter::Encoding encoding)
+    : m_name(QStringConverter::nameForEncoding(encoding))
+{}
+
+bool TextEncoding::isValid() const
 {
-    return m_codec ? m_codec->name() : QByteArray();
+    return !m_name.isEmpty();
 }
 
-QString TextCodec::displayName() const
+QString TextEncoding::displayName() const
 {
-    return m_codec ? QString::fromLatin1(m_codec->name()) : QString("Null codec");
+    return isValid() ? QString::fromLatin1(m_name) : QString("Null codec");
 }
 
-QString TextCodec::fullDisplayName() const
+QString TextEncoding::fullDisplayName() const
 {
     QString compoundName = displayName();
-    if (m_codec) {
-        for (const QByteArray &alias : m_codec->aliases()) {
+
+#if 0
+    // FIXME: There is no replacement for QTextCodec::aliases() in the
+    // QStringConverter world (yet?).
+    QTextCodec *codec = m_name == QStringEncoder::nameForEncoding(QStringConverter::System)
+                            ? QTextCodec::codecForLocale()
+                            : QTextCodec::codecForName(m_name);
+
+    if (codec) {
+        for (const QByteArray &alias : codec->aliases()) {
             compoundName += QLatin1String(" / ");
             compoundName += QString::fromLatin1(alias);
         }
     }
+#endif
     return compoundName;
 }
 
-bool TextCodec::isValid() const
+bool TextEncoding::isUtf8() const
 {
-    return m_codec;
+    return m_name == "UTF-8";
 }
 
-int TextCodec::mibEnum() const
+QString TextEncoding::decode(QByteArrayView encoded) const
 {
-    return m_codec ? m_codec->mibEnum() : -1;
+    return QStringDecoder(m_name).decode(encoded);
 }
 
-TextCodec TextCodec::codecForLocale()
+QByteArray TextEncoding::encode(QStringView decoded) const
 {
-    if (QTextCodec *codec = QTextCodec::codecForLocale())
-        return TextCodec(codec);
-    QTC_CHECK(false);
-    return {};
+    return QStringEncoder(m_name).encode(decoded);
 }
 
-bool TextCodec::isUtf8() const
+bool operator==(const TextEncoding &left, const TextEncoding &right)
 {
-    return m_codec && m_codec->name() == "UTF-8";
+    return left.name() == right.name();
 }
 
-bool TextCodec::isUtf8Codec(const QByteArray &name)
+bool operator!=(const TextEncoding &left, const TextEncoding &right)
 {
-    static const auto utf8Codecs = []() -> QList<QByteArray> {
-        const TextCodec codec = TextCodec::utf8();
-        if (QTC_GUARD(codec.isValid()))
-            return QList<QByteArray>{codec.name()} + codec.m_codec->aliases();
-        return {"UTF-8"};
+    return left.name() != right.name();
+}
+
+const QList<TextEncoding> &TextEncoding::availableEncodings()
+{
+    static const QList<TextEncoding> theAvailableEncoding = [] {
+        QList<TextEncoding> encodings;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+        std::set<QString> encodingNames;
+        const QStringList codecs = QStringConverter::availableCodecs();
+        for (const QString &name : codecs) {
+            // Drop encoders that don't even remember their names.
+            QStringEncoder encoder(name.toUtf8());
+            if (!encoder.isValid())
+                continue;
+            if (QByteArray(encoder.name()).isEmpty())
+                continue;
+            const auto [_, inserted] = encodingNames.insert(name);
+            QTC_ASSERT(inserted, continue);
+            TextEncoding encoding(name.toUtf8());
+            encodings.append(encoding);
+        }
+#else
+        // Before Qt 6.7, QStringConverter::availableCodecs did not exist,
+        // even if Qt was built with ICU. Offer at least the well-known ones.
+        for (int enc = 0; enc < QStringConverter::Encoding::LastEncoding; ++enc)
+            encodings.append(TextEncoding(QStringConverter::Encoding(enc)));
+#endif
+        return encodings;
     }();
-
-    return utf8Codecs.contains(name);
+    return theAvailableEncoding;
 }
 
-QList<int> TextCodec::availableMibs()
+static TextEncoding theEncodingForLocale = TextEncoding(QStringEncoder::System);
+
+void TextEncoding::setEncodingForLocale(const QByteArray &codecName)
 {
-    return QTextCodec::availableMibs();
+    theEncodingForLocale = codecName;
 }
 
-QList<QByteArray> TextCodec::availableCodecs()
+TextEncoding TextEncoding::encodingForLocale()
 {
-    return QTextCodec::availableCodecs();
-}
-
-TextCodec TextCodec::utf8()
-{
-    static TextCodec theUtf8Codec(QTextCodec::codecForName("UTF-8"));
-    return theUtf8Codec;
-}
-
-TextCodec TextCodec::utf16()
-{
-    static TextCodec theUtf16Codec(QTextCodec::codecForName("UTF-16"));
-    return theUtf16Codec;
-}
-
-TextCodec TextCodec::utf32()
-{
-    static TextCodec theUtf32Codec(QTextCodec::codecForName("UTF-32"));
-    return theUtf32Codec;
-}
-
-TextCodec TextCodec::latin1()
-{
-    static TextCodec theLatin1Codec(QTextCodec::codecForName("latin1"));
-    return theLatin1Codec;
-}
-
-void TextCodec::setCodecForLocale(const QByteArray &codecName)
-{
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName(codecName));
-}
-
-QByteArray TextCodec::fromUnicode(QStringView data) const
-{
-    if (m_codec)
-        return m_codec->fromUnicode(data);
-
-    QTC_CHECK(false);
-    return {};
-}
-
-QString TextCodec::toUnicode(const QByteArray &data) const
-{
-    if (m_codec)
-        return m_codec->toUnicode(data);
-
-    QTC_CHECK(false);
-    return {};
-}
-
-QString TextCodec::toUnicode(QByteArrayView data) const
-{
-    if (m_codec)
-        return m_codec->toUnicode(data.constData(), data.size());
-
-    QTC_CHECK(false);
-    return {};
-}
-
-QString TextCodec::toUnicode(const char *data, int size, ConverterState *state) const
-{
-    if (m_codec)
-        return m_codec->toUnicode(data, size, state);
-
-    QTC_CHECK(false);
-    return {};
-}
-
-bool TextCodec::canEncode(QStringView data) const
-{
-    return m_codec && m_codec->canEncode(data);
-}
-
-TextCodec TextCodec::codecForName(const QByteArray &codecName)
-{
-    return TextCodec(QTextCodec::codecForName(codecName));
-}
-
-TextCodec TextCodec::codecForMib(int mib)
-{
-    return TextCodec(QTextCodec::codecForMib(mib));
-}
-
-bool operator==(const TextCodec &left, const TextCodec &right)
-{
-    return left.m_codec == right.m_codec;
+    return theEncodingForLocale;
 }
 
 } // namespace Utils

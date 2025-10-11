@@ -33,14 +33,8 @@ namespace Utils {
 
 class DeviceFileAccess;
 class Environment;
-enum class FileStreamHandle;
-class TextCodec;
-
-template<class... Args>
-using Continuation = std::function<void(Args...)>;
-using CopyContinuation = Continuation<const Result<> &>;
-using ReadContinuation = Continuation<const Result<QByteArray> &>;
-using WriteContinuation = Continuation<const Result<qint64> &>;
+enum class FileStreamHandle : int {};
+class TextEncoding;
 
 class UTILS_EXPORT FileFilter
 {
@@ -56,10 +50,10 @@ public:
     const QDirIterator::IteratorFlags iteratorFlags = QDirIterator::NoIteratorFlags;
 };
 
-class FilePath;
-using FilePaths = QList<FilePath>;
+class FilePaths;
 using FilePair = std::pair<FilePath, FilePath>;
 using FilePairs = QList<FilePair>;
+
 UTILS_EXPORT FilePaths firstPaths(const FilePairs &pairs);
 UTILS_EXPORT FilePaths secondPaths(const FilePairs &pairs);
 
@@ -71,31 +65,6 @@ public:
 
 signals:
     void pathChanged(const Utils::FilePath &path);
-};
-
-class TemporaryFilePathPrivate;
-
-class UTILS_EXPORT TemporaryFilePath
-{
-public:
-    TemporaryFilePath() = delete;
-    TemporaryFilePath(const TemporaryFilePath &other) = delete;
-
-    ~TemporaryFilePath();
-
-    static Result<std::unique_ptr<TemporaryFilePath>> create(const FilePath &templatePath);
-
-    void setAutoRemove(bool autoDelete);
-    bool autoRemove() const;
-
-    FilePath templatePath() const;
-    FilePath filePath() const;
-
-private:
-    TemporaryFilePath(const FilePath &templatePath, const FilePath &filePath);
-
-private:
-    std::unique_ptr<TemporaryFilePathPrivate> d;
 };
 
 class UTILS_EXPORT FilePath
@@ -169,7 +138,7 @@ public:
     bool isReadableFile() const;
     bool isReadableDir() const;
     bool isRelativePath() const;
-    bool isAbsolutePath() const { return !isRelativePath(); }
+    bool isAbsolutePath() const;
     bool isFile() const;
     bool isDir() const;
     bool isSymLink() const;
@@ -179,13 +148,14 @@ public:
     bool isNewerThan(const QDateTime &timeStamp) const;
     QDateTime lastModified() const;
     QFile::Permissions permissions() const;
-    bool setPermissions(QFile::Permissions permissions) const;
-    bool makeWritable() const;
+    Result<> setPermissions(QFile::Permissions permissions) const;
+    Result<> makeWritable() const;
     OsType osType() const;
     Result<> removeFile() const;
     Result<> removeRecursively() const;
     Result<> copyRecursively(const FilePath &target) const;
     Result<> copyFile(const FilePath &target) const;
+    Result<> createSymLink(const FilePath &symLink) const;
     Result<> renameFile(const FilePath &target) const;
     qint64 fileSize() const;
     QString owner() const;
@@ -207,8 +177,8 @@ public:
     QChar pathComponentSeparator() const;
     QChar pathListSeparator() const;
 
-    TextCodec processStdOutCodec() const;
-    TextCodec processStdErrCodec() const;
+    TextEncoding processStdOutEncoding() const;
+    TextEncoding processStdErrEncoding() const;
 
     void clear();
     bool isEmpty() const;
@@ -226,7 +196,8 @@ public:
     [[nodiscard]] FilePath withExecutableSuffix() const;
     [[nodiscard]] FilePath withSuffix(const QString &suffix) const;
     [[nodiscard]] FilePath relativeChildPath(const FilePath &parent) const;
-    [[nodiscard]] FilePath relativePathFromDir(const FilePath &anchorDir) const;
+    [[nodiscard]] QString relativePathFromDir(const FilePath &anchorDir) const;
+    [[nodiscard]] QString relativeNativePathFromDir(const FilePath &anchorDir) const;
     [[nodiscard]] Environment deviceEnvironment() const;
     [[nodiscard]] Result<Environment> deviceEnvironmentWithError() const;
     [[nodiscard]] FilePaths devicePathEnvironmentVariable() const;
@@ -259,22 +230,27 @@ public:
     [[nodiscard]] FilePaths searchAllInDirectories(const FilePaths &dirs,
                                                    const FilePathPredicate &filter = {},
                                                    MatchScope matchScope = WithAnySuffix) const;
-    [[nodiscard]] FilePath searchInPath(const FilePaths &additionalDirs = {},
+    [[nodiscard]] FilePath searchInPath() const;
+    [[nodiscard]] FilePath searchInPath(const FilePaths &additionalDirs,
                                         PathAmending = AppendToPath,
                                         const FilePathPredicate &filter = {},
                                         MatchScope matchScope = WithAnySuffix) const;
-    [[nodiscard]] FilePaths searchAllInPath(const FilePaths &additionalDirs = {},
+    [[nodiscard]] FilePaths searchAllInPath() const;
+    [[nodiscard]] FilePaths searchAllInPath(const FilePaths &additionalDirs,
                                             PathAmending = AppendToPath,
                                             const FilePathPredicate &filter = {},
                                             MatchScope matchScope = WithAnySuffix) const;
-
-    [[nodiscard]] static FilePaths fromSettingsList(const QVariant &variant);
-    [[nodiscard]] static QVariant toSettingsList(const FilePaths &filePaths);
+    [[nodiscard]] FilePath searchHereAndInParents(const QString &fileName, QDir::Filter type) const;
+    [[nodiscard]] FilePath searchHereAndInParents(const QStringList &fileNames,
+                                                  QDir::Filter type) const;
+    void searchHereAndInParents(
+        const std::function<IterationPolicy(const FilePath &)> &constraint) const;
 
     std::optional<FilePath> refersToExecutableFile(MatchScope considerScript) const;
 
     [[nodiscard]] Result<FilePath> tmpDir() const;
     [[nodiscard]] Result<FilePath> createTempFile() const;
+    [[nodiscard]] Result<FilePath> createTempDir() const;
 
     // makes sure that capitalization of directories is canonical
     // on Windows and macOS. This is rarely needed.
@@ -290,15 +266,6 @@ public:
     static QString formatFilePaths(const FilePaths &files, const QString &separator);
     static void removeDuplicates(FilePaths &files);
     static void sort(FilePaths &files);
-
-    // Asynchronous interface
-    FileStreamHandle asyncCopy(const FilePath &target,
-                               QObject *context,
-                               const CopyContinuation &cont = {}) const;
-    FileStreamHandle asyncRead(QObject *context, const ReadContinuation &cont = {}) const;
-    FileStreamHandle asyncWrite(const QByteArray &data,
-                                QObject *context,
-                                const WriteContinuation &cont = {}) const;
 
     // Prefer not to use
     // Using isLocal() in "user" code is likely to result in code that
@@ -341,12 +308,17 @@ public:
         return toUrlishString();
     }
 
+    [[deprecated("Use FilePaths::fromSettings()")]]
+    static FilePaths fromSettingsList(const QVariant &variant);
+    [[deprecated("Use FilePaths::fromStrings()")]]
+    static FilePaths fromStrings(const QStringList &fileNames);
+    [[deprecated("Use FilePaths:toSettings")]]
+    static QVariant toSettingsList(const FilePaths &filePaths);
+
     bool equalsCaseSensitive(const FilePath &other) const;
 
     Utils::Result<std::unique_ptr<FilePathWatcher>> watch() const;
     void openTerminal(const Environment &env) const;
-
-    FilePath intern() const;
 
 private:
     // These are needed.
@@ -394,6 +366,71 @@ public:
     // Only call once.
     static void setupDeviceFileHooks(const DeviceFileHooks &hooks);
 };
+
+class UTILS_EXPORT FilePaths final : public QList<FilePath>
+{
+public:
+    using QList<FilePath>::QList;
+    FilePaths(const QList<FilePath> &filePaths)
+        : QList<FilePath>(filePaths)
+    {}
+
+    [[nodiscard]] static FilePaths fromSettings(const QVariant &variant);
+    [[nodiscard]] static FilePaths fromStrings(const QStringList &fileNames);
+    [[nodiscard]] static FilePaths resolvePaths(const FilePath &anchor,
+                                                const QStringList &fileNames);
+
+    [[nodiscard]] QVariant toSettings() const;
+    [[nodiscard]] QStringList toFsPathStrings() const;
+    [[nodiscard]] QString toUserOutput(const QString &separator) const;
+    [[nodiscard]] FilePath commonPath() const;
+    void sort();
+};
+
+//! A Range that iterates over the specified path and its parent directories. Optionally only up to "last".
+class UTILS_EXPORT PathAndParents
+{
+public:
+    PathAndParents(const FilePath &p);
+    PathAndParents(const FilePath &p, const FilePath &last);
+
+    class UTILS_EXPORT iterator
+    {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = FilePath;
+        using difference_type = std::ptrdiff_t;
+        using pointer = FilePath *;
+        using reference = FilePath &;
+
+        explicit iterator(const FilePath &p);
+
+        iterator &operator++();
+        iterator operator++(int);
+
+        bool operator!=(const iterator &other) const;
+        bool operator==(const iterator &other) const;
+        [[nodiscard]] const FilePath &operator*() const;
+
+    private:
+        FilePath current;
+    };
+
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
+
+private:
+    const FilePath m_path;
+    const FilePath m_lastPath;
+};
+
+// Needed with older gcc.
+template<template<typename...> class C = QList, // result container
+         typename F>                            // Arguments to C
+Q_REQUIRED_RESULT auto transform(const FilePaths &container, F function)
+{
+    return transform<C, const QList<FilePath> &>(static_cast<QList<FilePath>>(container), function);
+}
 
 // For testing
 UTILS_EXPORT QString doCleanPath(const QString &input);

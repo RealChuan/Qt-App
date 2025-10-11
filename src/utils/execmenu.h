@@ -14,6 +14,5 @@ QT_END_NAMESPACE
 namespace Utils {
 
 UTILS_EXPORT QAction *execMenuAtWidget(QMenu *menu, QWidget *widget);
-UTILS_EXPORT void addToolTipsToMenu(QMenu *menu);
 
 } // namespace Utils

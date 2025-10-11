@@ -11,11 +11,11 @@ LIBS += \
 
 HEADERS += \
     dialog.hpp \
-    gui_global.hpp \
     mainwidget.hpp \
     messagebox.h \
     pushbutton.hpp \
-    waitwidget.h
+    waitwidget.h \
+    widgets_global.hpp 
 
 SOURCES += \
     dialog.cc \

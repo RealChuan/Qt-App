@@ -31,6 +31,7 @@ class DeviceProcessHooks;
 class ProcessInterface;
 class ProcessResultData;
 class ProcessRunData;
+class TextEncoding;
 
 class UTILS_EXPORT Process final : public QObject
 {
@@ -114,6 +115,9 @@ public:
     bool isRunAsRoot() const;
     void setAbortOnMetaChars(bool abort);
 
+    using ProcessInterfaceCreator = std::function<ProcessInterface *()>;
+    void setProcessInterfaceCreator(const ProcessInterfaceCreator &creator);
+
     void setProcessChannelMode(QProcess::ProcessChannelMode mode);
     QProcess::ProcessChannelMode processChannelMode() const;
 
@@ -148,8 +152,8 @@ public:
     void runBlocking(std::chrono::seconds timeout = std::chrono::seconds(10),
                      EventLoopMode eventLoopMode = EventLoopMode::Off);
 
-    void setCodec(const TextCodec &codec); // for stdOut and stdErr
-    void setUtf8Codec();                   // for stdOut and stdErr
+    void setEncoding(const TextEncoding &encoding); // for stdOut and stdErr
+    void setUtf8Codec();                            // for stdOut and stdErr
     void setUtf8StdOutCodec(); // for stdOut, stdErr uses executable.processStdErrCodec()
 
     void setTimeOutMessageBoxEnabled(bool);
@@ -198,6 +202,16 @@ public:
     void setForceDefaultErrorModeOnWindows(bool force);
     bool forceDefaultErrorModeOnWindows() const;
 
+    // Use it with care!
+    // That's useful only when process uses ExternalTerminalProcessImpl.
+    // In this case, after the process is finished, you may take the process interface
+    // to keep the external window open and delete the process afterwards, without
+    // closing the external window.
+    // You are responsible for deleting the interface at later point in time, otherwise you leak it.
+    // Deleting the interface will close the external window immediately.
+    // Call it only from slot connected to Process::done() signal.
+    ProcessInterface *takeProcessInterface();
+
 signals:
     void starting(); // On NotRunning -> Starting state transition
     void started();  // On Starting -> Running state transition
@@ -221,13 +235,12 @@ public:
     std::function<ProcessInterface *(const FilePath &)> processImplHook;
 };
 
-class UTILS_EXPORT ProcessTaskAdapter final : public Tasking::TaskAdapter<Process>
+class ProcessTaskAdapter final
 {
 public:
-    ProcessTaskAdapter();
-    void start() final;
+    UTILS_EXPORT void operator()(Process *task, Tasking::TaskInterface *iface);
 };
 
-using ProcessTask = Tasking::CustomTask<ProcessTaskAdapter>;
+using ProcessTask = Tasking::CustomTask<Process, ProcessTaskAdapter>;
 
 } // namespace Utils

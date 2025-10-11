@@ -24,12 +24,17 @@ class AboutPlugin : public ExtensionSystem::IPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "aboutplugin.json")
-public:
+
+    ~AboutPlugin() override = default;
+
     Utils::Result<> initialize(const QStringList &arguments) override
     {
-        addObject(new AboutPluginWidget(this));
+        m_aboutPluginWidgetPtr.reset(new AboutPluginWidget(this));
+        Core::addCoreWidget(m_aboutPluginWidgetPtr.data());
         return Utils::ResultOk;
     }
+
+    QScopedPointer<AboutPluginWidget> m_aboutPluginWidgetPtr;
 };
 
 } // namespace Plugin

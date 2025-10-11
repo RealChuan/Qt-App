@@ -8,57 +8,43 @@
 #include <QString>
 #include <QStringConverter>
 
-QT_BEGIN_NAMESPACE
-class QTextCodec;
-QT_END_NAMESPACE
-
 namespace Utils {
 
-class UTILS_EXPORT TextCodec final
+class UTILS_EXPORT TextEncoding
 {
 public:
-    using ConverterState = QStringConverter::State;
+    TextEncoding();
+    TextEncoding(const QByteArray &name);
+    TextEncoding(QStringEncoder::Encoding encoding);
 
-    TextCodec();
+    static const QStringConverter::Encoding Utf8 = QStringConverter::Encoding::Utf8;
+    static const QStringConverter::Encoding Utf16 = QStringConverter::Encoding::Utf16;
+    static const QStringConverter::Encoding Utf32 = QStringConverter::Encoding::Utf32;
+    static const QStringConverter::Encoding Latin1 = QStringConverter::Encoding::Latin1;
+    static const QStringConverter::Encoding System = QStringConverter::Encoding::System;
 
     bool isValid() const;
 
-    int mibEnum() const;
-    QByteArray name() const;
+    QByteArray name() const { return m_name; }
+
     QString displayName() const;
-    QString fullDisplayName() const; // Includes aliases
-
-    QByteArray fromUnicode(QStringView data) const;
-
-    QString toUnicode(const QByteArray &data) const;
-    QString toUnicode(QByteArrayView data) const;
-    QString toUnicode(const char *data, int size, ConverterState *state) const;
-
-    bool canEncode(QStringView data) const;
-
-    static TextCodec codecForName(const QByteArray &codecName);
-    static TextCodec codecForMib(int mib);
-    static TextCodec codecForLocale();
+    QString fullDisplayName() const;
 
     bool isUtf8() const;
-    static bool isUtf8Codec(const QByteArray &codecName); // Also considers aliases
 
-    static QList<int> availableMibs();
-    static QList<QByteArray> availableCodecs();
+    QString decode(QByteArrayView encoded) const;
+    QByteArray encode(QStringView decoded) const;
 
-    static TextCodec utf8();
-    static TextCodec utf16();
-    static TextCodec utf32();
-    static TextCodec latin1();
+    static TextEncoding encodingForLocale();
+    static void setEncodingForLocale(const QByteArray &codecName);
 
-    static void setCodecForLocale(const QByteArray &codecName);
+    static const QList<TextEncoding> &availableEncodings();
 
 private:
-    explicit TextCodec(QTextCodec *codec);
+    UTILS_EXPORT friend bool operator==(const TextEncoding &left, const TextEncoding &right);
+    UTILS_EXPORT friend bool operator!=(const TextEncoding &left, const TextEncoding &right);
 
-    UTILS_EXPORT friend bool operator==(const TextCodec &left, const TextCodec &right);
-
-    QTextCodec *m_codec = nullptr; // FIXME: Avoid later
+    QByteArray m_name;
 };
 
 } // namespace Utils

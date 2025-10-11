@@ -7,9 +7,7 @@
 #include "filepath.h"
 #include "icon.h"
 #include "icondisplay.h"
-// #include "markdownbrowser.h"
 #include "qtcassert.h"
-
 #include <solutions/spinner/spinner.h>
 
 #include <QDebug>
@@ -217,7 +215,7 @@ private:
             ++indexInRow;
         }
         // Finish the last row.
-        if (!testOnly)
+        if (!testOnly && !itemList.isEmpty())
             setItemGeometries(/*count=*/indexInRow, /*beforeIndex=*/itemList.size(), lineHeight);
 
         return y + lineHeight - rect.y() + bottom;
@@ -1287,39 +1285,6 @@ void addToTabWidget(TabWidget *tabWidget, const Tab &tab)
     access(tabWidget)->addTab(tab.inner.emerge(), tab.tabName);
 }
 
-// MarkdownBrowser
-
-// MarkdownBrowser::MarkdownBrowser(std::initializer_list<I> ps)
-// {
-//     ptr = new Implementation;
-//     apply(this, ps);
-// }
-
-// QString MarkdownBrowser::toMarkdown() const
-// {
-//     return access(this)->toMarkdown();
-// }
-
-// void MarkdownBrowser::setMarkdown(const QString &markdown)
-// {
-//     access(this)->setMarkdown(markdown);
-// }
-
-// void MarkdownBrowser::setBasePath(const Utils::FilePath &path)
-// {
-//     access(this)->setBasePath(path);
-// }
-
-// void MarkdownBrowser::setEnableCodeCopyButton(bool enable)
-// {
-//     access(this)->setEnableCodeCopyButton(enable);
-// }
-
-// void MarkdownBrowser::setViewportMargins(int left, int top, int right, int bottom)
-// {
-//     access(this)->setMargins(QMargins(left, top, right, bottom));
-// }
-
 void CanvasWidget::setPaintFunction(const PaintFunction &paintFunction)
 {
     m_paintFunction = std::move(paintFunction);
@@ -1347,15 +1312,28 @@ void Canvas::setPaintFunction(const CanvasWidget::PaintFunction &paintFunction)
 
 // Special If
 
-If::If(bool condition,
-       const std::initializer_list<Layout::I> ifcase,
-       const std::initializer_list<Layout::I> elsecase)
-    : used(condition ? ifcase : elsecase)
+If::If(bool condition)
+    : condition(condition)
 {}
 
-void addToLayout(Layout *layout, const If &inner)
+If::If(bool condition, const Items &list)
+    : condition(condition)
+    , list(list)
+{}
+
+If operator>>(const If &if_, const Then &then_)
 {
-    for (const Layout::I &item : inner.used)
+    return If(if_.condition, if_.condition ? then_.list : If::Items());
+}
+
+If operator>>(const If &if_, const Else &else_)
+{
+    return If(if_.condition, if_.condition ? If::Items() : else_.list);
+}
+
+void addToLayout(Layout *layout, const If &if_)
+{
+    for (const Layout::I &item : if_.list)
         item.apply(layout);
 }
 

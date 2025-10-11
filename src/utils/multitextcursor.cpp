@@ -27,7 +27,7 @@ void MultiTextCursor::fillMapWithList()
         m_cursorMap[it->selectionStart()] = it;
 }
 
-MultiTextCursor& MultiTextCursor::operator=(const MultiTextCursor &multiCursor)
+MultiTextCursor &MultiTextCursor::operator=(const MultiTextCursor &multiCursor)
 {
     m_cursorList = multiCursor.m_cursorList;
     fillMapWithList();
@@ -39,7 +39,7 @@ MultiTextCursor::MultiTextCursor(const MultiTextCursor &multiCursor)
     *this = multiCursor;
 }
 
-MultiTextCursor& MultiTextCursor::operator=(const MultiTextCursor &&multiCursor)
+MultiTextCursor &MultiTextCursor::operator=(const MultiTextCursor &&multiCursor)
 {
     m_cursorList = std::move(multiCursor.m_cursorList);
     fillMapWithList();
@@ -164,7 +164,19 @@ QTextCursor MultiTextCursor::takeMainCursor()
     QTextCursor cursor = m_cursorList.back();
     auto it = m_cursorList.end();
     --it;
-    m_cursorMap.erase(it->selectionStart());
+
+    auto mapIt = m_cursorMap.find(it->selectionStart());
+    if (mapIt == m_cursorMap.end()) {
+        // If the QTextCursor has been moved, we cannot find it by selectionStart in the map.
+        // We need to find it by comparing the cursor pointers.
+        mapIt = std::find_if(m_cursorMap.begin(), m_cursorMap.end(), [&it](const auto &pair) {
+            return pair.second == it;
+        });
+    }
+
+    QTC_ASSERT(mapIt != m_cursorMap.end(), return QTextCursor());
+
+    m_cursorMap.erase(mapIt);
     m_cursorList.erase(it);
 
     return cursor;
@@ -195,16 +207,6 @@ bool MultiTextCursor::hasMultipleCursors() const
 int MultiTextCursor::cursorCount() const
 {
     return static_cast<int>(m_cursorList.size());
-}
-
-void MultiTextCursor::movePosition(QTextCursor::MoveOperation operation,
-                                   QTextCursor::MoveMode mode,
-                                   int n)
-{
-    for (auto &cursor : m_cursorList)
-        cursor.movePosition(operation, mode, n);
-
-    mergeCursors();
 }
 
 bool MultiTextCursor::hasSelection() const
@@ -285,7 +287,8 @@ void MultiTextCursor::insertText(const QString &text, bool selectNewText)
 
 bool equalCursors(const QTextCursor &lhs, const QTextCursor &rhs)
 {
-    return lhs == rhs && lhs.anchor() == rhs.anchor();
+    return lhs == rhs && lhs.anchor() == rhs.anchor()
+           && lhs.verticalMovementX() == rhs.verticalMovementX();
 }
 
 bool MultiTextCursor::operator==(const MultiTextCursor &other) const
@@ -300,7 +303,7 @@ bool MultiTextCursor::operator==(const MultiTextCursor &other) const
 
     auto it = m_cursorMap.begin();
     auto otherIt = other.m_cursorMap.begin();
-    for (;it != m_cursorMap.end() && otherIt != other.m_cursorMap.end(); ++it, ++otherIt) {
+    for (; it != m_cursorMap.end() && otherIt != other.m_cursorMap.end(); ++it, ++otherIt) {
         const QTextCursor &cursor = *it->second;
         const QTextCursor &otherCursor = *otherIt->second;
         if (it->first != otherIt->first || cursor != otherCursor
@@ -321,172 +324,15 @@ void MultiTextCursor::mergeCursors()
     setCursors(cursors);
 }
 
-// could go into QTextCursor...
-static QTextLine currentTextLine(const QTextCursor &cursor)
-{
-    const QTextBlock block = cursor.block();
-    if (!block.isValid())
-        return {};
-
-    const QTextLayout *layout = block.layout();
-    if (!layout)
-        return {};
-
-    const int relativePos = cursor.position() - block.position();
-    return layout->lineForTextPosition(relativePos);
-}
-
-bool MultiTextCursor::multiCursorEvent(
-    QKeyEvent *e, QKeySequence::StandardKey matchKey, Qt::KeyboardModifiers filterModifiers)
+bool MultiTextCursor::multiCursorEvent(QKeyEvent *e,
+                                       QKeySequence::StandardKey matchKey,
+                                       Qt::KeyboardModifiers filterModifiers)
 {
     filterModifiers |= (Utils::HostOsInfo::isMacHost() ? Qt::KeypadModifier : Qt::AltModifier);
     uint searchkey = (e->modifiers() | e->key()) & ~filterModifiers;
 
     const QList<QKeySequence> bindings = QKeySequence::keyBindings(matchKey);
     return bindings.contains(QKeySequence(searchkey));
-}
-
-bool MultiTextCursor::handleMoveKeyEvent(QKeyEvent *e, bool camelCaseNavigationEnabled)
-{
-    if (e->modifiers() & Qt::AltModifier && !Utils::HostOsInfo::isMacHost()) {
-        QTextCursor::MoveOperation op = QTextCursor::NoMove;
-        if (multiCursorEvent(e, QKeySequence::MoveToNextWord)) {
-            op = QTextCursor::WordRight;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToPreviousWord)) {
-            op = QTextCursor::WordLeft;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToEndOfBlock)) {
-            op = QTextCursor::EndOfBlock;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToStartOfBlock)) {
-            op = QTextCursor::StartOfBlock;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToNextLine, Qt::ShiftModifier)) {
-            op = QTextCursor::Down;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToPreviousLine, Qt::ShiftModifier)) {
-            op = QTextCursor::Up;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToStartOfLine)) {
-            op = QTextCursor::StartOfLine;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToEndOfLine)) {
-            op = QTextCursor::EndOfLine;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToStartOfDocument)) {
-            op = QTextCursor::Start;
-        } else if (multiCursorEvent(e, QKeySequence::MoveToEndOfDocument)) {
-            op = QTextCursor::End;
-        }
-
-        if (op != QTextCursor::NoMove) {
-            const std::list<QTextCursor> cursors = m_cursorList;
-            for (QTextCursor cursor : cursors) {
-                if (camelCaseNavigationEnabled && op == QTextCursor::WordRight)
-                    CamelCaseCursor::right(&cursor, QTextCursor::MoveAnchor);
-                else if (camelCaseNavigationEnabled && op == QTextCursor::WordLeft)
-                    CamelCaseCursor::left(&cursor, QTextCursor::MoveAnchor);
-                else
-                    cursor.movePosition(op, QTextCursor::MoveAnchor);
-
-                addCursor(cursor);
-            }
-            return true;
-        }
-    }
-
-    for (auto it = m_cursorList.begin(); it != m_cursorList.end(); ++it) {
-        QTextCursor &cursor = *it;
-        QTextCursor::MoveMode mode = QTextCursor::MoveAnchor;
-        QTextCursor::MoveOperation op = QTextCursor::NoMove;
-
-        if (e == QKeySequence::MoveToNextChar) {
-            op = QTextCursor::Right;
-        } else if (e == QKeySequence::MoveToPreviousChar) {
-            op = QTextCursor::Left;
-        } else if (multiCursorEvent(e, QKeySequence::SelectNextChar)) {
-            op = QTextCursor::Right;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectPreviousChar)) {
-            op = QTextCursor::Left;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectNextWord)) {
-            op = QTextCursor::WordRight;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectPreviousWord)) {
-            op = QTextCursor::WordLeft;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectStartOfLine)) {
-            op = QTextCursor::StartOfLine;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectEndOfLine)) {
-            op = QTextCursor::EndOfLine;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectStartOfBlock)) {
-            op = QTextCursor::StartOfBlock;
-            mode = QTextCursor::KeepAnchor;
-        } else if (multiCursorEvent(e, QKeySequence::SelectEndOfBlock)) {
-            op = QTextCursor::EndOfBlock;
-            mode = QTextCursor::KeepAnchor;
-        } else if (e == QKeySequence::SelectStartOfDocument) {
-            op = QTextCursor::Start;
-            mode = QTextCursor::KeepAnchor;
-        } else if (e == QKeySequence::SelectEndOfDocument) {
-            op = QTextCursor::End;
-            mode = QTextCursor::KeepAnchor;
-        } else if (e == QKeySequence::SelectPreviousLine) {
-            op = QTextCursor::Up;
-            mode = QTextCursor::KeepAnchor;
-        } else if (e == QKeySequence::SelectNextLine) {
-            op = QTextCursor::Down;
-            mode = QTextCursor::KeepAnchor;
-            {
-                QTextBlock block = cursor.block();
-                QTextLine line = currentTextLine(cursor);
-                if (!block.next().isValid() && line.isValid()
-                    && line.lineNumber() == block.layout()->lineCount() - 1)
-                    op = QTextCursor::End;
-            }
-        } else if (e == QKeySequence::MoveToNextWord) {
-            op = QTextCursor::WordRight;
-        } else if (e == QKeySequence::MoveToPreviousWord) {
-            op = QTextCursor::WordLeft;
-        } else if (e == QKeySequence::MoveToEndOfBlock) {
-            op = QTextCursor::EndOfBlock;
-        } else if (e == QKeySequence::MoveToStartOfBlock) {
-            op = QTextCursor::StartOfBlock;
-        } else if (e == QKeySequence::MoveToNextLine) {
-            op = QTextCursor::Down;
-        } else if (e == QKeySequence::MoveToPreviousLine) {
-            op = QTextCursor::Up;
-        } else if (e == QKeySequence::MoveToStartOfLine) {
-            op = QTextCursor::StartOfLine;
-        } else if (e == QKeySequence::MoveToEndOfLine) {
-            op = QTextCursor::EndOfLine;
-        } else if (e == QKeySequence::MoveToStartOfDocument) {
-            op = QTextCursor::Start;
-        } else if (e == QKeySequence::MoveToEndOfDocument) {
-            op = QTextCursor::End;
-        } else {
-            return false;
-        }
-
-        // Except for pageup and pagedown, macOS has very different behavior, we don't do it all, but
-        // here's the breakdown:
-        // Shift still works as an anchor, but only one of the other keys can be down Ctrl (Command),
-        // Alt (Option), or Meta (Control).
-        // Command/Control + Left/Right -- Move to left or right of the line
-        //                 + Up/Down -- Move to top bottom of the file. (Control doesn't move the cursor)
-        // Option + Left/Right -- Move one word Left/right.
-        //        + Up/Down  -- Begin/End of Paragraph.
-        // Home/End Top/Bottom of file. (usually don't move the cursor, but will select)
-
-        bool visualNavigation = cursor.visualNavigation();
-        cursor.setVisualNavigation(true);
-
-        if (camelCaseNavigationEnabled && op == QTextCursor::WordRight)
-            CamelCaseCursor::right(&cursor, mode);
-        else if (camelCaseNavigationEnabled && op == QTextCursor::WordLeft)
-            CamelCaseCursor::left(&cursor, mode);
-        else if (!cursor.movePosition(op, mode) && mode == QTextCursor::MoveAnchor)
-            cursor.clearSelection();
-        cursor.setVisualNavigation(visualNavigation);
-    }
-    mergeCursors();
-    return true;
 }
 
 } // namespace Utils

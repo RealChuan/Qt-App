@@ -3,8 +3,6 @@
 
 #include "execmenu.h"
 
-#include "tooltip/tooltip.h"
-
 #include <QMenu>
 #include <QPoint>
 #include <QRect>
@@ -41,17 +39,6 @@ QAction *execMenuAtWidget(QMenu *menu, QWidget *widget)
     p.ry() += 1;
 
     return menu->exec(p);
-}
-
-/*!
-    Adds tool tips to the \a menu that show the action's tool tip when hovering
-    over an entry.
- */
-void addToolTipsToMenu(QMenu *menu)
-{
-    QObject::connect(menu, &QMenu::hovered, menu, [menu](QAction *action) {
-        ToolTip::show(menu->mapToGlobal(menu->actionGeometry(action).topRight()), action->toolTip());
-    });
 }
 
 } // namespace Utils

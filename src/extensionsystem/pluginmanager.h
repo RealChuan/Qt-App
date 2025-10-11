@@ -65,34 +65,6 @@ public:
         return 0;
     }
 
-    template<typename T>
-    static auto getObjects() -> QVector<T *>
-    {
-        QReadLocker lock(listLock());
-        QVector<T *> results;
-        QVector<QObject *> all = allObjects();
-        foreach (QObject *obj, all) {
-            T *result = qobject_cast<T *>(obj);
-            if (result)
-                results += result;
-        }
-        return results;
-    }
-
-    template<typename T, typename Predicate>
-    static auto getObjects(Predicate predicate) -> QVector<T *>
-    {
-        QReadLocker lock(listLock());
-        QVector<T *> results;
-        QVector<QObject *> all = allObjects();
-        foreach (QObject *obj, all) {
-            T *result = qobject_cast<T *>(obj);
-            if (result && predicate(result))
-                results += result;
-        }
-        return results;
-    }
-
     static QObject *getObjectByName(const QString &name);
 
     static void startProfiling();
@@ -121,34 +93,31 @@ public:
     static void reInstallPlugins();
 
     static Utils::Result<> removePluginOnRestart(const QString &id);
-    static void installPluginOnRestart(const Utils::FilePath &source,
-                                       const Utils::FilePath &destination);
+    static void installPluginOnRestart(
+        const Utils::FilePath &source, const Utils::FilePath &destination);
 
     static void removePluginsAfterRestart();
     static void installPluginsAfterRestart();
 
     // UI
-    static std::optional<QSet<PluginSpec *>> askForEnablingPlugins(QWidget *dialogParent,
-                                                                   const QSet<PluginSpec *> &plugins,
-                                                                   bool enable);
+    static std::optional<QSet<PluginSpec *>> askForEnablingPlugins(
+        QWidget *dialogParent, const QSet<PluginSpec *> &plugins, bool enable);
 
     // Settings
-    static void setSettings(Utils::QtcSettings *settings);
     static Utils::QtcSettings *settings();
-    static void setInstallSettings(Utils::QtcSettings *settings);
     static Utils::QtcSettings *globalSettings();
     static void writeSettings();
 
     // command line arguments
     static QStringList arguments();
     static QStringList argumentsForRestart();
-    static Utils::Result<> parseOptions(const QStringList &args,
-                                        const QMap<QString, bool> &appOptions,
-                                        QMap<QString, QString> *foundAppOptions);
+    static Utils::Result<> parseOptions(
+        const QStringList &args,
+        const QMap<QString, bool> &appOptions,
+        QMap<QString, QString> *foundAppOptions);
     static void formatOptions(QTextStream &str, int optionIndentation, int descriptionIndentation);
-    static void formatPluginOptions(QTextStream &str,
-                                    int optionIndentation,
-                                    int descriptionIndentation);
+    static void formatPluginOptions(
+        QTextStream &str, int optionIndentation, int descriptionIndentation);
     static void formatPluginVersions(QTextStream &str);
 
     static QString serializedArguments();

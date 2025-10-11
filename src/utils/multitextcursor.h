@@ -56,12 +56,6 @@ public:
     /// merges overlapping cursors together
     void mergeCursors();
 
-    /// applies the move key event \param e to all cursors in this multi cursor
-    bool handleMoveKeyEvent(QKeyEvent *e, bool camelCaseNavigationEnabled);
-    /// applies the move \param operation to all cursors in this multi cursor \param n times
-    /// with the move \param mode
-    void movePosition(QTextCursor::MoveOperation operation, QTextCursor::MoveMode mode, int n = 1);
-
     /// Returns whether any cursor has a selection.
     bool hasSelection() const;
     /// Returns the selected text of all cursors that have a selection separated by

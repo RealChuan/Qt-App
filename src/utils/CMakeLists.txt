@@ -25,17 +25,10 @@ set(PROJECT_SOURCES
     mimetypes2/mimetypeparser_p.h
     mimetypes2/mimetypeparser.cpp
     mimetypes2/mimeutils.cpp
-    tooltip/effects.h
-    tooltip/tips.cpp
-    tooltip/tips.h
-    tooltip/tooltip.cpp
-    tooltip/tooltip.h
     algorithm.h
     appdata.hpp
     appinfo.cpp
     appinfo.h
-    async.cpp
-    async.h
     benchmarker.cpp
     benchmarker.h
     builderutils.h
@@ -57,17 +50,11 @@ set(PROJECT_SOURCES
     execmenu.cpp
     execmenu.h
     expected.h
-    faketooltip.cpp
-    faketooltip.h
     fancylineedit.cpp
     fancylineedit.h
     filepath.cpp
     filepath.h
     filepathinfo.h
-    filestreamer.cpp
-    filestreamer.h
-    filestreamermanager.cpp
-    filestreamermanager.h
     fileutils.cpp
     fileutils.h
     futuresynchronizer.cpp
@@ -84,8 +71,6 @@ set(PROJECT_SOURCES
     icon.h
     icondisplay.cpp
     icondisplay.h
-    id.cpp
-    id.h
     indexedcontainerproxyconstiterator.h
     infolabel.cpp
     infolabel.h
@@ -121,6 +106,7 @@ set(PROJECT_SOURCES
     qtcassert.h
     qtcprocess.cpp
     qtcprocess.h
+    qtcsettings_p.h
     qtcsettings.cpp
     qtcsettings.h
     result.cpp
@@ -135,12 +121,14 @@ set(PROJECT_SOURCES
     store.cpp
     store.h
     storekey.h
-    stringtable.cpp
-    stringtable.h
     stringutils.cpp
     stringutils.h
     stylehelper.cpp
     stylehelper.h
+    temporarydirectory.cpp
+    temporarydirectory.h
+    temporaryfile.cpp
+    temporaryfile.h
     textcodec.cpp
     textcodec.h
     threadutils.cpp

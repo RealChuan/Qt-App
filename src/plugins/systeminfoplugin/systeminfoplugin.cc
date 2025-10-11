@@ -22,12 +22,17 @@ class SystemInfoPlugin : public ExtensionSystem::IPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "systeminfoplugin.json")
-public:
+
+    ~SystemInfoPlugin() override = default;
+
     Utils::Result<> initialize(const QStringList &arguments) override
     {
-        addObject(new SystemInfoPluginWidget(this));
+        m_systemInfoPluginWidgetPtr.reset(new SystemInfoPluginWidget(this));
+        Core::addCoreWidget(m_systemInfoPluginWidgetPtr.data());
         return Utils::ResultOk;
     }
+
+    QScopedPointer<SystemInfoPluginWidget> m_systemInfoPluginWidgetPtr;
 };
 
 } // namespace Plugin

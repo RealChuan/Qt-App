@@ -22,12 +22,17 @@ class GuiPlugin : public ExtensionSystem::IPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "guiplugin.json")
-public:
+
+    ~GuiPlugin() override = default;
+
     Utils::Result<> initialize(const QStringList &argument) override
     {
-        addObject(new GuiPluginWidget(this));
+        m_guiPluginWidgetPtr.reset(new GuiPluginWidget(this));
+        Core::addCoreWidget(m_guiPluginWidgetPtr.data());
         return Utils::ResultOk;
     }
+
+    QScopedPointer<GuiPluginWidget> m_guiPluginWidgetPtr;
 };
 
 } // namespace Plugin

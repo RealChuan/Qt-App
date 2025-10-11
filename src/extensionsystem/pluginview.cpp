@@ -113,8 +113,8 @@ public:
 
                 if (decoration.isEmpty())
                     return displayName;
-                return QString::fromLatin1("%1 (%2)").arg(displayName,
-                                                          decoration.join(QLatin1Char(',')));
+                return QString::fromLatin1("%1 (%2)")
+                    .arg(displayName, decoration.join(QLatin1Char(',')));
             }
             if (role == SortRole)
                 return displayName;
@@ -164,8 +164,7 @@ public:
 
         case VersionColumn:
             if (role == Qt::DisplayRole || role == SortRole)
-                return QString::fromLatin1("%1 (%2)").arg(m_spec->version(),
-                                                          m_spec->compatVersion());
+                return QString::fromLatin1("%1 (%2)").arg(m_spec->version(), m_spec->compatVersion());
             break;
 
         case VendorColumn:
@@ -317,19 +316,18 @@ PluginView::PluginView(QWidget *parent)
     header->setSortIndicator(NameColumn, Qt::AscendingOrder);
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    connect(PluginManager::instance(),
-            &PluginManager::pluginsChanged,
-            this,
-            &PluginView::updatePlugins);
+    connect(
+        PluginManager::instance(), &PluginManager::pluginsChanged, this, &PluginView::updatePlugins);
 
     connect(m_categoryView, &QAbstractItemView::activated, this, [this](const QModelIndex &idx) {
         emit pluginActivated(pluginForIndex(idx));
     });
 
-    connect(m_categoryView->selectionModel(),
-            &QItemSelectionModel::currentChanged,
-            this,
-            [this](const QModelIndex &idx) { emit currentPluginChanged(pluginForIndex(idx)); });
+    connect(
+        m_categoryView->selectionModel(),
+        &QItemSelectionModel::currentChanged,
+        this,
+        [this](const QModelIndex &idx) { emit currentPluginChanged(pluginForIndex(idx)); });
 
     updatePlugins();
 }
@@ -352,9 +350,8 @@ PluginSpec *PluginView::currentPlugin() const
 */
 void PluginView::setFilter(const QString &filter)
 {
-    m_data.m_sortModel->setFilterRegularExpression(
-        QRegularExpression(QRegularExpression::escape(filter),
-                           QRegularExpression::CaseInsensitiveOption));
+    m_data.m_sortModel->setFilterRegularExpression(QRegularExpression(
+        QRegularExpression::escape(filter), QRegularExpression::CaseInsensitiveOption));
     m_categoryView->expandAll();
 }
 

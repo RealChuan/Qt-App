@@ -6,7 +6,6 @@
 #include <extensionsystem/iplugin.h>
 #include <extensionsystem/pluginmanager.h>
 #include <utils/guiutils.h>
-#include <utils/id.h>
 #include <utils/utils.hpp>
 
 #include <QApplication>
@@ -33,6 +32,13 @@ class CorePlugin : public ExtensionSystem::IPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "coreplugin.json")
 public:
+    CorePlugin()
+    {
+        QObject::connect(qApp,
+                         SIGNAL(fileOpenRequest(QString)),
+                         this,
+                         SLOT(fileOpenRequest(QString)));
+    }
     ~CorePlugin() override {}
 
     Utils::Result<> initialize(const QStringList &arguments) override
@@ -51,6 +57,15 @@ public:
     {
         Utils::restoreAndActivate(mainwindowPtr.data());
         return nullptr;
+    }
+
+public slots:
+    void fileOpenRequest(const QString &f)
+    {
+        if (ExtensionSystem::PluginManager::isShuttingDown()) {
+            return;
+        }
+        remoteCommand(QStringList(), QString(), QStringList(f));
     }
 
 private:

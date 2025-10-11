@@ -11,13 +11,9 @@
 #include "processinterface.h"
 #include "processreaper.h"
 #include "stringutils.h"
-// #include "terminalhooks.h"
 #include "textcodec.h"
 #include "threadutils.h"
 #include "utilstr.h"
-
-// #include <iptyprocess.h>
-// #include <ptyqt.h>
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -34,7 +30,7 @@
 // qmlpuppet does not use that.
 #include <QGuiApplication>
 #include <QMessageBox>
-#include <QStringConverterBase>
+#include <QStringConverter>
 #endif
 
 #include <algorithm>
@@ -233,15 +229,14 @@ public:
 
     QString readAllData()
     {
-        QString msg = codec.toUnicode(rawData.data(), rawData.size(), &codecState);
+        QString msg = decoder.decode(rawData);
         rawData.clear();
         return msg;
     }
 
     QByteArray rawData;
     QString incompleteLineBuffer; // lines not yet signaled
-    TextCodec codec;
-    TextCodec::ConverterState codecState;
+    QStringDecoder decoder;
     std::function<void(const QString &lines)> outputCallback;
     TextChannelMode m_textChannelMode = TextChannelMode::Off;
 
@@ -345,150 +340,6 @@ bool DefaultImpl::ensureProgramExists(const QString &program)
     emit done(result);
     return false;
 }
-
-// class PtyProcessImpl final : public DefaultImpl
-// {
-// public:
-//     ~PtyProcessImpl()
-//     {
-//         QTC_CHECK(m_setup.m_ptyData);
-//         m_setup.m_ptyData->setResizeHandler({});
-//     }
-
-//     qint64 write(const QByteArray &data) final
-//     {
-//         if (m_ptyProcess)
-//             return m_ptyProcess->write(data);
-//         return -1;
-//     }
-
-//     void sendControlSignal(ControlSignal controlSignal) final
-//     {
-//         if (!m_ptyProcess)
-//             return;
-
-//         switch (controlSignal) {
-//         case ControlSignal::Terminate: m_ptyProcess.reset(); break;
-//         case ControlSignal::Kill: m_ptyProcess->kill(); break;
-//         default: QTC_CHECK(false);
-//         }
-//     }
-
-//     void doDefaultStart(const QString &program, const QStringList &arguments) final
-//     {
-//         QString executable = program;
-//         FilePath path = FilePath::fromUserInput(executable);
-//         if (!path.isAbsolutePath()) {
-//             path = path.searchInPath();
-//             if (path.isEmpty()) {
-//                 const ProcessResultData result
-//                     = {0,
-//                        QProcess::CrashExit,
-//                        QProcess::FailedToStart,
-//                        Tr::tr("The program \"%1\" could not be found.").arg(program)};
-//                 emit done(result);
-//                 return;
-//             }
-
-//             executable = path.nativePath();
-//         }
-
-//         QTC_CHECK(m_setup.m_ptyData);
-//         m_setup.m_ptyData->setResizeHandler([this](const QSize &size) {
-//             if (m_ptyProcess)
-//                 m_ptyProcess->resize(size.width(), size.height());
-//         });
-//         m_ptyProcess.reset(PtyQt::createPtyProcess(IPtyProcess::AutoPty));
-//         if (!m_ptyProcess) {
-//             const ProcessResultData result = {-1,
-//                                               QProcess::CrashExit,
-//                                               QProcess::FailedToStart,
-//                                               "Failed to create pty process"};
-//             emit done(result);
-//             return;
-//         }
-
-//         QProcessEnvironment penv = m_setup.m_environment.toProcessEnvironment();
-//         if (penv.isEmpty())
-//             penv = Environment::systemEnvironment().toProcessEnvironment();
-//         const QStringList senv = penv.toStringList();
-
-//         FilePath workingDir = m_setup.m_workingDirectory;
-//         if (!workingDir.isDir())
-//             workingDir = workingDir.parentDir();
-//         if (!QTC_GUARD(workingDir.exists()))
-//             workingDir = workingDir.withNewPath({});
-
-//         connect(m_ptyProcess->notifier(), &QIODevice::readyRead, this, [this] {
-//             if (m_setup.m_ptyData->ptyInputFlagsChangedHandler()
-//                 && m_inputFlags != m_ptyProcess->inputFlags()) {
-//                 m_inputFlags = m_ptyProcess->inputFlags();
-//                 m_setup.m_ptyData->ptyInputFlagsChangedHandler()(
-//                     static_cast<Pty::PtyInputFlag>(m_inputFlags.toInt()));
-//             }
-
-//             const QByteArray data = m_ptyProcess->readAll();
-//             if (!data.isEmpty())
-//                 emit readyRead(data, {});
-//         });
-
-//         connect(m_ptyProcess->notifier(), &QIODevice::aboutToClose, this, [this] {
-//             if (m_ptyProcess) {
-//                 const ProcessResultData result = {m_ptyProcess->exitCode(),
-//                                                   QProcess::NormalExit,
-//                                                   QProcess::UnknownError,
-//                                                   {}};
-
-//                 const QByteArray restOfOutput = m_ptyProcess->readAll();
-//                 if (!restOfOutput.isEmpty()) {
-//                     emit readyRead(restOfOutput, {});
-//                     m_ptyProcess->notifier()->disconnect();
-//                 }
-
-//                 emit done(result);
-//                 return;
-//             }
-
-//             const ProcessResultData result = {0, QProcess::NormalExit, QProcess::UnknownError, {}};
-//             emit done(result);
-//         });
-
-//         bool startResult = m_ptyProcess->startProcess(executable,
-//                                                       HostOsInfo::isWindowsHost()
-//                                                           ? QStringList{m_setup.m_nativeArguments}
-//                                                                 << arguments
-//                                                           : arguments,
-//                                                       workingDir.nativePath(),
-//                                                       senv,
-//                                                       m_setup.m_ptyData->size().width(),
-//                                                       m_setup.m_ptyData->size().height());
-
-//         if (!startResult) {
-//             const ProcessResultData result = {-1,
-//                                               QProcess::CrashExit,
-//                                               QProcess::FailedToStart,
-//                                               "Failed to start pty process: "
-//                                                   + m_ptyProcess->lastError()};
-//             emit done(result);
-//             return;
-//         }
-
-//         if (!m_ptyProcess->lastError().isEmpty()) {
-//             const ProcessResultData result = {-1,
-//                                               QProcess::CrashExit,
-//                                               QProcess::FailedToStart,
-//                                               m_ptyProcess->lastError()};
-//             emit done(result);
-//             return;
-//         }
-
-//         emit started(m_ptyProcess->pid());
-//     }
-
-// private:
-//     std::unique_ptr<IPtyProcess> m_ptyProcess;
-//     IPtyProcess::PtyInputFlags m_inputFlags;
-// };
 
 class QProcessImpl final : public DefaultImpl
 {
@@ -731,14 +582,7 @@ public:
     void setupDebugLog();
     void storeEventLoopDebugInfo(const QVariant &value);
 
-    ProcessInterface *createProcessInterface()
-    {
-        // if (m_setup.m_ptyData)
-        //     return new PtyProcessImpl;
-        // if (m_setup.m_terminalMode != TerminalMode::Off)
-        //     return Terminal::Hooks::instance().createTerminalProcessInterface();
-        return new QProcessImpl;
-    }
+    ProcessInterface *createProcessInterface() { return new QProcessImpl; }
 
     void setProcessInterface(ProcessInterface *process)
     {
@@ -762,6 +606,8 @@ public:
     std::unique_ptr<ProcessInterface> m_process;
     ProcessSetupData m_setup;
 
+    Process::ProcessInterfaceCreator m_processInterfaceCreator;
+
     void handleStarted(qint64 processId, qint64 applicationMainThreadId);
     void handleReadyRead(const QByteArray &outputData, const QByteArray &errorData);
     void handleDone(const ProcessResultData &data);
@@ -783,8 +629,8 @@ public:
     qint64 m_applicationMainThreadId = 0;
     ProcessResultData m_resultData;
 
-    TextCodec m_stdOutCodec;
-    TextCodec m_stdErrCodec;
+    std::optional<TextEncoding> m_stdOutEncoding;
+    std::optional<TextEncoding> m_stdErrEncoding;
 
     ProcessResult m_result = ProcessResult::StartFailed;
     ChannelBuffer m_stdOut;
@@ -1042,15 +888,15 @@ void ProcessPrivate::sendControlSignal(ControlSignal controlSignal)
 
 void ProcessPrivate::clearForRun()
 {
-    if (!m_stdOutCodec.isValid())
-        m_stdOutCodec = m_setup.m_commandLine.executable().processStdOutCodec();
+    if (!m_stdOutEncoding)
+        m_stdOutEncoding = m_setup.m_commandLine.executable().processStdOutEncoding();
     m_stdOut.clearForRun();
-    m_stdOut.codec = m_stdOutCodec;
+    m_stdOut.decoder = QStringDecoder(m_stdOutEncoding->name());
 
-    if (!m_stdErrCodec.isValid())
-        m_stdErrCodec = m_setup.m_commandLine.executable().processStdErrCodec();
+    if (!m_stdErrEncoding)
+        m_stdErrEncoding = m_setup.m_commandLine.executable().processStdErrEncoding();
     m_stdErr.clearForRun();
-    m_stdErr.codec = m_stdErrCodec;
+    m_stdErr.decoder = QStringDecoder(m_stdErrEncoding->name());
 
     m_result = ProcessResult::StartFailed;
     m_startTimestamp = {};
@@ -1217,7 +1063,7 @@ void Process::start()
     }
 
     ProcessInterface *processImpl = nullptr;
-    if (d->m_setup.m_commandLine.executable().isLocal()) {
+    if (d->m_setup.m_commandLine.executable().isLocal() || d->m_processInterfaceCreator) {
         processImpl = d->createProcessInterface();
     } else {
         QTC_ASSERT(s_deviceHooks.processImplHook, return);
@@ -1300,6 +1146,11 @@ void Process::setAbortOnMetaChars(bool abort)
     d->m_setup.m_abortOnMetaChars = abort;
 }
 
+void Process::setProcessInterfaceCreator(const ProcessInterfaceCreator &creator)
+{
+    d->m_processInterfaceCreator = creator;
+}
+
 void Process::setRunAsRoot(bool on)
 {
     d->m_setup.m_runAsRoot = on;
@@ -1354,6 +1205,22 @@ void Process::setForceDefaultErrorModeOnWindows(bool force)
 bool Process::forceDefaultErrorModeOnWindows() const
 {
     return d->m_setup.m_forceDefaultErrorMode;
+}
+
+ProcessInterface *Process::takeProcessInterface()
+{
+    QTC_ASSERT(QThread::currentThread() == thread(), return nullptr);
+    QTC_ASSERT(state() == QProcess::NotRunning, return nullptr);
+    QTC_ASSERT(d->m_process, return nullptr);
+    QTC_ASSERT(d->m_process->thread() == thread(), return nullptr);
+    if (d->m_blockingInterface) {
+        d->m_blockingInterface->disconnect();
+        d->m_blockingInterface.release()->deleteLater();
+    }
+    d->clearForRun();
+    d->m_process->disconnect();
+    d->m_process->setParent(nullptr);
+    return d->m_process.release();
 }
 
 void Process::setExtraData(const QString &key, const QVariant &value)
@@ -1620,6 +1487,11 @@ void Process::stop()
         return;
 
     d->sendControlSignal(ControlSignal::Terminate);
+
+    // done() signal could have been sent synchronously - see TerminalInterface::killInferiorProcess()
+    if (state() == QProcess::NotRunning)
+        return;
+
     d->m_killTimer.start(d->m_process->m_setup.m_reaperTimeout);
 }
 
@@ -1735,15 +1607,15 @@ QByteArray Process::rawStdErr() const
 QString Process::stdOut() const
 {
     QTC_CHECK(d->m_stdOut.keepRawData);
-    QTC_ASSERT(d->m_stdOutCodec.isValid(), return {}); // Process was not started
-    return d->m_stdOutCodec.toUnicode(d->m_stdOut.rawData);
+    QTC_ASSERT(d->m_stdOutEncoding, return {}); // Process was not started
+    return d->m_stdOut.decoder.decode(d->m_stdOut.rawData);
 }
 
 QString Process::stdErr() const
 {
     QTC_CHECK(d->m_stdErr.keepRawData);
-    QTC_ASSERT(d->m_stdErrCodec.isValid(), return {}); // Process was not started
-    return d->m_stdErrCodec.toUnicode(d->m_stdErr.rawData);
+    QTC_ASSERT(d->m_stdOutEncoding, return {}); // Process was not started
+    return d->m_stdOut.decoder.decode(d->m_stdErr.rawData);
 }
 
 QString Process::cleanedStdOut() const
@@ -1788,7 +1660,6 @@ UTILS_EXPORT QDebug operator<<(QDebug str, const Process &r)
 void ChannelBuffer::clearForRun()
 {
     rawData.clear();
-    codecState.reset();
     incompleteLineBuffer.clear();
 }
 
@@ -1807,7 +1678,7 @@ void ChannelBuffer::append(const QByteArray &text)
         return;
 
     // Convert and append the new input to the buffer of incomplete lines
-    incompleteLineBuffer.append(codec.toUnicode(text.constData(), text.size(), &codecState));
+    incompleteLineBuffer.append(decoder.decode(text));
 
     QStringView bufferView(incompleteLineBuffer);
 
@@ -1857,22 +1728,21 @@ void ChannelBuffer::handleRest()
     }
 }
 
-void Process::setCodec(const TextCodec &codec)
+void Process::setEncoding(const TextEncoding &encoding)
 {
-    QTC_ASSERT(codec.isValid(), return);
-    d->m_stdOutCodec = codec;
-    d->m_stdErrCodec = codec;
+    d->m_stdOutEncoding = encoding;
+    d->m_stdErrEncoding = encoding;
 }
 
 void Process::setUtf8Codec()
 {
-    d->m_stdOutCodec = TextCodec::utf8();
-    d->m_stdErrCodec = TextCodec::utf8();
+    d->m_stdOutEncoding = QStringDecoder::Utf8;
+    d->m_stdErrEncoding = QStringDecoder::Utf8;
 }
 
 void Process::setUtf8StdOutCodec()
 {
-    d->m_stdOutCodec = TextCodec::utf8();
+    d->m_stdOutEncoding = QStringDecoder::Utf8;
 }
 
 void Process::setTimeOutMessageBoxEnabled(bool v)
@@ -1906,6 +1776,8 @@ void Process::runBlocking(seconds timeout, EventLoopMode eventLoopMode)
         if (state() == QProcess::NotRunning)
             return;
         stop();
+        // TODO: This arbitrary 2s causes flakiness of:
+        //       tst_Process::runBlockingStdOut:"Short timeout without end of line".
         QTC_CHECK(waitForFinished(2s));
     };
 
@@ -2163,16 +2035,18 @@ void ProcessPrivate::storeEventLoopDebugInfo(const QVariant &value)
         setProperty(QTC_PROCESS_BLOCKING_TYPE, value);
 }
 
-ProcessTaskAdapter::ProcessTaskAdapter()
+void ProcessTaskAdapter::operator()(Process *task, Tasking::TaskInterface *iface)
 {
-    connect(task(), &Process::done, this, [this] {
-        emit done(Tasking::toDoneResult(task()->result() == ProcessResult::FinishedWithSuccess));
-    });
-}
-
-void ProcessTaskAdapter::start()
-{
-    task()->start();
+    QObject::connect(
+        task,
+        &Process::done,
+        iface,
+        [iface, task] {
+            iface->reportDone(
+                Tasking::toDoneResult(task->result() == ProcessResult::FinishedWithSuccess));
+        },
+        Qt::SingleShotConnection);
+    task->start();
 }
 
 } // namespace Utils

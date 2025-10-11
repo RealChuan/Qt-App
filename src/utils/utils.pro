@@ -2,7 +2,6 @@ include(../../qmake/PlatformLibraries.pri)
 
 include(mimetypes2/mimetypes.pri)
 include(fsengine/fsengine.pri)
-include(tooltip/tooltip.pri)
 
 QT += widgets core5compat concurrent network core-private
 
@@ -24,7 +23,6 @@ win32 {
 
 SOURCES += \
     appinfo.cpp \
-    async.cpp \
     benchmarker.cpp \
     camelcasecursor.cpp \
     categorysortfiltermodel.cpp \
@@ -34,11 +32,8 @@ SOURCES += \
     elidinglabel.cpp \
     environment.cpp \
     execmenu.cpp \
-    faketooltip.cpp \
     fancylineedit.cpp \
     filepath.cpp \
-    filestreamer.cpp \
-    filestreamermanager.cpp \
     fileutils.cpp \
     futuresynchronizer.cpp \
     guard.cpp \
@@ -47,7 +42,6 @@ SOURCES += \
     hostosinfo.cpp \
     icon.cpp \
     icondisplay.cpp \
-    id.cpp \
     infolabel.cpp \
     itemviews.cpp \
     languagemanager.cc \
@@ -69,9 +63,10 @@ SOURCES += \
     shutdownguard.cpp \
     singletonmanager.cc \
     store.cpp \
-    stringtable.cpp \
     stringutils.cpp \
     stylehelper.cpp \
+    temporarydirectory.cpp \
+    temporaryfile.cpp \
     textcodec.cpp \
     threadutils.cpp \
     treemodel.cpp \
@@ -84,7 +79,6 @@ HEADERS += \
     algorithm.h \
     appdata.hpp \
     appinfo.h \
-    async.h \
     benchmarker.h \
     builderutils.h \
     camelcasecursor.h \
@@ -97,12 +91,9 @@ HEADERS += \
     environmentfwd.h \
     execmenu.h \
     expected.h \
-    faketooltip.h \
     fancylineedit.h \
     filepath.h \
     filepathinfo.h \
-    filestreamer.h \
-    filestreamermanager.h \
     fileutils.h \
     futuresynchronizer.h \
     guard.h \
@@ -111,7 +102,6 @@ HEADERS += \
     hostosinfo.h \
     icon.h \
     icondisplay.h \
-    id.h \
     indexedcontainerproxyconstiterator.h \
     infolabel.h \
     itemviews.h \
@@ -133,6 +123,7 @@ HEADERS += \
     qtcassert.h \
     qtcprocess.h \
     qtcsettings.h \
+    qtcsettings_p.h \
     result.h \
     savefile.h \
     shutdownguard.h \
@@ -140,9 +131,10 @@ HEADERS += \
     singletonmanager.hpp \
     store.h \
     storekey.h \
-    stringtable.h \
     stringutils.h \
     stylehelper.h \
+    temporarydirectory.h \
+    temporaryfile.h \
     textcodec.h \
     threadutils.h \
     treemodel.h \

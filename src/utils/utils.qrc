@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/utils">
         <file>images/arrow.png</file>
-        <file>tooltip/images/f1.png</file>
         <file>images/broken.png</file>
         <file>images/broken@2x.png</file>
         <file>images/notloaded.png</file>

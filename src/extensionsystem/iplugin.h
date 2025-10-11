@@ -33,9 +33,10 @@ public:
     virtual void extensionsInitialized() {}
     virtual bool delayedInitialize() { return false; }
     virtual ShutdownFlag aboutToShutdown() { return SynchronousShutdown; }
-    virtual QObject *remoteCommand(const QStringList & /* options */,
-                                   const QString & /* workingDirectory */,
-                                   const QStringList & /* arguments */)
+    virtual QObject *remoteCommand(
+        const QStringList & /* options */,
+        const QString & /* workingDirectory */,
+        const QStringList & /* arguments */)
     {
         return nullptr;
     }
@@ -52,9 +53,6 @@ protected:
 
 signals:
     void asynchronousShutdownFinished();
-
-protected:
-    void addObject(QObject *obj);
 
 private:
     Internal::IPluginPrivate *d = nullptr; // For potential extension. Currently unused.

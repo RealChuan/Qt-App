@@ -9,8 +9,6 @@
 #include "pluginmanager_p.h"
 #include "pluginspec.h"
 
-// #include <nanotrace/nanotrace.h>
-
 #include <utils/algorithm.h>
 #include <utils/benchmarker.h>
 #include <utils/fileutils.h>
@@ -531,32 +529,12 @@ void PluginManager::setPluginIID(const QString &iid)
 }
 
 /*!
-    Defines the user specific \a settings to use for information about enabled and
-    disabled plugins.
-    Needs to be set before the plugin search path is set with setPluginPaths().
-*/
-void PluginManager::setSettings(QtcSettings *settings)
-{
-    d->setSettings(settings);
-}
-
-/*!
-    Defines the global (user-independent) \a settings to use for information about
-    default disabled plugins.
-    Needs to be set before the plugin search path is set with setPluginPaths().
-*/
-void PluginManager::setInstallSettings(QtcSettings *settings)
-{
-    d->setGlobalSettings(settings);
-}
-
-/*!
     Returns the user specific settings used for information about enabled and
     disabled plugins.
 */
 QtcSettings *PluginManager::settings()
 {
-    return d->settings;
+    return &Utils::userSettings();
 }
 
 /*!
@@ -564,7 +542,7 @@ QtcSettings *PluginManager::settings()
 */
 QtcSettings *PluginManager::globalSettings()
 {
-    return d->globalSettings;
+    return &Utils::installSettings();
 }
 
 void PluginManager::writeSettings()
@@ -677,6 +655,8 @@ static QStringList subList(const QStringList &in, const QString &key)
 
 void PluginManager::remoteArguments(const QString &serializedArgument, QObject *socket)
 {
+    if (isShuttingDown())
+        return;
     if (serializedArgument.isEmpty())
         return;
     QStringList serializedArguments = serializedArgument.split(QLatin1Char('|'));
@@ -716,8 +696,6 @@ void PluginManager::remoteArguments(const QString &serializedArgument, QObject *
     \a foundAppOptions is set to pairs of (\e {option string}, \e argument)
     for any application options that were found.
     The command line options that were not processed can be retrieved via the arguments() function.
-    If an error occurred (like missing argument for an option that requires one), \a errorString contains
-    a descriptive message of the error.
 
     Returns if there was an error.
  */
@@ -999,40 +977,14 @@ PluginSpecs PluginManager::loadQueue()
 
 //============PluginManagerPrivate===========
 
-/*!
-    \internal
-*/
-void PluginManagerPrivate::setSettings(QtcSettings *s)
-{
-    if (settings)
-        delete settings;
-    settings = s;
-    if (settings)
-        settings->setParent(this);
-}
-
-/*!
-    \internal
-*/
-void PluginManagerPrivate::setGlobalSettings(QtcSettings *s)
-{
-    if (globalSettings)
-        delete globalSettings;
-    globalSettings = s;
-    if (globalSettings)
-        globalSettings->setParent(this);
-}
-
 void PluginManagerPrivate::startDelayedInitialize()
 {
     Utils::setMimeStartupPhase(MimeStartupPhase::PluginsDelayedInitializing);
     {
-        // NANOTRACE_SCOPE("ExtensionSystem", "DelayedInitialize");
         while (!delayedInitializeQueue.empty()) {
             PluginSpec *spec = delayedInitializeQueue.front();
             const std::string specName = spec->id().toStdString();
             delayedInitializeQueue.pop();
-            // NANOTRACE_SCOPE(specName, specName + "::delayedInitialized");
             profilingReport(">delayedInitialize", spec);
             bool delay = spec->delayedInitialize();
             profilingReport("<delayedInitialize", spec, &spec->performanceData().delayedInitialize);
@@ -1045,7 +997,6 @@ void PluginManagerPrivate::startDelayedInitialize()
             m_totalStartupMS = m_profileTimer->elapsed();
         printProfilingSummary();
     }
-    // NANOTRACE_SHUTDOWN();
     emit q->initializationDone();
 #ifdef EXTENSIONSYSTEM_WITH_TESTOPTION
     if (PluginManager::testRunRequested())
@@ -1082,8 +1033,7 @@ PluginManagerPrivate::~PluginManagerPrivate()
 */
 void PluginManagerPrivate::writeSettings()
 {
-    if (!settings)
-        return;
+    QtcSettings &settings = Utils::userSettings();
     QStringList tempDisabledPlugins;
     QStringList tempForceEnabledPlugins;
     for (PluginSpec *spec : std::as_const(pluginSpecs)) {
@@ -1093,8 +1043,8 @@ void PluginManagerPrivate::writeSettings()
             tempForceEnabledPlugins.append(spec->id());
     }
 
-    settings->setValueWithDefault(C_IGNORED_PLUGINS, tempDisabledPlugins);
-    settings->setValueWithDefault(C_FORCEENABLED_PLUGINS, tempForceEnabledPlugins);
+    settings.setValueWithDefault(C_IGNORED_PLUGINS, tempDisabledPlugins);
+    settings.setValueWithDefault(C_FORCEENABLED_PLUGINS, tempForceEnabledPlugins);
 }
 
 static inline QStringList toLower(const QStringList &list)
@@ -1107,17 +1057,16 @@ static inline QStringList toLower(const QStringList &list)
 */
 void PluginManagerPrivate::readSettings()
 {
-    if (globalSettings) {
-        defaultDisabledPlugins = toLower(globalSettings->value(C_IGNORED_PLUGINS).toStringList());
-        defaultEnabledPlugins = toLower(
-            globalSettings->value(C_FORCEENABLED_PLUGINS).toStringList());
-    }
-    if (settings) {
-        disabledPlugins = toLower(settings->value(C_IGNORED_PLUGINS).toStringList());
-        forceEnabledPlugins = toLower(settings->value(C_FORCEENABLED_PLUGINS).toStringList());
-        pluginsWithAcceptedTermsAndConditions = filteredUnique(
-            settings->value(C_TANDCACCEPTED_PLUGINS).toStringList());
-    }
+    QtcSettings &userSettings = Utils::userSettings();
+    QtcSettings &globalSettings = Utils::installSettings();
+
+    defaultDisabledPlugins = toLower(globalSettings.value(C_IGNORED_PLUGINS).toStringList());
+    defaultEnabledPlugins = toLower(globalSettings.value(C_FORCEENABLED_PLUGINS).toStringList());
+
+    disabledPlugins = toLower(userSettings.value(C_IGNORED_PLUGINS).toStringList());
+    forceEnabledPlugins = toLower(userSettings.value(C_FORCEENABLED_PLUGINS).toStringList());
+    pluginsWithAcceptedTermsAndConditions = filteredUnique(
+        userSettings.value(C_TANDCACCEPTED_PLUGINS).toStringList());
 }
 
 /*!
@@ -1474,25 +1423,21 @@ void PluginManagerPrivate::loadPlugins()
     const PluginSpecs queue = loadQueue();
     Utils::setMimeStartupPhase(MimeStartupPhase::PluginsLoading);
     {
-        // NANOTRACE_SCOPE("ExtensionSystem", "Load");
         for (PluginSpec *spec : queue)
             loadPlugin(spec, PluginSpec::Loaded);
     }
 
     Utils::setMimeStartupPhase(MimeStartupPhase::PluginsInitializing);
     {
-        // NANOTRACE_SCOPE("ExtensionSystem", "RegisterMimeTypes");
         for (PluginSpec *spec : queue)
             registerMimeFromPlugin(spec);
     }
     {
-        // NANOTRACE_SCOPE("ExtensionSystem", "Initialize");
         for (PluginSpec *spec : queue)
             loadPlugin(spec, PluginSpec::Initialized);
     }
 
     {
-        // NANOTRACE_SCOPE("ExtensionSystem", "ExtensionsInitialized");
         Utils::reverseForeach(queue, [this](PluginSpec *spec) {
             loadPlugin(spec, PluginSpec::Running);
             if (spec->state() == PluginSpec::Running) {
@@ -1656,9 +1601,9 @@ bool PluginManagerPrivate::loadQueue(PluginSpec *spec,
 class LockFile
 {
 public:
-    static QString filePath(PluginManagerPrivate *pm)
+    static QString filePath()
     {
-        return QFileInfo(pm->settings->fileName()).absolutePath() + '/'
+        return QFileInfo(userSettings().fileName()).absolutePath() + '/'
                + QCoreApplication::applicationName() + '.'
                + QCryptographicHash::hash(QCoreApplication::applicationDirPath().toUtf8(),
                                           QCryptographicHash::Sha1)
@@ -1667,9 +1612,9 @@ public:
                + ".lock";
     }
 
-    static std::optional<QString> lockedPluginId(PluginManagerPrivate *pm)
+    static std::optional<QString> lockedPluginId()
     {
-        const QString lockFilePath = LockFile::filePath(pm);
+        const QString lockFilePath = LockFile::filePath();
         if (QFileInfo::exists(lockFilePath)) {
             QFile f(lockFilePath);
             if (f.open(QIODevice::ReadOnly)) {
@@ -1683,8 +1628,8 @@ public:
         return {};
     }
 
-    LockFile(PluginManagerPrivate *pm, PluginSpec *spec)
-        : m_filePath(filePath(pm))
+    LockFile(PluginSpec *spec)
+        : m_filePath(filePath())
     {
         QDir().mkpath(QFileInfo(m_filePath).absolutePath());
         QFile f(m_filePath);
@@ -1707,7 +1652,7 @@ void PluginManagerPrivate::checkForProblematicPlugins()
 {
     if (!enableCrashCheck)
         return;
-    const std::optional<QString> pluginId = LockFile::lockedPluginId(this);
+    const std::optional<QString> pluginId = LockFile::lockedPluginId();
     if (pluginId) {
         PluginSpec *spec = pluginById(*pluginId);
         if (spec && !spec->isRequired()) {
@@ -1859,8 +1804,7 @@ bool PluginManagerPrivate::acceptTermsAndConditions(PluginSpec *spec)
     }
 
     pluginsWithAcceptedTermsAndConditions.append(spec->id());
-    if (settings)
-        settings->setValue(C_TANDCACCEPTED_PLUGINS, pluginsWithAcceptedTermsAndConditions);
+    userSettings().setValue(C_TANDCACCEPTED_PLUGINS, pluginsWithAcceptedTermsAndConditions);
 
     return true;
 }
@@ -1892,13 +1836,12 @@ void PluginManagerPrivate::loadPlugin(PluginSpec *spec, PluginSpec::State destSt
 
     std::unique_ptr<LockFile> lockFile;
     if (enableCrashCheck && destState < PluginSpec::Stopped)
-        lockFile.reset(new LockFile(this, spec));
+        lockFile.reset(new LockFile(spec));
 
     const std::string specId = spec->id().toStdString();
 
     switch (destState) {
     case PluginSpec::Running: {
-        // NANOTRACE_SCOPE(specId, specId + "::extensionsInitialized");
         profilingReport(">initializeExtensions", spec);
         spec->initializeExtensions();
         profilingReport("<initializeExtensions",
@@ -1931,14 +1874,12 @@ void PluginManagerPrivate::loadPlugin(PluginSpec *spec, PluginSpec::State destSt
     }
     switch (destState) {
     case PluginSpec::Loaded: {
-        // NANOTRACE_SCOPE(specId, specId + "::load");
         profilingReport(">loadLibrary", spec);
         spec->loadLibrary();
         profilingReport("<loadLibrary", spec, &spec->performanceData().load);
         break;
     }
     case PluginSpec::Initialized: {
-        // NANOTRACE_SCOPE(specId, specId + "::initialize");
         profilingReport(">initializePlugin", spec);
         spec->initializePlugin();
         profilingReport("<initializePlugin", spec, &spec->performanceData().initialize);
@@ -2033,47 +1974,48 @@ Result<> PluginManagerPrivate::removePluginOnRestart(const QString &pluginId)
 
     const QVariantList list = Utils::transform(*filePaths, &FilePath::toVariant);
 
-    settings->setValue(PLUGINS_TO_REMOVE_KEY,
-                       settings->value(PLUGINS_TO_REMOVE_KEY).toList() + list);
+    QtcSettings &settings = Utils::userSettings();
+    settings.setValue(PLUGINS_TO_REMOVE_KEY, settings.value(PLUGINS_TO_REMOVE_KEY).toList() + list);
 
-    settings->sync();
+    settings.sync();
     return ResultOk;
 }
 
-static QList<QPair<FilePath, FilePath>> readPluginInstallList(QtcSettings *settings)
+static QList<QPair<FilePath, FilePath>> readPluginInstallList()
 {
-    int size = settings->beginReadArray(PLUGINS_TO_INSTALL_KEY);
+    QtcSettings &settings = Utils::userSettings();
+    int size = settings.beginReadArray(PLUGINS_TO_INSTALL_KEY);
 
     QList<QPair<FilePath, FilePath>> installList;
     for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        installList.append({FilePath::fromVariant(settings->value("src")),
-                            FilePath::fromVariant(settings->value("dest"))});
+        settings.setArrayIndex(i);
+        installList.append({FilePath::fromVariant(settings.value("src")),
+                            FilePath::fromVariant(settings.value("dest"))});
     }
-    settings->endArray();
+    settings.endArray();
     return installList;
 }
 
-void PluginManagerPrivate::installPluginOnRestart(const Utils::FilePath &src,
-                                                  const Utils::FilePath &dest)
+void PluginManagerPrivate::installPluginOnRestart(const FilePath &src, const FilePath &dest)
 {
-    const QList<QPair<FilePath, FilePath>> list = readPluginInstallList(settings)
-                                                  << qMakePair(src, dest);
+    QtcSettings &settings = Utils::userSettings();
+    const QList<QPair<FilePath, FilePath>> list = readPluginInstallList() << qMakePair(src, dest);
 
-    settings->beginWriteArray(PLUGINS_TO_INSTALL_KEY);
+    settings.beginWriteArray(PLUGINS_TO_INSTALL_KEY);
     for (int i = 0; i < list.size(); ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("src", list.at(i).first.toVariant());
-        settings->setValue("dest", list.at(i).second.toVariant());
+        settings.setArrayIndex(i);
+        settings.setValue("src", list.at(i).first.toVariant());
+        settings.setValue("dest", list.at(i).second.toVariant());
     }
-    settings->endArray();
+    settings.endArray();
 
-    settings->sync();
+    settings.sync();
 }
 
 void PluginManagerPrivate::removePluginsAfterRestart()
 {
-    const FilePaths removeList = Utils::transform(settings->value(PLUGINS_TO_REMOVE_KEY).toList(),
+    QtcSettings &settings = Utils::userSettings();
+    const FilePaths removeList = Utils::transform(settings.value(PLUGINS_TO_REMOVE_KEY).toList(),
                                                   &FilePath::fromVariant);
 
     for (const FilePath &path : removeList) {
@@ -2087,14 +2029,14 @@ void PluginManagerPrivate::removePluginsAfterRestart()
             qCWarning(pluginLog()) << "Failed to remove" << path << ":" << r.error();
     }
 
-    settings->remove(PLUGINS_TO_REMOVE_KEY);
+    settings.remove(PLUGINS_TO_REMOVE_KEY);
 }
 
 void PluginManagerPrivate::installPluginsAfterRestart()
 {
     QTC_CHECK(pluginSpecs.isEmpty());
 
-    const QList<QPair<FilePath, FilePath>> installList = readPluginInstallList(settings);
+    const QList<QPair<FilePath, FilePath>> installList = readPluginInstallList();
 
     for (const auto &[src, dest] : installList) {
         if (!src.exists()) {
@@ -2137,7 +2079,7 @@ void PluginManagerPrivate::installPluginsAfterRestart()
                 << "Failed to remove the source file in" << src << ":" << result.error();
     }
 
-    settings->remove(PLUGINS_TO_INSTALL_KEY);
+    Utils::userSettings().remove(PLUGINS_TO_INSTALL_KEY);
 }
 
 /*!
@@ -2236,12 +2178,6 @@ void PluginManagerPrivate::increaseProfilingVerbosity()
 void PluginManagerPrivate::enableTracing(const QString &filePath)
 {
     const QString jsonFilePath = filePath.endsWith(".json") ? filePath : filePath + ".json";
-#ifdef NANOTRACE_ENABLED
-    qDebug() << "Trace event file (CTF) will be saved at" << qPrintable(jsonFilePath);
-#endif
-    // NANOTRACE_INIT(QCoreApplication::applicationName().toStdString(),
-    //                "Main",
-    //                jsonFilePath.toStdString());
 }
 
 void PluginManagerPrivate::profilingReport(const char *what, const PluginSpec *spec, qint64 *target)
@@ -2363,8 +2299,8 @@ void PluginManager::setTermsAndConditionsAccepted(PluginSpec *spec)
     if (spec->termsAndConditions()
         && !d->pluginsWithAcceptedTermsAndConditions.contains(spec->id())) {
         d->pluginsWithAcceptedTermsAndConditions.append(spec->id());
-        if (d->settings)
-            d->settings->setValue(C_TANDCACCEPTED_PLUGINS, d->pluginsWithAcceptedTermsAndConditions);
+        Utils::userSettings().setValue(C_TANDCACCEPTED_PLUGINS,
+                                       d->pluginsWithAcceptedTermsAndConditions);
     }
 }
 

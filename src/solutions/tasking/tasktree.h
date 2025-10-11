@@ -73,15 +73,31 @@ enum class DoneWith
 };
 Q_ENUM_NS(DoneWith)
 
-enum class CallDoneIf
+enum class CallDone
 {
-    SuccessOrError,
-    Success,
-    Error
+    Never = 0,
+    OnSuccess = 1 << 0,
+    OnError   = 1 << 1,
+    OnCancel  = 1 << 2,
+    Always = OnSuccess | OnError | OnCancel
 };
-Q_ENUM_NS(CallDoneIf)
+Q_ENUM_NS(CallDone)
+Q_DECLARE_FLAGS(CallDoneFlags, CallDone)
+Q_DECLARE_OPERATORS_FOR_FLAGS(CallDoneFlags)
 
 TASKING_EXPORT DoneResult toDoneResult(bool success);
+TASKING_EXPORT bool shouldCallDone(CallDoneFlags callDone, DoneWith result);
+
+// Checks if Function may be invoked with Args and if Function's return type is Result.
+template <typename Result, typename Function, typename ...Args,
+          typename DecayedFunction = std::decay_t<Function>>
+static constexpr bool isInvocable()
+{
+    // Note, that std::is_invocable_r_v doesn't check Result type properly.
+    if constexpr (std::is_invocable_r_v<Result, DecayedFunction, Args...>)
+        return std::is_same_v<Result, std::invoke_result_t<DecayedFunction, Args...>>;
+    return false;
+}
 
 class LoopData;
 class StorageData;
@@ -91,17 +107,11 @@ class TASKING_EXPORT TaskInterface : public QObject
 {
     Q_OBJECT
 
-Q_SIGNALS:
-    void done(DoneResult result);
+public:
+    void reportDone(DoneResult result);
 
-private:
-    template <typename Task, typename Deleter> friend class TaskAdapter;
-    friend class TaskTreePrivate;
-    TaskInterface() = default;
-#ifdef Q_QDOC
-protected:
-#endif
-    virtual void start() = 0;
+Q_SIGNALS:
+    void done(DoneResult result, QPrivateSignal);
 };
 
 class TASKING_EXPORT Loop
@@ -230,24 +240,31 @@ public:
 
 protected:
     GroupItem(const Loop &loop) : GroupItem(GroupData{{}, {}, {}, loop}) {}
-    // Internal, provided by CustomTask
-    using InterfaceCreateHandler = std::function<TaskInterface *(void)>;
+    using TaskAdapterPtr = void *;
+    // Internal, provided by QCustomTask
+    using TaskAdapterConstructor = std::function<TaskAdapterPtr(void)>;
+    // Internal, provided by QCustomTask
+    using TaskAdapterDestructor = std::function<void(TaskAdapterPtr)>;
+    //
+    using TaskAdapterStarter = std::function<void(TaskAdapterPtr, TaskInterface *)>;
     // Called prior to task start, just after createHandler
-    using InterfaceSetupHandler = std::function<SetupResult(TaskInterface &)>;
+    using TaskAdapterSetupHandler = std::function<SetupResult(TaskAdapterPtr)>;
     // Called on task done, just before deleteLater
-    using InterfaceDoneHandler = std::function<DoneResult(const TaskInterface &, DoneWith)>;
+    using TaskAdapterDoneHandler = std::function<DoneResult(TaskAdapterPtr, DoneWith)>;
 
     struct TaskHandler {
-        InterfaceCreateHandler m_createHandler;
-        InterfaceSetupHandler m_setupHandler = {};
-        InterfaceDoneHandler m_doneHandler = {};
-        CallDoneIf m_callDoneIf = CallDoneIf::SuccessOrError;
+        TaskAdapterConstructor m_taskAdapterConstructor;
+        TaskAdapterDestructor m_taskAdapterDestructor;
+        TaskAdapterStarter m_taskAdapterStarter;
+        TaskAdapterSetupHandler m_taskAdapterSetupHandler = {};
+        TaskAdapterDoneHandler m_taskAdapterDoneHandler = {};
+        CallDoneFlags m_callDoneFlags = CallDone::Always;
     };
 
     struct GroupHandler {
         GroupSetupHandler m_setupHandler;
         GroupDoneHandler m_doneHandler = {};
-        CallDoneIf m_callDoneIf = CallDoneIf::SuccessOrError;
+        CallDoneFlags m_callDoneFlags = CallDone::Always;
     };
 
     struct GroupData {
@@ -277,20 +294,10 @@ protected:
 
     static GroupItem groupHandler(const GroupHandler &handler) { return GroupItem({handler}); }
 
-    // Checks if Function may be invoked with Args and if Function's return type is Result.
-    template <typename Result, typename Function, typename ...Args,
-              typename DecayedFunction = std::decay_t<Function>>
-    static constexpr bool isInvocable()
-    {
-        // Note, that std::is_invocable_r_v doesn't check Result type properly.
-        if constexpr (std::is_invocable_r_v<Result, DecayedFunction, Args...>)
-            return std::is_same_v<Result, std::invoke_result_t<DecayedFunction, Args...>>;
-        return false;
-    }
-
 private:
     TASKING_EXPORT friend Group operator>>(const For &forItem, const Do &doItem);
     friend class ContainerNode;
+    friend class TaskInterfaceAdapter;
     friend class TaskNode;
     friend class TaskTreePrivate;
     friend class When;
@@ -345,8 +352,8 @@ public:
         return groupHandler({wrapGroupSetup(std::forward<Handler>(handler))});
     }
     template <typename Handler>
-    static GroupItem onGroupDone(Handler &&handler, CallDoneIf callDoneIf = CallDoneIf::SuccessOrError) {
-        return groupHandler({{}, wrapGroupDone(std::forward<Handler>(handler)), callDoneIf});
+    static GroupItem onGroupDone(Handler &&handler, CallDoneFlags callDone = CallDone::Always) {
+        return groupHandler({{}, wrapGroupDone(std::forward<Handler>(handler)), callDone});
     }
 
 private:
@@ -433,9 +440,9 @@ static GroupItem onGroupSetup(Handler &&handler)
 }
 
 template <typename Handler>
-static GroupItem onGroupDone(Handler &&handler, CallDoneIf callDoneIf = CallDoneIf::SuccessOrError)
+static GroupItem onGroupDone(Handler &&handler, CallDoneFlags callDone = CallDone::Always)
 {
-    return Group::onGroupDone(std::forward<Handler>(handler), callDoneIf);
+    return Group::onGroupDone(std::forward<Handler>(handler), callDone);
 }
 
 // Default: 1 (sequential). 0 means unlimited (parallel).
@@ -518,68 +525,109 @@ private:
     }
 };
 
-template <typename Task, typename Deleter = std::default_delete<Task>>
-class TaskAdapter : public TaskInterface
+// A convenient default helper, when:
+// 1. Task is derived from QObject.
+// 2. Task::start() method starts the task.
+// 3. Task::done(DoneResult) signal is emitted when the task is finished.
+template <typename Task>
+class DefaultTaskAdapter
 {
-protected:
-    TaskAdapter() : m_task(new Task) {}
-    Task *task() { return m_task.get(); }
-    const Task *task() const { return m_task.get(); }
+public:
+    void operator()(Task *task, TaskInterface *iface) {
+        QObject::connect(task, &Task::done, iface, &TaskInterface::reportDone,
+                         Qt::SingleShotConnection);
+        task->start();
+    }
 
 private:
-    friend class When;
-    using TaskType = Task;
-    using DeleterType = Deleter;
-    template <typename Adapter> friend class CustomTask;
-    std::unique_ptr<Task, Deleter> m_task;
+    template <typename, typename = void>
+    struct has_start : std::false_type {};
+    template <typename T>
+    struct has_start<T, std::void_t<decltype(std::declval<T>().start())>> : std::true_type {};
+    template <typename T>
+    static inline constexpr bool has_start_v = has_start<T>::value;
+
+    static_assert(std::is_base_of_v<QObject, Task>,
+                  "DefaultTaskAdapter<Task>: The Task type needs to be derived from QObject.");
+    static_assert(has_start_v<Task>,
+                  "DefaultTaskAdapter<Task>: The Task type needs to specify public start() method.");
 };
 
-template <typename Adapter>
+// TODO: Allow Task = void?
+template <typename Task, typename Adapter = DefaultTaskAdapter<Task>,
+          typename Deleter = std::default_delete<Task>>
 class CustomTask final : public ExecutableItem
 {
 public:
-    using Task = typename Adapter::TaskType;
-    using Deleter = typename Adapter::DeleterType;
-    static_assert(std::is_base_of_v<TaskAdapter<Task, Deleter>, Adapter>,
-                  "The Adapter type for the CustomTask<Adapter> needs to be derived from "
-                  "TaskAdapter<Task>.");
     using TaskSetupHandler = std::function<SetupResult(Task &)>;
     using TaskDoneHandler = std::function<DoneResult(const Task &, DoneWith)>;
 
     template <typename SetupHandler = TaskSetupHandler, typename DoneHandler = TaskDoneHandler>
     CustomTask(SetupHandler &&setup = TaskSetupHandler(), DoneHandler &&done = TaskDoneHandler(),
-               CallDoneIf callDoneIf = CallDoneIf::SuccessOrError)
-        : ExecutableItem({&createAdapter, wrapSetup(std::forward<SetupHandler>(setup)),
-                          wrapDone(std::forward<DoneHandler>(done)), callDoneIf})
+               CallDoneFlags callDone = CallDone::Always)
+        : ExecutableItem({&taskAdapterConstructor, &taskAdapterDestructor, &taskAdapterStarter,
+                          wrapSetup(std::forward<SetupHandler>(setup)),
+                          wrapDone(std::forward<DoneHandler>(done)), callDone})
     {}
 
 private:
+    static_assert(std::is_default_constructible_v<Task>,
+                  "CustomTask<Type, Adapter, Deleter>: The Task type needs to "
+                  "be default constructible.");
+    static_assert(std::is_default_constructible_v<Adapter>,
+                  "CustomTask<Type, Adapter, Deleter>: The Adapter type needs to "
+                  "be default constructible.");
+    static_assert(std::is_invocable_v<Adapter, Task *, TaskInterface *>,
+                  "CustomTask<Type, Adapter, Deleter>: The Adapter type needs to "
+                  "implement public \"void operator()(Task *task, QTaskInterface *iface);\" "
+                  "method.");
+
     friend class When;
-    static Adapter *createAdapter() { return new Adapter; }
+
+    struct TaskAdapter {
+        TaskAdapter() : task(new Task()) {}
+        std::unique_ptr<Task, Deleter> task;
+        Adapter adapter;
+    };
+
+    static TaskAdapter *taskAdapterConstructor() { return new TaskAdapter; }
+
+    static void taskAdapterDestructor(TaskAdapterPtr voidAdapter) {
+        delete static_cast<TaskAdapter *>(voidAdapter);
+    }
+
+    static void taskAdapterStarter(TaskAdapterPtr voidAdapter, TaskInterface *iface) {
+        TaskAdapter *taskAdapter = static_cast<TaskAdapter *>(voidAdapter);
+        std::invoke(taskAdapter->adapter, taskAdapter->task.get(), iface);
+    }
 
     template <typename Handler>
-    static InterfaceSetupHandler wrapSetup(Handler &&handler) {
-        if constexpr (std::is_same_v<Handler, TaskSetupHandler>)
-            return {}; // When user passed {} for the setup handler.
+    static TaskAdapterSetupHandler wrapSetup(Handler &&handler) {
+        if constexpr (std::is_same_v<std::decay_t<Handler>, TaskSetupHandler>) {
+            if (!handler)
+                return {}; // When user passed {} for the setup handler.
+        }
         // R, V stands for: Setup[R]esult, [V]oid
         static constexpr bool isR = isInvocable<SetupResult, Handler, Task &>();
         static constexpr bool isV = isInvocable<void, Handler, Task &>();
         static_assert(isR || isV,
             "Task setup handler needs to take (Task &) as an argument and has to return void or "
             "SetupResult. The passed handler doesn't fulfill these requirements.");
-        return [handler = std::move(handler)](TaskInterface &taskInterface) {
-            Adapter &adapter = static_cast<Adapter &>(taskInterface);
+        return [handler = std::move(handler)](TaskAdapterPtr voidAdapter) {
+            Task *task = static_cast<TaskAdapter *>(voidAdapter)->task.get();
             if constexpr (isR)
-                return std::invoke(handler, *adapter.task());
-            std::invoke(handler, *adapter.task());
+                return std::invoke(handler, *task);
+            std::invoke(handler, *task);
             return SetupResult::Continue;
         };
     }
 
     template <typename Handler>
-    static InterfaceDoneHandler wrapDone(Handler &&handler) {
-        if constexpr (std::is_same_v<Handler, TaskDoneHandler>)
-            return {}; // User passed {} for the done handler.
+    static TaskAdapterDoneHandler wrapDone(Handler &&handler) {
+        if constexpr (std::is_same_v<std::decay_t<Handler>, TaskDoneHandler>) {
+            if (!handler)
+                return {}; // User passed {} for the done handler.
+        }
         static constexpr bool isDoneResultType = std::is_same_v<std::decay_t<Handler>, DoneResult>;
         // R, B, V, T, D stands for: Done[R]esult, [B]ool, [V]oid, [T]ask, [D]oneWith
         static constexpr bool isRTD = isInvocable<DoneResult, Handler, const Task &, DoneWith>();
@@ -601,30 +649,30 @@ private:
             "(DoneWith) or (void) as arguments and has to return void, bool or DoneResult. "
             "Alternatively, it may be of DoneResult type. "
             "The passed handler doesn't fulfill these requirements.");
-        return [handler = std::move(handler)](const TaskInterface &taskInterface, DoneWith result) {
+        return [handler = std::move(handler)](TaskAdapterPtr voidAdapter, DoneWith result) {
             if constexpr (isDoneResultType)
                 return handler;
-            const Adapter &adapter = static_cast<const Adapter &>(taskInterface);
+            Task *task = static_cast<TaskAdapter *>(voidAdapter)->task.get();
             if constexpr (isRTD)
-                return std::invoke(handler, *adapter.task(), result);
+                return std::invoke(handler, *task, result);
             if constexpr (isRT)
-                return std::invoke(handler, *adapter.task());
+                return std::invoke(handler, *task);
             if constexpr (isRD)
                 return std::invoke(handler, result);
             if constexpr (isR)
                 return std::invoke(handler);
             if constexpr (isBTD)
-                return toDoneResult(std::invoke(handler, *adapter.task(), result));
+                return toDoneResult(std::invoke(handler, *task, result));
             if constexpr (isBT)
-                return toDoneResult(std::invoke(handler, *adapter.task()));
+                return toDoneResult(std::invoke(handler, *task));
             if constexpr (isBD)
                 return toDoneResult(std::invoke(handler, result));
             if constexpr (isB)
                 return toDoneResult(std::invoke(handler));
             if constexpr (isVTD)
-                std::invoke(handler, *adapter.task(), result);
+                std::invoke(handler, *task, result);
             else if constexpr (isVT)
-                std::invoke(handler, *adapter.task());
+                std::invoke(handler, *task);
             else if constexpr (isVD)
                 std::invoke(handler, result);
             else if constexpr (isV)
@@ -634,28 +682,13 @@ private:
     }
 };
 
-template <typename Task>
-class SimpleTaskAdapter final : public TaskAdapter<Task>
-{
-public:
-    SimpleTaskAdapter() { this->connect(this->task(), &Task::done, this, &TaskInterface::done); }
-    void start() final { this->task()->start(); }
-};
-
-// A convenient helper, when:
-// 1. Task is derived from QObject.
-// 2. Task::start() method starts the task.
-// 3. Task::done(DoneResult) signal is emitted when the task is finished.
-template <typename Task>
-using SimpleCustomTask = CustomTask<SimpleTaskAdapter<Task>>;
-
 class TASKING_EXPORT TaskTree final : public QObject
 {
     Q_OBJECT
 
 public:
-    TaskTree();
-    TaskTree(const Group &recipe);
+    TaskTree(QObject *parent = nullptr);
+    TaskTree(const Group &recipe, QObject *parent = nullptr);
     ~TaskTree();
 
     void setRecipe(const Group &recipe);
@@ -715,28 +748,23 @@ private:
     TaskTreePrivate *d;
 };
 
-class TASKING_EXPORT TaskTreeTaskAdapter final : public TaskAdapter<TaskTree>
+class TaskTreeTaskAdapter final
 {
 public:
-    TaskTreeTaskAdapter();
-
-private:
-    void start() final;
+    TASKING_EXPORT void operator()(TaskTree *task, TaskInterface *iface);
 };
 
-class TASKING_EXPORT TimeoutTaskAdapter final : public TaskAdapter<std::chrono::milliseconds>
+class TimeoutTaskAdapter final
 {
 public:
-    TimeoutTaskAdapter();
-    ~TimeoutTaskAdapter();
-
+    TASKING_EXPORT ~TimeoutTaskAdapter();
+    TASKING_EXPORT void operator()(std::chrono::milliseconds *task, TaskInterface *iface);
 private:
-    void start() final;
     std::optional<int> m_timerId;
 };
 
-using TaskTreeTask = CustomTask<TaskTreeTaskAdapter>;
-using TimeoutTask = CustomTask<TimeoutTaskAdapter>;
+using TaskTreeTask = CustomTask<TaskTree, TaskTreeTaskAdapter>;
+using TimeoutTask = CustomTask<std::chrono::milliseconds, TimeoutTaskAdapter>;
 
 TASKING_EXPORT ExecutableItem timeoutTask(const std::chrono::milliseconds &timeout,
                                           DoneResult result = DoneResult::Error);

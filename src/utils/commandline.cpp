@@ -1483,9 +1483,13 @@ CommandLine::CommandLine(const FilePath &exe, std::initializer_list<ArgRef> args
     for (const ArgRef &arg : args) {
         if (const auto ptr = std::get_if<const char *>(&arg.m_arg))
             addArg(QString::fromUtf8(*ptr));
-        else if (const auto ptr = std::get_if<std::reference_wrapper<const QString>>(&arg.m_arg))
-            addArg(*ptr);
-        else if (const auto ptr = std::get_if<std::reference_wrapper<const QStringList>>(&arg.m_arg))
+        else if (const auto ptr = std::get_if<std::reference_wrapper<const QString>>(&arg.m_arg)) {
+            if (arg.m_raw)
+                addArgs(*ptr, Raw);
+            else
+                addArg(*ptr);
+        } else if (const auto ptr = std::get_if<std::reference_wrapper<const QStringList>>(
+                       &arg.m_arg))
             addArgs(*ptr);
         else if (const auto ptr = std::get_if<QStringList>(&arg.m_arg))
             addArgs(*ptr);
@@ -1598,6 +1602,17 @@ void CommandLine::addCommandLineWithAnd(const CommandLine &cmd)
     }
 
     addArgs("&&", Raw);
+    addCommandLineAsArgs(cmd, Raw);
+}
+
+void CommandLine::addCommandLineWithOr(const CommandLine &cmd)
+{
+    if (m_executable.isEmpty()) {
+        *this = cmd;
+        return;
+    }
+
+    addArgs("||", Raw);
     addCommandLineAsArgs(cmd, Raw);
 }
 

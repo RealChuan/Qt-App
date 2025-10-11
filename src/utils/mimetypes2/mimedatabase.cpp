@@ -13,8 +13,6 @@
 
 #include "algorithm.h"
 
-// #include <nanotrace/nanotrace.h>
-
 #include <QtCore/QBuffer>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -166,6 +164,15 @@ void MimeDatabasePrivate::loadProviders()
       <glob pattern="*.tbz2"/>
       <glob pattern="*.tbz"/>
       <glob pattern="*.tb2"/>
+    </mime-type>
+    <mime-type type="application/x-dockerfile">
+      <comment>Dockerfile</comment>
+      <magic priority="50">
+        <match value="FROM " type="string" offset="0"/>
+      </magic>
+      <glob pattern="Dockerfile"/>
+      <glob pattern="*.dockerfile"/>
+      <sub-class-of type="text/plain"/>
     </mime-type>
 </mime-info>)--"));
     }

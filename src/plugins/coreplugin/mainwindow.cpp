@@ -190,20 +190,22 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::extensionsInitialized()
 {
-    for (auto *const page : ExtensionSystem::PluginManager::getObjects<Core::CoreWidget>()) {
-        if (page->widget() == nullptr) {
+    auto coreWidgets = Core::getCoreWidgets();
+
+    for (auto *const page : std::as_const(coreWidgets)) {
+        auto *widget = page->widget();
+        if (widget == nullptr) {
             continue;
         }
-        if (page->button()->property("Type") == Core::CoreWidget::Type::Main) {
-            d_ptr->vLayoutGroup1->addWidget(page->button());
-        } else if (page->button()->property("Type") == Core::CoreWidget::Type::Help) {
-            d_ptr->vLayoutGroup2->addWidget(page->button());
-        } else {
-            continue;
+        switch (page->type()) {
+        case Core::CoreWidget::Type::Main: d_ptr->vLayoutGroup1->addWidget(page->button()); break;
+        case Core::CoreWidget::Type::Help: d_ptr->vLayoutGroup2->addWidget(page->button()); break;
+        default: continue;
         }
-        d_ptr->menuBtnGroup->addButton(page->button());
-        d_ptr->stackedWidget->addWidget(page->widget());
-        connect(page->button(), &QPushButton::clicked, this, [this, page] {
+        auto *button = page->button();
+        d_ptr->menuBtnGroup->addButton(button);
+        d_ptr->stackedWidget->addWidget(widget);
+        connect(button, &QPushButton::clicked, this, [this, page] {
             d_ptr->stackedWidget->setCurrentWidget(page->widget());
         });
     }
