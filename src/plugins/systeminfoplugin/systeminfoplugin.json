@@ -10,8 +10,8 @@
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Help",
-    "Description": "Show system information.",
-    "LongDescription": "Show system information.",
+    "Description": "Displays detailed system hardware and software information",
+    "LongDescription": "This plugin provides comprehensive system monitoring and diagnostics by displaying real-time information about hardware components (CPU, memory, storage, network) and software environment (operating system, runtime versions, system resources).",
     "Url": "",
     "DocumentationUrl": ""
 }

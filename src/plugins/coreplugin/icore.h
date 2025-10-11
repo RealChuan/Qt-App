@@ -29,4 +29,6 @@ public slots:
     void restart();
 };
 
+QString msgPluginChangesRequireRestart();
+
 } // namespace Plugin

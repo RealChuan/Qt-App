@@ -28,7 +28,7 @@ find_package(
 qt_standard_project_setup(I18N_SOURCE_LANGUAGE en I18N_TRANSLATED_LANGUAGES
                           zh_CN)
 
-include(cmake/QtTranslations.cmake)
+include(cmake/QtUtilities.cmake)
 
 find_package(unofficial-breakpad CONFIG REQUIRED)
 if(unofficial-breakpad_FOUND)
@@ -50,15 +50,6 @@ add_subdirectory(tests)
 add_subdirectory(examples)
 
 add_translations(${PROJECT_NAME})
-
-set(deploy_tool_options_arg "")
-if(WIN32)
-  set(deploy_tool_options_arg "--compiler-runtime" "--openssl-root"
-                              "${VCPKG_ROOT}/installed/${ARCH_DIR}-windows")
-endif()
-qt_generate_deploy_app_script(
-  TARGET ${PROJECT_NAME} OUTPUT_SCRIPT deploy_script DEPLOY_TOOL_OPTIONS
-  ${deploy_tool_options_arg})
-install(SCRIPT ${deploy_script})
+deploy_qt_application(${PROJECT_NAME})
 
 include(cmake/CMakeDebugInfo.cmake)

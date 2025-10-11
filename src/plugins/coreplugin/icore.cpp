@@ -13,7 +13,7 @@
 
 namespace Plugin {
 
-static void setRestart(bool restart)
+static void setRestartRequested(bool restart)
 {
     qApp->setProperty("restart", restart);
 }
@@ -77,8 +77,13 @@ Utils::FilePath ICore::resourcePath(const QString &rel)
 
 void ICore::restart()
 {
-    setRestart(true);
+    setRestartRequested(true);
     Utils::quitApplication();
+}
+
+QString msgPluginChangesRequireRestart()
+{
+    return Tr::tr("Plugin changes will take effect after restart.");
 }
 
 } // namespace Plugin

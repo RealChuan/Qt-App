@@ -5,8 +5,7 @@
 
 #include "coreplugin.hpp"
 #include "coreplugintr.h"
-// #include "icore.h"
-// #include "plugininstallwizard.h"
+#include "icore.h"
 
 #include <extensionsystem/plugindetailsview.h>
 #include <extensionsystem/pluginerrorview.h>
@@ -37,13 +36,11 @@ private:
     void openDetails(ExtensionSystem::PluginSpec *spec);
     void openErrorDetails();
     void closeDialog();
-    void showInstallWizard();
 
     ExtensionSystem::PluginView *m_view;
 
     QPushButton *m_detailsButton;
     QPushButton *m_errorDetailsButton;
-    QPushButton *m_installButton;
     bool m_isRestartRequired = false;
     QSet<ExtensionSystem::PluginSpec *> m_softLoad;
 };
@@ -66,8 +63,6 @@ PluginDialog::PluginDialog()
     m_errorDetailsButton = buttonBox->addButton(Tr::tr("Error Details"),
                                                 QDialogButtonBox::ActionRole);
     m_errorDetailsButton->setEnabled(false);
-    m_installButton = buttonBox->addButton(Tr::tr("Install Plugin..."),
-                                           QDialogButtonBox::ActionRole);
 
     using namespace Layouting;
     Column{
@@ -102,7 +97,6 @@ PluginDialog::PluginDialog()
         openDetails(m_view->currentPlugin());
     });
     connect(m_errorDetailsButton, &QAbstractButton::clicked, this, &PluginDialog::openErrorDetails);
-    connect(m_installButton, &QAbstractButton::clicked, this, &PluginDialog::showInstallWizard);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &PluginDialog::closeDialog);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(this, &QDialog::rejected, m_view, &ExtensionSystem::PluginView::cancelChanges);
@@ -115,15 +109,9 @@ void PluginDialog::closeDialog()
 
     PluginManager::loadPluginsAtRuntime(m_softLoad);
 
-    // if (m_isRestartRequired)
-    //     ICore::askForRestart(Tr::tr("Plugin changes will take effect after restart."));
+    if (m_isRestartRequired)
+        ICore::askForRestart(msgPluginChangesRequireRestart());
     accept();
-}
-
-void PluginDialog::showInstallWizard()
-{
-    // if (executePluginInstallWizard() == InstallResult::NeedsRestart)
-    //     m_isRestartRequired = true;
 }
 
 void PluginDialog::updateButtons()

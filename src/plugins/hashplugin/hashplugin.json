@@ -10,8 +10,8 @@
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Main",
-    "Description": "Hash Widget Plugin",
-    "LongDescription": "Hash Widget Plugin",
+    "Description": "Calculate and verify file checksums",
+    "LongDescription": "This plugin provides hash calculation and verification functionality for files and text. It supports multiple hash algorithms including MD5, SHA-1, SHA-256, and SHA-512, allowing users to generate checksums and verify file integrity.",
     "Url": "",
     "DocumentationUrl": ""
 }

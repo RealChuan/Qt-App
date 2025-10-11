@@ -10,8 +10,8 @@
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Core",
-    "Description": "Core Widget Plugin",
-    "LongDescription": "Core Widget Plugin",
+    "Description": "Essential framework and foundational services",
+    "LongDescription": "The Core plugin provides the fundamental infrastructure and essential services required for the application to function. It includes basic UI components, plugin management, and system-level functionalities that other plugins depend on.",
     "Url": "",
     "DocumentationUrl": ""
 }

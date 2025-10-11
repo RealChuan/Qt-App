@@ -10,8 +10,8 @@
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Main",
-    "Description": "Hello Widget Plugin",
-    "LongDescription": "Hello Widget Plugin",
+    "Description": "Sample plugin demonstrating basic functionality",
+    "LongDescription": "The Hello plugin serves as a template and demonstration of plugin development basics. It provides a simple interface to showcase how plugins integrate with the main application and can be used as a starting point for developing new plugins.",
     "Url": "",
     "DocumentationUrl": ""
 }

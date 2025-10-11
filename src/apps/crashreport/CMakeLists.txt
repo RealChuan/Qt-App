@@ -13,7 +13,8 @@ target_link_libraries(
           utils
           Qt::Network
           Qt::Core5Compat
-          Qt::Widgets)
+          Qt::Widgets
+          tl::expected)
 qt_finalize_executable(CrashReport)
 
 if(CMAKE_HOST_APPLE)

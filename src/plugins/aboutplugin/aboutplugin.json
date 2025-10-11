@@ -10,8 +10,8 @@
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Help",
-    "Description": "About Widget Plugin",
-    "LongDescription": "About Widget Plugin",
+    "Description": "Provides application information and version details",
+    "LongDescription": "This plugin displays comprehensive application information including version details, license information, developer credits, and system information in an easy-to-access about dialog.",
     "Url": "",
     "DocumentationUrl": ""
 }

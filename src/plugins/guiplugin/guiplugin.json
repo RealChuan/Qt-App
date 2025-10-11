@@ -10,8 +10,8 @@
     "Copyright": "(C) 2025 The Youth Ltd",
     "License": "GNU General Public License v3.0",
     "Category": "Main",
-    "Description": "Gui Widget Plugin",
-    "LongDescription": "Gui Widget Plugin",
+    "Description": "Main user interface components and widgets",
+    "LongDescription": "This plugin provides the primary graphical user interface elements, window management, and user interaction components that form the main application workspace and visual experience.",
     "Url": "",
     "DocumentationUrl": ""
 }

@@ -4,6 +4,7 @@
 #include <dump/breakpad.hpp>
 #include <resource/resource.hpp>
 #include <utils/appdata.hpp>
+#include <utils/hostosinfo.h>
 #include <utils/logasync.h>
 #include <utils/singletonmanager.hpp>
 #include <utils/utils.hpp>
@@ -56,13 +57,19 @@ auto main(int argc, char *argv[]) -> int
             return EXIT_SUCCESS;
         }
     }
-#ifdef Q_OS_WIN
-    if (!qFuzzyCompare(app.devicePixelRatio(), 1.0)
-        && QApplication::style()->objectName().startsWith(QLatin1String("windows"),
-                                                          Qt::CaseInsensitive)) {
-        QApplication::setStyle(QLatin1String("fusion"));
+    if (Utils::HostOsInfo::isWindowsHost()) {
+        // The Windows 11 default style (Qt 6.7) has major issues, therefore
+        // set the previous default style: "windowsvista"
+        // FIXME: check newer Qt Versions
+        QApplication::setStyle(QLatin1String("windowsvista"));
+
+        // On scaling different than 100% or 200% use the "fusion" style
+        qreal tmp;
+        const bool fractionalDpi = !qFuzzyIsNull(std::modf(qApp->devicePixelRatio(), &tmp));
+        if (fractionalDpi) {
+            QApplication::setStyle(QLatin1String("fusion"));
+        }
     }
-#endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     app.setAttribute(Qt::AA_UseHighDpiPixmaps);
     app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
