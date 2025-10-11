@@ -21,11 +21,11 @@ VS_VERSION_INFO VERSIONINFO
 			BEGIN
 				VALUE "CompanyName", "The Youth.\0"
 				VALUE "FileDescription", "CrashReport\0"
-				VALUE "FileVersion", "0.1.1.0\0"
+				VALUE "FileVersion", "0.2.1.0\0"
 				VALUE "LegalCopyright", "Copyright (C) 2025 Youth.\0"
 				VALUE "OriginalFilename", "CrashReport\0"
 				VALUE "ProductName", "CrashReport\0"
-				VALUE "ProductVersion", "0.1.1.0\0"
+				VALUE "ProductVersion", "0.2.1.0\0"
 				VALUE "InternalName", "CrashReport\0"
 				VALUE "Comments", "CrashReport\0"
 				VALUE "LegalTrademarks", "Youth\0"

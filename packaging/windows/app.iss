@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Qt-App"
-#define MyAppVersion "0.1.1"
+#define MyAppVersion "0.2.1"
 #define MyAppPublisher "The Youth."
 #define MyAppURL "https://github.com/RealChuan/Qt-App"
 #define MyAppExeName MyAppName + ".exe"

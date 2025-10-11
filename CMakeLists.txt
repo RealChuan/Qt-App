@@ -6,7 +6,7 @@ include(cmake/QtSetup.cmake)
 
 project(
   Qt-App
-  VERSION 0.1.1
+  VERSION 0.2.1
   DESCRIPTION "This is a Qt Application template"
   HOMEPAGE_URL "https://github.com/RealChuan/Qt-App"
   LANGUAGES CXX)

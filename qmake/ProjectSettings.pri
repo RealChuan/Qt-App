@@ -1,7 +1,7 @@
 PROJECT_NAME = Qt-App
 
 isEmpty(RC_LANG): RC_LANG = 0x0004
-isEmpty(VERSION): VERSION = 0.1.1.0
+isEmpty(VERSION): VERSION = 0.2.1.0
 CONFIG += skip_target_version_ext
 
 isEmpty(QMAKE_TARGET_COMPANY): QMAKE_TARGET_COMPANY = The Youth.

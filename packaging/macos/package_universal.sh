@@ -44,7 +44,7 @@ zip_path="${releases_dir}/${app_name}.7z"
 7z a -t7z -mx=9 -mmt "${zip_path}" "${packet_dir}/${app_name}.app"
 
 # package with pkg
-version="0.1.1"
+version="0.2.1"
 mkdir -p ${packet_dir}/output
 # process_plist "${project_dir}/packaging/macos/distribution.xml"
 chmod -R +x ${project_dir}/packaging/macos/scripts

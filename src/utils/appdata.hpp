@@ -3,8 +3,8 @@
 namespace Utils {
 
 static constexpr auto author = "Youth";
-static constexpr auto version = "0.1.1";
-static constexpr auto displayVersion = "0.1.1";
+static constexpr auto version = "0.2.1";
+static constexpr auto displayVersion = "0.2.1";
 static constexpr auto id = "Qt-App";
 static constexpr auto appName = "Qt-App";
 static constexpr auto crashName = "CrashReport";
