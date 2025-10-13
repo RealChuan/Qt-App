@@ -10,13 +10,11 @@ TARGET = CrashpadTest
 
 LIBS += -l$$replaceLibName(dump)
 
-include(../../qmake/VcpkgToolchain.pri)
+include(../../qmake/InstallCrashpad.pri)
 
 SOURCES += \
         main.cc
 
 DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
-macx{
-    QMAKE_POST_LINK += $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/*" "$$RUNTIME_OUTPUT_DIRECTORY"
-}
+QMAKE_POST_LINK += $$setup_crashpad_handler($$RUNTIME_OUTPUT_DIRECTORY)

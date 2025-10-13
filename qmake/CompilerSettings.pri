@@ -1,4 +1,4 @@
-macx{
+macx {
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 13.0
 }
 

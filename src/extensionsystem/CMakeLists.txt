@@ -21,8 +21,6 @@ set(PROJECT_SOURCES
     pluginview.cpp
     pluginview.h)
 
-include_directories(${PROJECT_SOURCE_DIR}/utils)
-
 set_property(SOURCE pluginmanager.cpp PROPERTY SKIP_AUTOMOC ON)
 
 add_shared_library(extensionsystem ${PROJECT_SOURCES} ${SOURCE})

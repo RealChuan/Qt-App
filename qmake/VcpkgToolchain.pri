@@ -40,21 +40,16 @@ INCLUDEPATH += \
     $$vcpkg_path/include/crashpad
 
 # for crashpad
-win32{
-    CONFIG(debug, debug|release) {
-        LIBS += -lzlibd
-    }else{
-        LIBS += -lzlib
-    }
+win32 {
+    LIBS += -lzlib$$suffix -lAdvapi32
     DEFINES += NOMINMAX
-    LIBS += -lAdvapi32
 }
 
-unix{
+unix {
     LIBS += -lz
 }
 
-macx{
+macx {
     LIBS += \
         -lbsm \
         -lmig_output \

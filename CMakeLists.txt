@@ -14,6 +14,7 @@ project(
 include(cmake/ProjectSettings.cmake)
 include(cmake/InstallConfig.cmake)
 include(cmake/PlatformLibraries.cmake)
+include(cmake/InstallCrashpad.cmake)
 
 find_package(
   Qt6 REQUIRED

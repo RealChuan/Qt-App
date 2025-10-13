@@ -41,15 +41,6 @@ target_link_libraries(
 
 qt_finalize_executable(${PROJECT_NAME})
 
-string(REPLACE "share/crashpad" "tools/crashpad" crash_handler_path
-               "${crashpad_DIR}")
-message(STATUS "Crashpad tools directory: ${crash_handler_path}")
-
-if(NOT EXISTS "${crash_handler_path}")
-  message(
-    FATAL_ERROR "Crashpad tools directory not found: ${crash_handler_path}")
-endif()
-
 if(CMAKE_HOST_APPLE)
   set(CRASHPAD_TARGET_DIR
       "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/MacOS")
@@ -57,52 +48,32 @@ else()
   set(CRASHPAD_TARGET_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
 
-message(STATUS "Crashpad target directory: ${CRASHPAD_TARGET_DIR}")
-
-add_custom_command(
-  TARGET ${PROJECT_NAME}
-  POST_BUILD
-  COMMENT "Copying crashpad handler to ${CRASHPAD_TARGET_DIR}"
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${CRASHPAD_TARGET_DIR}"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${crash_handler_path}"
-          "${CRASHPAD_TARGET_DIR}"
-  VERBATIM)
-
-if(UNIX)
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMENT "Setting execute permissions for crashpad_handler"
-    COMMAND chmod +x "${CRASHPAD_TARGET_DIR}/crashpad_handler"
-    VERBATIM)
-endif()
+setup_crashpad_handler("${CRASHPAD_TARGET_DIR}")
 
 install(
   TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION ${MAIN_APP_INSTALL_DIR}
   BUNDLE DESTINATION ${MAIN_APP_INSTALL_DIR})
 
-if(CMAKE_HOST_WIN32)
-  install(DIRECTORY "${crash_handler_path}/" DESTINATION ${TOOL_INSTALL_DIR})
-else()
-  install(
-    DIRECTORY "${crash_handler_path}/"
-    DESTINATION ${TOOL_INSTALL_DIR}
-    # 设置权限
-    FILE_PERMISSIONS
-      OWNER_READ
-      OWNER_WRITE
-      OWNER_EXECUTE
-      GROUP_READ
-      GROUP_EXECUTE
-      WORLD_READ
-      WORLD_EXECUTE
-    DIRECTORY_PERMISSIONS
-      OWNER_READ
-      OWNER_WRITE
-      OWNER_EXECUTE
-      GROUP_READ
-      GROUP_EXECUTE
-      WORLD_READ
-      WORLD_EXECUTE)
-endif()
+get_crashpad_tools_path(crash_handler_path)
+
+install(
+  DIRECTORY "${crash_handler_path}/"
+  DESTINATION ${TOOL_INSTALL_DIR}
+  # 设置权限
+  FILE_PERMISSIONS
+    OWNER_READ
+    OWNER_WRITE
+    OWNER_EXECUTE
+    GROUP_READ
+    GROUP_EXECUTE
+    WORLD_READ
+    WORLD_EXECUTE
+  DIRECTORY_PERMISSIONS
+    OWNER_READ
+    OWNER_WRITE
+    OWNER_EXECUTE
+    GROUP_READ
+    GROUP_EXECUTE
+    WORLD_READ
+    WORLD_EXECUTE)

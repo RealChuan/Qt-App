@@ -16,7 +16,7 @@ LIBS += \
     -l$$replaceLibName(tasking) \
     -l$$replaceLibName(spinner)
 
-include(../../../qmake/VcpkgToolchain.pri)
+include(../../../qmake/InstallCrashpad.pri)
 
 DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
@@ -26,20 +26,17 @@ ICON     = app.icns
 SOURCES += \
     main.cc
 
-win32{
-    src_path = $$vcpkg_path/tools/crashpad
-    dest_path = $$RUNTIME_OUTPUT_DIRECTORY
-    QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$replace(src_path, /, \\) $$replace(dest_path, /, \\)
+win32 | unix:!macx {
+    CRASHPAD_TARGET_DIR = $$RUNTIME_OUTPUT_DIRECTORY
 }
 
-macx{
+macx {
+    CRASHPAD_TARGET_DIR = $$RUNTIME_OUTPUT_DIRECTORY/$$member(PROJECT_NAME, 0).app/Contents/MacOS
+}
+
+QMAKE_POST_LINK += $$setup_crashpad_handler($$CRASHPAD_TARGET_DIR)
+
+macx {
     dest_path = $$RUNTIME_OUTPUT_DIRECTORY/$$member(PROJECT_NAME, 0).app/Contents/MacOS
-    QMAKE_POST_LINK += $$QMAKE_COPY_FILE $$RUNTIME_OUTPUT_DIRECTORY/CrashReport $$dest_path/CrashReport
-    QMAKE_POST_LINK += && $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/*" "$$dest_path"
-    QMAKE_POST_LINK += && chmod +x "$$dest_path/crashpad_handler"
-}
-
-unix:!macx{
-    QMAKE_POST_LINK += $$QMAKE_COPY_DIR "$$vcpkg_path/tools/crashpad/*" "$$RUNTIME_OUTPUT_DIRECTORY"
-    QMAKE_POST_LINK += && chmod +x "$$RUNTIME_OUTPUT_DIRECTORY/crashpad_handler"
+    QMAKE_POST_LINK += && $$QMAKE_COPY_FILE $$RUNTIME_OUTPUT_DIRECTORY/CrashReport $$dest_path/CrashReport
 }
