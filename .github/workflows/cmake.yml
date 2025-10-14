@@ -63,7 +63,7 @@ jobs:
       - uses: ./.github/actions/install-dependencies
 
       - name: Configure and build windows
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           .\packaging\windows\Enter-VsDevShell.ps1
@@ -75,7 +75,7 @@ jobs:
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
 
       - name: Configure and build ubuntu
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           cmake \
@@ -86,7 +86,7 @@ jobs:
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
 
       - name: Configure and build macos
-        if: startsWith(matrix.os, 'macos')
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           cmake \

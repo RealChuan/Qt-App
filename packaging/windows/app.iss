@@ -68,6 +68,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
+Name: "vcredist"; Description: "Install Microsoft Visual C++ Redistributable"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked;
 
 [Files]
 Source: "..\packet\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyAppExeName}')
@@ -122,7 +123,7 @@ Name: "{group}\{#MyAppUninstallName}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\vc_redist.x64.exe"; Parameters: "/q"; StatusMsg: "Installing Microsoft Visual C++ Runtime ..."; Flags: skipifdoesntexist;
+Filename: "{app}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Microsoft Visual C++ Runtime ..."; Flags: runhidden waituntilterminated skipifdoesntexist; Tasks: vcredist
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"" "; Flags: runhidden;
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"" dir=in action=allow enable=yes"; Flags: runhidden;
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyCrashAppName}"" program=""{app}\{#MyCrashAppExeName}"" "; Flags: runhidden;
