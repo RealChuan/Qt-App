@@ -80,7 +80,7 @@ jobs:
           lintian -i ${{ env.RELEASES_DIR }}/Qt-App.deb || true
 
       - name: Upload Debian packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: debian-packages
           path: ${{ env.RELEASES_DIR }}
