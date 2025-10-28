@@ -177,7 +177,7 @@ jobs:
           mkdir -p "${{ env.PACKET_DIR }}" "${{ env.RELEASES_DIR }}"
 
       - name: Download platform artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: ${{ env.PACKET_DIR }}
 
@@ -219,7 +219,7 @@ jobs:
           mkdir -p "${{ env.RELEASES_DIR }}"
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: ${{ env.RELEASES_DIR }}
 
