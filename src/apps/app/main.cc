@@ -148,13 +148,13 @@ auto main(int argc, char *argv[]) -> int
 #endif
 
     setAppInfo();
-
-    Dump::CrashPad crashpad(Utils::crashPath(), app.applicationDirPath(), "", true);
-    // auto *breakPad = Dump::BreakPad::instance();
-    // breakPad->setDumpPath(Utils::crashPath());
-    // QObject::connect(breakPad, &Dump::BreakPad::crash, [] { Dump::openCrashReporter(); });
-
     QDir::setCurrent(app.applicationDirPath());
+
+    Dump::Crashpad crashpad(Utils::crashPath().toStdString(),
+                            app.applicationDirPath().toStdString(),
+                            {},
+                            true);
+
     LANGUAGE_MANAGER->loadLanguage();
 
     auto *log = Utils::LogAsync::instance();

@@ -94,12 +94,13 @@ private:
                        &MainWindow::onSystrayIconActivated);
 
         qApp->setQuitOnLastWindowClosed(false);
-        // for macOS, when the app is active, click the dock icon to show the main window
+// for macOS, when the app is active, click the dock icon to show the main window
+#ifdef Q_OS_MACOS
         q_ptr->connect(qApp,
                        &QApplication::applicationStateChanged,
                        q_ptr,
                        &MainWindow::onApplicationStateChanged);
-
+#endif
         QMetaObject::invokeMethod(
             q_ptr,
             [systemTrayIcon] {
@@ -278,12 +279,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::buildConnect()
 {
-    connect(
-        this,
-        &MainWindow::aboutToclose,
-        this,
-        [] { Utils::quitApplication(); },
-        Qt::QueuedConnection);
+    // connect(
+    //     this,
+    //     &MainWindow::aboutToclose,
+    //     this,
+    //     [] { Utils::quitApplication(); },
+    //     Qt::QueuedConnection);
 }
 
 void MainWindow::setupMenu()

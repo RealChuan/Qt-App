@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     }
     auto crashPath = dir.filePath("crashpad");
 
-    Dump::CrashPad crashpad(crashPath, a.applicationDirPath(), "", true);
+    Dump::Crashpad crashpad(crashPath.toStdString(), a.applicationDirPath().toStdString(), {}, true);
 
     crash();
 

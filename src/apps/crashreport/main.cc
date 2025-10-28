@@ -76,8 +76,10 @@ auto main(int argc, char *argv[]) -> int
 #endif
 
     setAppInfo();
-    Dump::BreakPad::instance()->setDumpPath(Utils::crashPath());
     QDir::setCurrent(app.applicationDirPath());
+
+    Dump::Breakpad breakpad(Utils::crashPath().toStdString());
+
     LANGUAGE_MANAGER->loadLanguage();
 
     // 异步日志

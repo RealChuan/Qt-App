@@ -19,8 +19,7 @@ auto main(int argc, char *argv[]) -> int
     }
     auto crashPath = dir.filePath("breakpad");
 
-    auto *breakPad = Dump::BreakPad::instance();
-    breakPad->setDumpPath(crashPath);
+    Dump::Breakpad breakpad(crashPath.toStdString());
 
     crash();
 
