@@ -56,9 +56,9 @@ chmod +x ${packet_dir}/opt/${app_name}/*.sh
 chmod 644 ${packet_dir}/usr/share/applications/*.desktop
 
 deb_path="${releases_dir}/${app_name}.deb"
-sudo dpkg -b ${packet_dir}/. ${deb_path}
+fakeroot dpkg -b ${packet_dir}/. ${deb_path}
 
-sudo chmod -R +x ${releases_dir}
+chmod -R +x ${releases_dir}
 
 lintian -i ${deb_path} || true
 

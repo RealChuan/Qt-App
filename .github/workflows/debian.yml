@@ -3,30 +3,30 @@ name: Build debian packages
 on:
   push:
     paths-ignore:
-      - 'docs/**'
-      - 'qmake/**'
-      - 'translations/**'
-      - '**/*.md'
-      - '**/*.txt'
-      - '**/.clang-*'
-      - '**/.gitignore'
-      - '**/*.pri'
-      - '**/LICENSE*'
-      - '**/*.pro'
-      - '**/README*'
+      - "docs/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
   pull_request:
     paths-ignore:
-      - 'docs/**'
-      - 'qmake/**'
-      - 'translations/**'
-      - '**/*.md'
-      - '**/*.txt'
-      - '**/.clang-*'
-      - '**/.gitignore'
-      - '**/*.pri'
-      - '**/LICENSE*'
-      - '**/*.pro'
-      - '**/README*'
+      - "docs/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
 
 env:
   PACKET_DIR: ./packaging/packet
@@ -38,9 +38,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with: 
+        with:
           fetch-depth: 1
-          
+
       - uses: ./.github/actions/install-dependencies
 
       - name: Install build dependencies

@@ -3,33 +3,33 @@ name: CMake Build and Release
 on:
   push:
     paths-ignore:
-      - 'docs/**'
-      - 'qmake/**'
-      - 'translations/**'
-      - '**/*.md'
-      - '**/*.txt'
-      - '**/.clang-*'
-      - '**/.gitignore'
-      - '**/*.pri'
-      - '**/LICENSE*'
-      - '**/*.pro'
-      - '**/README*'
+      - "docs/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
   pull_request:
     paths-ignore:
-      - 'docs/**'
-      - 'qmake/**'
-      - 'translations/**'
-      - '**/*.md'
-      - '**/*.txt'
-      - '**/.clang-*'
-      - '**/.gitignore'
-      - '**/*.pri'
-      - '**/LICENSE*'
-      - '**/*.pro'
-      - '**/README*'
+      - "docs/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: '13.0'
+  MACOSX_DEPLOYMENT_TARGET: "13.0"
   PACKET_DIR: packaging/packet
   RELEASES_DIR: packaging/releases
   BUILD_DIR: build
@@ -57,9 +57,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with: 
+        with:
           fetch-depth: 1
-          
+
       - uses: ./.github/actions/install-dependencies
 
       - name: Configure and build windows
@@ -111,7 +111,7 @@ jobs:
         run: |
           cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}/install" -v
           tree "${{ github.workspace }}/install"
-        
+
       - name: Prepare packaging directory
         shell: bash
         run: |
@@ -163,7 +163,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with: 
+        with:
           fetch-depth: 1
 
       - name: Install dependencies
@@ -200,7 +200,7 @@ jobs:
         with:
           name: macos-latest-universal-${{ env.BUILD_TYPE }}
           path: ${{ env.RELEASES_DIR }}
-  
+
   github-release:
     name: Create gitHub release
     needs: macos-universal-bundle
@@ -210,7 +210,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with: 
+        with:
           fetch-depth: 1
 
       - name: Prepare release directory
