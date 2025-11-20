@@ -23,10 +23,7 @@ chmod +x ${packet_dir}/${app_name} \
 chmod 644 ${packet_dir}/*.desktop
 chmod 644 ${packet_dir}/app.png
 
-# 删除测试文件
-rm -rf "${packet_dir}/examples"
-rm -f ${packet_dir}/*Test*
-ls -al ${packet_dir}
+tree ${packet_dir}
 
 # 使用linuxdeployqt部署
 cd ${packet_dir}

@@ -34,10 +34,8 @@ foreach ($file in $allFiles) {
 }
 
 $Remove_List_Relative = @(
-    "examples",
     "*.ilk",
     "*.pdb",
-    "*Test*",
     "*plugin*.dll"
 )
 $Remove_List_Absolute = $Remove_List_Relative | ForEach-Object {

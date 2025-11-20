@@ -47,8 +47,6 @@ endif()
 include_directories(src)
 
 add_subdirectory(src)
-add_subdirectory(tests)
-add_subdirectory(examples)
 
 add_translations(${PROJECT_NAME})
 deploy_qt_application(${PROJECT_NAME})

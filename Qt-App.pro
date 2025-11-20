@@ -1,10 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS += \
-    src \
-    examples \
-    tests
+SUBDIRS += src
 
 TRANSLATIONS += \
     translations/qt-app_en.ts \

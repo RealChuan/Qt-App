@@ -1,2 +1,0 @@
-add_subdirectory(breakpadtest)
-add_subdirectory(crashpadtest)
