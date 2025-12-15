@@ -151,7 +151,7 @@ jobs:
           echo "Release directory contents:"
           ls -la "${{ env.RELEASES_DIR }}/"
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.os }}-${{matrix.arch}}-${{ env.BUILD_TYPE }}
           path: ${{ env.RELEASES_DIR }}
@@ -196,7 +196,7 @@ jobs:
           tree "${{ env.RELEASES_DIR }}/"
 
       - name: Upload universal artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: macos-latest-universal-${{ env.BUILD_TYPE }}
           path: ${{ env.RELEASES_DIR }}
