@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -80,7 +80,7 @@ jobs:
           lintian -i ${{ env.RELEASES_DIR }}/Qt-App.deb || true
 
       - name: Upload Debian packages
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: debian-packages
           path: ${{ env.RELEASES_DIR }}

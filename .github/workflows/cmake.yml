@@ -56,7 +56,7 @@ jobs:
             arch: arm64
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -151,7 +151,7 @@ jobs:
           echo "Release directory contents:"
           ls -la "${{ env.RELEASES_DIR }}/"
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.os }}-${{matrix.arch}}-${{ env.BUILD_TYPE }}
           path: ${{ env.RELEASES_DIR }}
@@ -162,7 +162,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -177,7 +177,7 @@ jobs:
           mkdir -p "${{ env.PACKET_DIR }}" "${{ env.RELEASES_DIR }}"
 
       - name: Download platform artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: ${{ env.PACKET_DIR }}
 
@@ -196,7 +196,7 @@ jobs:
           tree "${{ env.RELEASES_DIR }}/"
 
       - name: Upload universal artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: macos-latest-universal-${{ env.BUILD_TYPE }}
           path: ${{ env.RELEASES_DIR }}
@@ -209,7 +209,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -219,7 +219,7 @@ jobs:
           mkdir -p "${{ env.RELEASES_DIR }}"
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: ${{ env.RELEASES_DIR }}
 
