@@ -1,12 +1,10 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 
-APP_NAME="Qt-App"
-
-# 升级/安装前先优雅退出
-pkill -TERM -x ${APP_NAME} 2>/dev/null || true
-sleep 1
-pkill -KILL -x ${APP_NAME} 2>/dev/null || true
-pkill -TERM -x CrashReport 2>/dev/null || true
-pkill -KILL -x CrashReport 2>/dev/null || true
+# preinst 负责“安装前”，不需要停进程。
+# 停进程放到 prerm，覆盖 remove / upgrade 两种场景。
+#
+# 保留此脚本是为了让 dpkg 有明确的钩子位置；
+# 未来若需要在解包前做检查（磁盘空间、系统版本），可在此添加。
 
 exit 0

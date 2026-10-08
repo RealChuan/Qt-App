@@ -4,21 +4,15 @@
 #include <dump/breakpad.hpp>
 #include <resource/resource.hpp>
 #include <utils/appdata.hpp>
+#include <utils/asynclog.hpp>
 #include <utils/hostosinfo.h>
-#include <utils/logasync.h>
 #include <utils/singletonmanager.hpp>
 #include <utils/utils.hpp>
 
 #include <QNetworkProxyFactory>
 #include <QStyle>
 
-void initResource()
-{
-    Resource r; // 这样才可以使用qrc
-#ifndef Q_OS_WIN
-    Q_INIT_RESOURCE(resource);
-#endif
-}
+namespace {
 
 void setAppInfo()
 {
@@ -37,6 +31,16 @@ void setQss()
                    ":/qss/qss/mainwidget.css",
                    ":/qss/qss/sidebarbutton.css",
                    ":/qss/qss/specific.css"});
+}
+
+} // namespace
+
+void initResource()
+{
+    Resource r; // 这样才可以使用qrc
+#ifndef Q_OS_WIN
+    Q_INIT_RESOURCE(resource);
+#endif
 }
 
 auto main(int argc, char *argv[]) -> int
@@ -82,14 +86,19 @@ auto main(int argc, char *argv[]) -> int
 
     LANGUAGE_MANAGER->loadLanguage();
 
-    // 异步日志
-    auto *log = Utils::LogAsync::instance();
-    log->setLogPath(Utils::logPath());
-    log->setAutoDelFile(true);
-    log->setAutoDelFileDays(7);
-    log->setOrientation(Utils::LogAsync::Orientation::StandardAndFile);
-    log->setLogLevel(QtDebugMsg);
-    log->startWork();
+    // 日志配置：Debug → 控制台 + 文件 + DEBUG
+    //           Release → 文件 + INFO（不写控制台，避免拖慢后端线程、污染用户终端）
+    AsyncLog::Config logConfig;
+    logConfig.logPath = Utils::logPath();
+    logConfig.file = !logConfig.logPath.isEmpty();
+#ifdef QT_DEBUG
+    logConfig.console = true;
+    logConfig.level = QtDebugMsg;
+#else
+    logConfig.console = false;
+    logConfig.level = QtInfoMsg;
+#endif
+    AsyncLog::Logger::instance()->start(logConfig);
 
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
@@ -108,6 +117,6 @@ auto main(int argc, char *argv[]) -> int
     w.show();
 
     auto result = app.exec();
-    log->stop();
+    AsyncLog::Logger::instance()->shutdown();
     return result;
 }

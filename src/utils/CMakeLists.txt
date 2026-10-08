@@ -29,6 +29,8 @@ set(PROJECT_SOURCES
     appdata.hpp
     appinfo.cpp
     appinfo.h
+    asynclog.cc
+    asynclog.hpp
     benchmarker.cpp
     benchmarker.h
     builderutils.h
@@ -80,10 +82,10 @@ set(PROJECT_SOURCES
     languagemanager.hpp
     layoutbuilder.cpp
     layoutbuilder.h
-    logasync.cpp
-    logasync.h
-    logfile.cc
-    logfile.hpp
+    logbuffer.cc
+    logbuffer.hpp
+    logsink.cc
+    logsink.hpp
     macroexpander.cpp
     macroexpander.h
     mimeutils.h

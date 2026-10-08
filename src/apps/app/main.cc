@@ -7,8 +7,8 @@
 #include <utils/algorithm.h>
 #include <utils/appdata.hpp>
 #include <utils/appinfo.h>
+#include <utils/asynclog.hpp>
 #include <utils/hostosinfo.h>
-#include <utils/logasync.h>
 #include <utils/qtcsettings_p.h>
 #include <utils/singletonmanager.hpp>
 #include <utils/utils.hpp>
@@ -18,10 +18,63 @@
 #include <QNetworkProxyFactory>
 #include <QStyle>
 
-static inline QString msgCoreLoadFailure(const QString &why)
+namespace {
+
+// 把 --log-level=<name> 的值映射成 QtMsgType；无法识别时返回 fallback
+QtMsgType parseLevel(const QString &name, QtMsgType fallback)
 {
-    return QCoreApplication::translate("Application", "Failed to load core: %1").arg(why);
+    const auto v = name.toLower();
+    if (v == QLatin1String("debug"))
+        return QtDebugMsg;
+    if (v == QLatin1String("info"))
+        return QtInfoMsg;
+    if (v == QLatin1String("warning"))
+        return QtWarningMsg;
+    if (v == QLatin1String("critical"))
+        return QtCriticalMsg;
+    if (v == QLatin1String("fatal"))
+        return QtFatalMsg;
+    return fallback;
 }
+
+// 根据构建类型生成日志配置并启动 AsyncLog::Logger 单例。
+//   Debug   构建 → 控制台开、级别 DEBUG
+//   Release 构建 → 控制台关、级别 INFO
+// 运行期可覆盖（现场排查用）：
+//   --console                                     强制打开控制台输出
+//   --log-level=debug|info|warning|critical|fatal 覆盖级别
+//
+// 要求 QApplication/QCoreApplication 已构造（内部读 QCoreApplication::arguments）。
+void startLogger()
+{
+    AsyncLog::Config config;
+    config.logPath = Utils::logPath();
+    config.file = !config.logPath.isEmpty();
+
+#ifdef QT_DEBUG
+    config.console = true;
+    config.level = QtDebugMsg;
+#else
+    config.console = false;
+    config.level = QtInfoMsg;
+#endif
+
+    // 手写扫描命令行，避免与 QtSingleApplication / 主程序自身的参数解析冲突
+    const auto args = QCoreApplication::arguments();
+    for (int i = 1; i < args.size(); ++i) {
+        const auto &arg = args[i];
+        if (arg == QLatin1String("--console")) {
+            config.console = true;
+        } else if (arg.startsWith(QLatin1String("--log-level="))) {
+            config.level = parseLevel(arg.mid(12), config.level); // strlen("--log-level=") == 12
+        }
+    }
+
+    AsyncLog::Logger::instance()->start(config);
+}
+
+static inline QString msgCoreLoadFailure(const QString &why)
+{ return QCoreApplication::translate("Application", "Failed to load core: %1").arg(why); }
 
 static void displayError(const QString &t)
 {
@@ -30,15 +83,6 @@ static void displayError(const QString &t)
     } else {
         qCritical("%s", qPrintable(t));
     }
-}
-
-void initResource()
-{
-    Resource r; // 这样才可以使用qrc
-#ifndef Q_OS_WIN
-    Q_INIT_RESOURCE(resource);
-    Q_INIT_RESOURCE(utils);
-#endif
 }
 
 void setAppInfo()
@@ -94,9 +138,7 @@ public:
     QString workingPath() const { return m_workingPath; }
 
     int restartOrExit(int exitCode)
-    {
-        return qApp->property("restart").toBool() ? restart(exitCode) : exitCode;
-    }
+    { return qApp->property("restart").toBool() ? restart(exitCode) : exitCode; }
 
     int restart(int exitCode)
     {
@@ -109,6 +151,17 @@ private:
     QStringList m_args;
     QString m_workingPath;
 };
+
+} // namespace
+
+void initResource()
+{
+    Resource r; // 这样才可以使用qrc
+#ifndef Q_OS_WIN
+    Q_INIT_RESOURCE(resource);
+    Q_INIT_RESOURCE(utils);
+#endif
+}
 
 auto main(int argc, char *argv[]) -> int
 {
@@ -157,13 +210,9 @@ auto main(int argc, char *argv[]) -> int
 
     LANGUAGE_MANAGER->loadLanguage();
 
-    auto *log = Utils::LogAsync::instance();
-    log->setLogPath(Utils::logPath());
-    log->setAutoDelFile(true);
-    log->setAutoDelFileDays(7);
-    log->setOrientation(Utils::LogAsync::Orientation::StandardAndFile);
-    log->setLogLevel(QtDebugMsg);
-    log->startWork();
+    // 启动日志：Debug → 控制台 + 文件 + DEBUG
+    //          Release → 文件 + INFO（--console 可临时开控制台）
+    startLogger();
 
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
@@ -249,6 +298,6 @@ auto main(int argc, char *argv[]) -> int
     }
 
     auto exitCode = restarter.restartOrExit(app.exec());
-    log->stop();
+    AsyncLog::Logger::instance()->shutdown();
     return exitCode;
 }

@@ -1,15 +1,43 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 
 APP_NAME="Qt-App"
 
-# 升级/安装前先优雅退出
-pkill -TERM -x ${APP_NAME} 2>/dev/null || true
-sleep 1
-pkill -KILL -x ${APP_NAME} 2>/dev/null || true
-pkill -TERM -x CrashReport 2>/dev/null || true
-pkill -KILL -x CrashReport 2>/dev/null || true
+stop_process() {
+    name="$1"
 
-# 删除桌面快捷方式
-rm -f ~/.local/share/applications/${APP_NAME}.desktop || true
+    # 先 SIGTERM，等待最多 3 秒；进程未退出再 SIGKILL。
+    if command -v pkill >/dev/null 2>&1; then
+        pkill -TERM -x "$name" 2>/dev/null || true
+    fi
+
+    i=0
+    while [ "$i" -lt 3 ]; do
+        if ! pgrep -x "$name" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 1
+        i=$((i + 1))
+    done
+
+    if command -v pkill >/dev/null 2>&1; then
+        pkill -KILL -x "$name" 2>/dev/null || true
+    fi
+
+    return 0
+}
+
+case "$1" in
+    remove|purge|upgrade|deconfigure)
+        stop_process "${APP_NAME}"
+        stop_process "CrashReport"
+        ;;
+    failed-upgrade)
+        # 升级失败时 dpkg 会重调 prerm；不要在这里杀进程，
+        # 因为旧版本可能已经被半卸载，正在被恢复。
+        ;;
+    *)
+        ;;
+esac
 
 exit 0

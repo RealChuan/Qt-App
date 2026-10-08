@@ -5,13 +5,14 @@ Section: utils
 Priority: optional
 Maintainer: RealChuan <sun1070753498@163.com>
 Homepage: https://github.com/RealChuan/Qt-App
-Depends: libc6 (>= 2.35)
+Depends: libc6 (>= 2.35), procps
 Description: simple Qt6-based system tray application
  Qt-App demonstrates how to build a modern cross-platform GUI
  with Qt6 and CMake. Features include:
  .
-  – System tray icon and context menu
-  – Native OS theme integration
-  – Clean C++17/20 code base
+  - System tray icon and context menu
+  - Native OS theme integration
+  - Clean C++17/20 code base
  .
  This package ships the main executable.
+ 

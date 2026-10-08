@@ -3,6 +3,7 @@
 
 #define MyAppName "Qt-App"
 #define MyAppVersion "0.2.1"
+#define MyAppFileVersion "0.2.1.0" 
 #define MyAppPublisher "The Youth."
 #define MyAppURL "https://github.com/RealChuan/Qt-App"
 #define MyAppExeName MyAppName + ".exe"
@@ -46,21 +47,27 @@ MinVersion=10.0
 DefaultGroupName={#MyAppName}
 Uninstallable=yes
 UninstallDisplayName={#MyAppName}
+
+; --- 版本信息修正 ---
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoCopyright={#MyAppPublisher}
 VersionInfoDescription={#MyAppName}
-VersionInfoOriginalFileName={#MyAppName}
+VersionInfoOriginalFileName={#MyAppExeName}
+VersionInfoVersion={#MyAppFileVersion}
+VersionInfoProductVersion={#MyAppFileVersion}
 VersionInfoProductTextVersion={#MyAppVersion}
-VersionInfoProductVersion={#MyAppVersion}
 VersionInfoTextVersion={#MyAppVersion}
+; -------------------
+
 ShowLanguageDialog=auto
 ; SignTool = sha256
 ; SignedUninstaller = yes
 
-; Only allow the installer to run on x64-compatible systems,
-; and enable 64-bit install mode.
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "Chinese"; MessagesFile: "ChineseSimplified.isl"
@@ -68,17 +75,17 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
-Name: "vcredist"; Description: "Install Microsoft Visual C++ Redistributable"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked;
+Name: "vcredist"; Description: "Install Microsoft Visual C++ Redistributable"; GroupDescription: "Additional Runtimes"; Flags: unchecked
 
 [Files]
-Source: "..\packet\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyAppExeName}')
-Source: "..\packet\{#MyCrashAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('{#MyCrashAppExeName}')
+Source: "..\packet\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\packet\{#MyCrashAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\plugins\*"; DestDir: "{app}\plugins"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\resources\*"; DestDir: "{app}\resources"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\translations\*"; DestDir: "{app}\translations"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\packet\aggregation.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\packet\crashpad_handler.exe"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: TaskKill('crashpad_handler.exe')
+Source: "..\packet\crashpad_handler.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\dump.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\packet\dxcompiler.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -120,15 +127,19 @@ Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyCompute
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:ProgramOnTheWeb,{#MyAppName}}"; Filename: "{#MyAppURL}"
 Name: "{group}\{#MyAppUninstallName}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Microsoft Visual C++ Runtime ..."; Flags: runhidden waituntilterminated skipifdoesntexist; Tasks: vcredist
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"" "; Flags: runhidden;
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"" dir=in action=allow enable=yes"; Flags: runhidden;
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyCrashAppName}"" program=""{app}\{#MyCrashAppExeName}"" "; Flags: runhidden;
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyCrashAppName}"" program=""{app}\{#MyCrashAppExeName}"" dir=in action=allow enable=yes"; Flags: runhidden;
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"" "; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"" dir=in action=allow enable=yes"; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyCrashAppName}"" program=""{app}\{#MyCrashAppExeName}"" "; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyCrashAppName}"" program=""{app}\{#MyCrashAppExeName}"" dir=in action=allow enable=yes"; Flags: runhidden
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"" program=""{app}\{#MyAppExeName}"""; Flags: runhidden; RunOnceId: "DelQtAppFirewallRule"
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyCrashAppName}"" program=""{app}\{#MyCrashAppExeName}"""; Flags: runhidden; RunOnceId: "DelCrashAppFirewallRule"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\_"
@@ -136,10 +147,54 @@ Type: filesandordirs; Name: "{localappdata}\Youth\{#MyAppName}"
 Type: filesandordirs; Name: "{localappdata}\Youth\{#MyCrashAppName}"
 
 [Code]
-procedure TaskKill(FileName: String);
+// 检查进程是否正在运行
+function IsProcessRunning(const ExeName: string): Boolean;
 var
   ResultCode: Integer;
 begin
-    Exec(ExpandConstant('taskkill.exe'), '/f /im ' + '"' + FileName + '"', '', SW_HIDE,
-     ewWaitUntilTerminated, ResultCode);
+  Result := Exec(
+    ExpandConstant('{cmd}'),
+    '/C tasklist /FI "IMAGENAME eq ' + ExeName + '" | find /I "' + ExeName + '" > nul',
+    '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0);
+end;
+
+// 安全结束进程
+function KillProcess(const ExeName: string): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := Exec(
+    ExpandConstant('{cmd}'),
+    '/C taskkill /F /IM "' + ExeName + '"',
+    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  // taskkill 对不存在的进程通常返回 128，也视为成功
+  Result := Result and ((ResultCode = 0) or (ResultCode = 128));
+end;
+
+// 停止所有相关进程
+function StopProcesses: Boolean;
+begin
+  Result := True;
+  if IsProcessRunning('{#MyAppExeName}') then
+    if not KillProcess('{#MyAppExeName}') then Result := False;
+  if IsProcessRunning('{#MyCrashAppExeName}') then
+    if not KillProcess('{#MyCrashAppExeName}') then Result := False;
+  if IsProcessRunning('crashpad_handler.exe') then
+    if not KillProcess('crashpad_handler.exe') then Result := False;
+end;
+
+// 安装前准备：关闭正在运行的进程
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  Result := '';
+  if not StopProcesses then
+    Result := '无法关闭正在运行的 {#MyAppName} 相关进程，请手动关闭后重试。';
+end;
+
+// 卸载初始化：关闭正在运行的进程
+function InitializeUninstall(): Boolean;
+begin
+  Result := StopProcesses;
+  if not Result then
+    MsgBox('无法关闭正在运行的 {#MyAppName} 相关进程，请手动关闭后重试。', mbError, MB_OK);
 end;

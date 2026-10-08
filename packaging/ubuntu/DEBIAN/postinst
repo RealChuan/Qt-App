@@ -1,20 +1,36 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 
 APP_NAME="Qt-App"
-APP_DIR=/opt/${APP_NAME}
-DESK=/usr/share/applications/${APP_NAME}.desktop
+APP_DIR="/opt/${APP_NAME}"
+DESK="/usr/share/applications/${APP_NAME}.desktop""
 
-# 二进制可执行
-chmod 0755 "${APP_DIR}"/${APP_NAME}
-chmod 0755 "${APP_DIR}"/${APP_NAME}.sh
-# 图标只读
-chmod 0644 "${APP_DIR}"/app.png
-# desktop 只读
-chmod 0644 "$DESK"
+case "$1" in
+    configure)
+        # 二进制、脚本、图标、desktop：只改权限，文件由 deb 包提供。
+        [ -f "${APP_DIR}/${APP_NAME}" ]    && chmod 0755 "${APP_DIR}/${APP_NAME}"
+        [ -f "${APP_DIR}/${APP_NAME}.sh" ] && chmod 0755 "${APP_DIR}/${APP_NAME}.sh"
+        [ -f "${APP_DIR}/app.png" ]        && chmod 0644 "${APP_DIR}/app.png"
+        [ -f "${DESK}" ]                   && chmod 0644 "${DESK}"
 
-# 更新桌面数据库（无声失败）
-if command -v update-desktop-database >/dev/null; then
-    update-desktop-database -q /usr/share/applications
-fi
+        # 有 MimeType= 才需要刷新 mime 库；没有可省略。
+        if command -v update-mime-database >/dev/null 2>&1; then
+            update-mime-database /usr/share/mime || true
+        fi
+
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        # dpkg 在这些情况下调用 postinst，允许失败但不做实际工作。
+        ;;
+
+    *)
+        echo "postinst called with unknown argument '$1'" >&2
+        exit 1
+        ;;
+esac
 
 exit 0

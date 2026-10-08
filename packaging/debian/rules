@@ -1,18 +1,7 @@
 #!/usr/bin/make -f
 
 # See debhelper(7) (uncomment to enable).
-# Output every command that modifies files on the build system.
 #export DH_VERBOSE = 1
-
-
-# See FEATURE AREAS in dpkg-buildflags(1).
-#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-
-# See ENVIRONMENT in dpkg-buildflags(1).
-# Package maintainers to append CFLAGS.
-#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-# Package maintainers to append LDFLAGS.
-#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 BUILD_TYPE ?= RelWithDebInfo
 
@@ -23,28 +12,26 @@ PACKET_DIR = packaging/packet
 %:
 	dh $@ --buildsystem=cmake+ninja
 
-# dh_make generated override targets.
-# This is an example for Cmake (see <https://bugs.debian.org/641051>).
-#override_dh_auto_configure:
-#	dh_auto_configure -- \
-#	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
-
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
-# 跳过 Meson 测试阶段  
+# 没有测试目标，跳过。
 override_dh_auto_test:
 	@echo "no test target, skipped"
 
+# package.sh 生成 linuxdeployqt 的输出到 PACKET_DIR，
+# 这里把它拷进 debian/tmp，再交给 dh_install 按 .install 文件布局。
 override_dh_auto_install:
 	debian/package.sh
-
 	install -d debian/tmp$(INSTALL_ROOT)
-	mv -v $(PACKET_DIR)/* debian/tmp$(INSTALL_ROOT)/
-
+	cp -a $(PACKET_DIR)/. debian/tmp$(INSTALL_ROOT)/
 	dh_install
 
+# linuxdeployqt 输出的可执行文件经过 patchelf 修改，
+# strip 可能破坏其 rpath 或 interpreter，因此跳过。
+# 如果确认不会出问题，可以删掉此 override 让 dh_strip 正常工作，
+# 以获得更小的二进制体积。
 override_dh_strip:
-	echo "跳过dh_strip，或者在linuxdeployqt处理中加入-no-strip参数"
+	@echo "Skipping dh_strip: binary pre-processed by linuxdeployqt"
 	

@@ -23,6 +23,7 @@ win32 {
 
 SOURCES += \
     appinfo.cpp \
+    asynclog.cc \
     benchmarker.cpp \
     camelcasecursor.cpp \
     categorysortfiltermodel.cpp \
@@ -46,8 +47,8 @@ SOURCES += \
     itemviews.cpp \
     languagemanager.cc \
     layoutbuilder.cpp \
-    logasync.cpp \
-    logfile.cc \
+    logbuffer.cc \
+    logsink.cc \
     macroexpander.cpp \
     multitextcursor.cpp \
     namevaluedictionary.cpp \
@@ -79,6 +80,7 @@ HEADERS += \
     algorithm.h \
     appdata.hpp \
     appinfo.h \
+    asynclog.hpp \
     benchmarker.h \
     builderutils.h \
     camelcasecursor.h \
@@ -107,8 +109,8 @@ HEADERS += \
     itemviews.h \
     languagemanager.hpp \
     layoutbuilder.h \
-    logasync.h \
-    logfile.hpp \
+    logbuffer.hpp \
+    logsink.hpp \
     macroexpander.h \
     mimeutils.h \
     multitextcursor.h \

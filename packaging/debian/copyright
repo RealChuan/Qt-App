@@ -4,7 +4,7 @@ Upstream-Name: qt-app
 Upstream-Contact: RealChuan <sun1070753498@163.com>
 
 Files: *
-Copyright: 2024-2025 RealChuan <sun1070753498@163.com>
+Copyright: 2024-2026 RealChuan <sun1070753498@163.com>
 License: GPL-3+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,5 +15,5 @@ Comment:
     License version 3 can be found in "/usr/share/common-licenses/GPL-3".
 
 Files: debian/*
-Copyright: 2025 RealChuan <sun1070753498@163.com>
+Copyright: 2026 RealChuan <sun1070753498@163.com>
 License: GPL-3+

@@ -3,10 +3,6 @@
   "name": "qt-app",
   "version": "0.2.1",
   "description": "manifest",
-  "dependencies": [
-    "breakpad",
-    "crashpad",
-    "tl-expected"
-  ],
-  "builtin-baseline": "e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb"
+  "dependencies": ["breakpad", "crashpad", "tl-expected"],
+  "builtin-baseline": "dc1232a6e05dcc49703091e83743e3b4df9b9b7c"
 }

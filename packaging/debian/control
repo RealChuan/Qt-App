@@ -9,12 +9,9 @@ Build-Depends:
  ninja-build,
 Standards-Version: 4.6.2
 Homepage: https://github.com/RealChuan/Qt-App
-#Vcs-Browser: https://salsa.debian.org/debian/qt-app
-#Vcs-Git: https://salsa.debian.org/debian/qt-app.git
 
 Package: qt-app
 Architecture: any
-Multi-Arch: foreign
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
@@ -22,8 +19,8 @@ Description: simple Qt6-based system tray application
  Qt-App demonstrates how to build a modern cross-platform GUI
  with Qt6 and CMake. Features include:
  .
-  – System tray icon and context menu
-  – Native OS theme integration
-  – Clean C++17/20 code base
+  - System tray icon and context menu
+  - Native OS theme integration
+  - Clean C++17/20 code base
  .
  This package ships the main executable.

@@ -1,26 +1,61 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 
 APP_NAME="Qt-App"
+DESK="/usr/share/applications/${APP_NAME}.desktop""
 
-# 仅对 remove/purge 事件清配置
+# 遍历真实用户家目录，删除用户级文件。
+# dpkg 以 root 执行，~ 和 ${HOME} 都指向 /root，不能直接用。
+remove_user_files() {
+    home="$1"
+    [ -d "$home" ] || return 0
+
+    # 用户级 desktop 快捷方式（若用户手动复制过）
+    rm -f "$home/.local/share/applications/${APP_NAME}.desktop""
+
+    # 用户配置
+    rm -rf "$home/.config/Youth/${APP_NAME}"
+    rm -rf "$home/.config/Youth/CrashReport"
+
+    return 0
+}
+
 case "$1" in
     remove)
-        # 保留配置，只清缓存（若未来有）
-        rm -rf "${HOME:-/root}"/.config/Youth/${APP_NAME}/cache
+        # 卸载：删系统文件，保留用户配置。
+        rm -f "${DESK}"
+
+        if command -v update-mime-database >/dev/null 2>&1; then
+            update-mime-database /usr/share/mime || true
+        fi
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
         ;;
+
     purge)
-        # 连配置一起删
-        rm -rf "${HOME:-/root}"/.config/Youth/${APP_NAME} \
-               "${HOME:-/root}"/.config/Youth/CrashReport
+        # 彻底清除：系统文件 + 用户文件。
+        rm -f "${DESK}"
+
+        for home in /home/* /root; do
+            [ "$home" = "/home/*" ] && continue   # glob 未展开
+            remove_user_files "$home"
+        done
+
+        if command -v update-mime-database >/dev/null 2>&1; then
+            update-mime-database /usr/share/mime || true
+        fi
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
+        ;;
+
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        # 升级不删任何文件。
+        ;;
+
+    *)
         ;;
 esac
-
-# 删除桌面快捷方式
-rm -f ~/.local/share/applications/${APP_NAME}.desktop || true
-
-# 刷新桌面数据库
-if command -v update-desktop-database >/dev/null; then
-    update-desktop-database -q /usr/share/applications
-fi
 
 exit 0
