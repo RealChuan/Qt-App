@@ -1,32 +1,36 @@
-#ifndef HELLOWIDGET_HPP
-#define HELLOWIDGET_HPP
+#pragma once
+
+#include <shell/page.hpp>
 
 #include <QWidget>
 
-namespace Plugin {
+#include <memory>
 
-class HelloWidget : public QWidget
+namespace Hello {
+
+// 模板插件的页面：一个居中标签 + 计数。
+class HelloWidget final : public QWidget, public Shell::IPage
 {
     Q_OBJECT
+
 public:
     explicit HelloWidget(QWidget *parent = nullptr);
     ~HelloWidget() override;
 
-private slots:
-    void onPrevious();
-    void onNext();
+    auto id() const -> QString override { return QStringLiteral("helloplugin.page"); }
+    auto title() const -> QString override { return tr("Hello"); }
+    auto order() const -> int override { return 10; }
+    auto widget() -> QWidget * override { return this; }
 
-protected:
-    void changeEvent(QEvent *event) override;
+    void setCount(int count);
+    void increment();
+
+signals:
+    void countChanged(int count);
 
 private:
-    void setupTr();
-    void buildConnect();
-
     class HelloWidgetPrivate;
-    QScopedPointer<HelloWidgetPrivate> d_ptr;
+    std::unique_ptr<HelloWidgetPrivate> d_ptr;
 };
 
-} // namespace Plugin
-
-#endif // HELLOWIDGET_HPP
+} // namespace Hello

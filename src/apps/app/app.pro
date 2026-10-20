@@ -1,20 +1,20 @@
 include(../../../qmake/PlatformLibraries.pri)
 
-QT       += core gui network widgets core5compat concurrent core-private
+QT       += core gui network widgets
 
 TEMPLATE = app
 
 TARGET = $$PROJECT_NAME
 
-LIBS += \ 
+# 注意：续行符 \ 必须是该行最后一个字符，行尾有空格会让续行失效
+LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(extensionsystem) \
+    -l$$replaceLibName(shell) \
     -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(widgets) \
     -l$$replaceLibName(resource) \
-    -l$$replaceLibName(utils) \
-    -l$$replaceLibName(tasking) \
-    -l$$replaceLibName(spinner)
+    -l$$replaceLibName(utils)
 
 include(../../../qmake/InstallCrashpad.pri)
 

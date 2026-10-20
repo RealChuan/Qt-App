@@ -4,7 +4,6 @@
 #include "qtsingleapplication.h"
 #include "qtlocalpeer.h"
 
-#include <3rdparty/ui_watchdog/uiwatchdog.h>
 #include <utils/utils.hpp>
 
 #include <QDir>
@@ -29,19 +28,11 @@ static QString instancesLockFilename(const QString &appSessionId)
     return res + appSessionId + QLatin1String("-instances");
 }
 
-static const char s_uiWatchDog[] = "QTC_UI_WATCHDOG";
-
 QtSingleApplication::QtSingleApplication(const QString &appId, int &argc, char **argv)
     : QApplication(argc, argv)
     , firstPeer(-1)
     , pidPeer(0)
 {
-    if (qEnvironmentVariableIsSet(s_uiWatchDog)) {
-        auto watchDog = new UiWatchdog(UiWatchdogWorker::OptionNone, this);
-        qDebug() << s_uiWatchDog << "env var is set. The freezes of main thread, above"
-                 << MAX_TIME_BLOCKED << "ms, will be reported.";
-        watchDog->start();
-    }
     this->appId = appId;
 
     const QString appSessionId = QtLocalPeer::appSessionId(appId);

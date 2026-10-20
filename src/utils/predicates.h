@@ -1,83 +1,38 @@
-// Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
-
 #pragma once
 
-#include <functional>
+#include <concepts>
 #include <type_traits>
 #include <utility>
 
-namespace Utils
-{
+namespace Utils {
 
-//////////////////
-// find helpers
-//////////////////
+// 统一处理“容器里存值”和“容器里存指针”两种情况。
+template<typename T>
+concept NonPointer = !std::is_pointer_v<std::remove_cvref_t<T>>;
+
+template<NonPointer T>
+constexpr auto derefItem(const T &value) -> const T &
+{
+    return value;
+}
+
+template<typename T>
+constexpr auto derefItem(T *value) -> const T &
+{
+    return *value;
+}
+
+// 通过成员变量或 getter 与给定值比较，生成一元谓词。
 template<typename R, typename S, typename T>
-decltype(auto) equal(R (S::*function)() const, T value)
+auto equal(R S::*member, T value)
 {
-    // This should use std::equal_to<> instead of std::equal_to<T>,
-    // but that's not supported everywhere yet, since it is C++14
-    return std::bind<bool>(std::equal_to<T>(), value, std::bind(function, std::placeholders::_1));
+    return [member, value](const auto &object) { return derefItem(object).*member == value; };
 }
 
 template<typename R, typename S, typename T>
-decltype(auto) equal(R S::*member, T value)
+auto equal(R (S::*function)() const, T value)
 {
-    return std::bind<bool>(std::equal_to<T>(), value, std::bind(member, std::placeholders::_1));
+    return [function, value](const auto &object) { return (derefItem(object).*function)() == value; };
 }
 
-//////////////////
-// comparison predicates
-//////////////////
-
-template<typename Type, typename Compare, typename Projection>
-auto compare(Type &&value, Compare compare, Projection projection)
-{
-    if constexpr (std::is_lvalue_reference_v<Type>) {
-        return [&value, compare, projection](const auto &entry) {
-            return std::invoke(compare, value, std::invoke(projection, entry));
-        };
-    } else {
-        return [value = std::forward<Type>(value), compare, projection](const auto &entry) {
-            return std::invoke(compare, value, std::invoke(projection, entry));
-        };
-    }
-}
-
-template<typename Type, typename Projection = std::identity>
-auto equalTo(Type &&value, Projection projection = {})
-{
-    return compare(value, std::ranges::equal_to{}, projection);
-}
-
-template<typename Type, typename Projection = std::identity>
-auto unequalTo(Type &&value, Projection projection = {})
-{
-    return compare(value, std::ranges::not_equal_to{}, projection);
-}
-
-template<typename Type, typename Projection = std::identity>
-auto lessThan(Type &&value, Projection projection = {})
-{
-    return compare(value, std::ranges::less{}, projection);
-}
-
-template<typename Type, typename Projection = std::identity>
-auto lessEqualThan(Type &&value, Projection projection = {})
-{
-    return compare(value, std::ranges::less_equal{}, projection);
-}
-
-template<typename Type, typename Projection = std::identity>
-auto greaterThan(Type &&value, Projection projection = {})
-{
-    return compare(value, std::ranges::greater{}, projection);
-}
-
-template<typename Type, typename Projection = std::identity>
-auto greaterEqualThan(Type &&value, Projection projection = {})
-{
-    return compare(value, std::ranges::greater_equal{}, projection);
-}
 } // namespace Utils

@@ -5,9 +5,7 @@ set(PROJECT_SOURCES
     qtsingleapplication/qtlocalpeer.h
     thirdparty_global.hpp)
 
-add_platform_library(thirdparty ${PROJECT_SOURCES})
-target_link_libraries(thirdparty PRIVATE utils Qt::Network Qt::Widgets)
-
-if(CMAKE_HOST_WIN32)
-  target_compile_definitions(thirdparty PRIVATE "THRIDPARTY_LIBRARY")
-endif()
+# thirdparty_global.hpp 里历史上拼成 THRIDPARTY_*，这里用 EXPORT_MACRO 保持原样，
+# 避免为了构建系统去改第三方源码。
+add_platform_library(thirdparty EXPORT_MACRO THRIDPARTY ${PROJECT_SOURCES})
+target_link_libraries(thirdparty PUBLIC utils Qt::Network Qt::Widgets)

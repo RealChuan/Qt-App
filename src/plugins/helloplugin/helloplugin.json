@@ -9,9 +9,9 @@
   "Vendor": "Youth",
   "Copyright": "(C) 2026 The Youth Ltd",
   "License": "GNU General Public License v3.0",
-  "Category": "Main",
-  "Description": "Sample plugin demonstrating basic functionality",
-  "LongDescription": "The Hello plugin serves as a template and demonstration of plugin development basics. It provides a simple interface to showcase how plugins integrate with the main application and can be used as a starting point for developing new plugins.",
+  "Category": "Samples",
+  "Description": "Minimal plugin template: one page, one command, persistent settings.",
+  "LongDescription": "Copy this plugin as the starting point for your own. It shows the three things a plugin needs: metadata, a page contributed to the shell, and a command registered in the command palette.",
   "Url": "",
   "DocumentationUrl": ""
 }

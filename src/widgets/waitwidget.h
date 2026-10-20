@@ -1,9 +1,10 @@
-#ifndef WAITWIDGET_H
-#define WAITWIDGET_H
+#pragma once
 
 #include "widgets_global.hpp"
 
 #include <QSplashScreen>
+
+#include <memory>
 
 namespace Widgets {
 
@@ -21,9 +22,7 @@ private slots:
 
 private:
     class WaitWidgetPrivate;
-    QScopedPointer<WaitWidgetPrivate> d_ptr;
+    std::unique_ptr<WaitWidgetPrivate> d_ptr;
 };
 
 } // namespace Widgets
-
-#endif // WAITWIDGET_H

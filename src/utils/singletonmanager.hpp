@@ -4,25 +4,29 @@
 #include "singleton.hpp"
 #include "widgetmanager.hpp"
 
+#include <QObject>
+
+#include <memory>
+
 namespace Utils {
 
 class UTILS_EXPORT SingletonManager : public QObject
 {
     Q_OBJECT
 public:
-    LanguageManager *languageManager();
-    WidgetManager *widgetManager();
+    [[nodiscard]] auto languageManager() -> LanguageManager *;
+    [[nodiscard]] auto widgetManager() -> WidgetManager *;
 
     void saveSettings();
 
 private:
     explicit SingletonManager(QObject *parent = nullptr);
-    ~SingletonManager();
+    ~SingletonManager() override;
 
     void loadSettings();
 
     class SingletonManagerPrivate;
-    QScopedPointer<SingletonManagerPrivate> d_ptr;
+    std::unique_ptr<SingletonManagerPrivate> d_ptr;
 
     SINGLETON(SingletonManager)
 };

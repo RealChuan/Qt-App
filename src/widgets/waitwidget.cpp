@@ -2,69 +2,75 @@
 
 #include <utils/utils.hpp>
 
-#include <QtWidgets>
+#include <QHBoxLayout>
+#include <QProgressBar>
+#include <QTimer>
 
 namespace Widgets {
+
+namespace {
+constexpr int kStep = 5;
+constexpr int kStopValue = 95;
+constexpr int kMaxValue = 100;
+constexpr int kTickMs = 100;
+} // namespace
 
 class WaitWidget::WaitWidgetPrivate
 {
 public:
     explicit WaitWidgetPrivate(WaitWidget *q)
         : q_ptr(q)
+        , progressBar(new QProgressBar(q))
+        , timer(new QTimer(q))
     {
-        processBar = new QProgressBar(q_ptr);
-        processBar->setMaximumHeight(5);
-        processBar->setTextVisible(false);
-        processBar->setRange(0, 100);
-
-        timer = new QTimer(q_ptr);
+        progressBar->setMaximumHeight(5);
+        progressBar->setTextVisible(false);
+        progressBar->setRange(0, kMaxValue);
     }
 
-    void setupUI()
+    void setupUi()
     {
         auto *layout = new QHBoxLayout(q_ptr);
         layout->setContentsMargins({});
         layout->setSpacing(0);
-        layout->addWidget(processBar);
+        layout->addWidget(progressBar);
     }
 
-    QWidget *q_ptr;
-    QProgressBar *processBar;
-    QTimer *timer;
+    WaitWidget *q_ptr = nullptr;
+    QProgressBar *progressBar = nullptr;
+    QTimer *timer = nullptr;
 };
 
 WaitWidget::WaitWidget()
-    : d_ptr(new WaitWidgetPrivate(this))
+    : d_ptr(std::make_unique<WaitWidgetPrivate>(this))
 {
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint
                    | Qt::MSWindowsFixedSizeDialogHint);
-    //setAttribute(Qt::WA_StyledBackground);
     setAttribute(Qt::WA_TranslucentBackground);
-    d_ptr->setupUI();
+
+    d_ptr->setupUi();
     connect(d_ptr->timer, &QTimer::timeout, this, &WaitWidget::updateProgressBar);
-    d_ptr->timer->start(100);
+    d_ptr->timer->start(kTickMs);
+
     resize(600, 5);
     Utils::windowCenter(this);
 }
 
-WaitWidget::~WaitWidget() {}
+WaitWidget::~WaitWidget() = default;
 
 void WaitWidget::fullProgressBar()
 {
-    int value = d_ptr->processBar->value();
-    if (value < 100) {
-        d_ptr->processBar->setValue(100);
-    }
+    d_ptr->progressBar->setValue(kMaxValue);
 }
 
 void WaitWidget::updateProgressBar()
 {
-    int value = d_ptr->processBar->value() + 5;
-    if (value >= 95) {
+    const int value = d_ptr->progressBar->value() + kStep;
+    if (value >= kStopValue) {
         d_ptr->timer->stop();
         return;
     }
-    d_ptr->processBar->setValue(value);
+    d_ptr->progressBar->setValue(value);
 }
 
 } // namespace Widgets

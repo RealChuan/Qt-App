@@ -4,6 +4,8 @@
 
 #include <QMainWindow>
 
+#include <memory>
+
 namespace Widgets {
 
 #ifndef Q_OS_MACOS
@@ -20,7 +22,7 @@ public:
     void setCentralWidget(QWidget *centralWidget);
     void setTitleBar(QWidget *titleBar);
 
-    auto shadowPadding() -> int;
+    [[nodiscard]] auto shadowPadding() -> int;
 
     void setSizeGripVisible(bool visible);
 
@@ -43,7 +45,7 @@ private:
     void setTr();
 
     class MainWidgetPrivate;
-    QScopedPointer<MainWidgetPrivate> d_ptr;
+    std::unique_ptr<MainWidgetPrivate> d_ptr;
 };
 #else
 class WIDGETS_EXPORT MainWidget : public QMainWindow
@@ -55,7 +57,7 @@ public:
     {}
 
     void setTitleBar(QWidget *widget);
-    int shadowPadding() { return 0; }
+    [[nodiscard]] auto shadowPadding() const -> int { return 0; }
 
 signals:
     void aboutToclose();

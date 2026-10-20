@@ -1,7 +1,9 @@
 set(PROJECT_SOURCES crashwidgets.cc crashwidgets.hpp main.cc)
-if(CMAKE_HOST_WIN32)
+
+if(WIN32)
   list(APPEND PROJECT_SOURCES app.rc)
 endif()
+
 qt_add_executable(CrashReport MANUAL_FINALIZATION ${PROJECT_SOURCES})
 set_target_properties(CrashReport PROPERTIES WIN32_EXECUTABLE ON)
 target_link_libraries(
@@ -12,14 +14,15 @@ target_link_libraries(
           resource
           utils
           Qt::Network
-          Qt::Core5Compat
-          Qt::Widgets
-          tl::expected)
+          Qt::Widgets)
+
+qtapp_apply_pch(CrashReport)
+
 qt_finalize_executable(CrashReport)
 
-if(CMAKE_HOST_APPLE)
-  set(BUNDLE_CONTENTS_DIR
-      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/MacOS")
+if(APPLE)
+  # CrashReport 需要放进主 app 的 Contents/MacOS，路径跟随主目标所在目录
+  set(BUNDLE_CONTENTS_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 
   add_custom_command(
     TARGET CrashReport

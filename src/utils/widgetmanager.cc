@@ -2,34 +2,30 @@
 
 #include <QSettings>
 
+using namespace Qt::StringLiterals;
+
 namespace Utils {
 
 class WidgetManager::WidgetManagerPrivate
 {
 public:
-    explicit WidgetManagerPrivate(WidgetManager *q)
-        : q_ptr(q)
-    {}
-
-    WidgetManager *q_ptr;
-
     bool showMask = true;
     bool blurBackground = true;
 };
 
 WidgetManager::WidgetManager(QObject *parent)
-    : QObject{parent}
-    , d_ptr(new WidgetManagerPrivate(this))
+    : QObject(parent)
+    , d_ptr(std::make_unique<WidgetManagerPrivate>())
 {}
 
-WidgetManager::~WidgetManager() {}
+WidgetManager::~WidgetManager() = default;
 
 void WidgetManager::setShowMask(bool show)
 {
     d_ptr->showMask = show;
 }
 
-bool WidgetManager::showMask() const
+auto WidgetManager::showMask() const -> bool
 {
     return d_ptr->showMask;
 }
@@ -39,24 +35,24 @@ void WidgetManager::setBlurBackground(bool show)
     d_ptr->blurBackground = show;
 }
 
-bool WidgetManager::blurBackground() const
+auto WidgetManager::blurBackground() const -> bool
 {
     return d_ptr->blurBackground;
 }
 
-void WidgetManager::saveSettings(QSettings &settings)
+void WidgetManager::saveSettings(QSettings &settings) const
 {
-    settings.beginGroup("Widget");
-    settings.setValue("showMask", d_ptr->showMask);
-    settings.setValue("blurBackground", d_ptr->blurBackground);
+    settings.beginGroup(u"Widget"_s);
+    settings.setValue(u"showMask"_s, d_ptr->showMask);
+    settings.setValue(u"blurBackground"_s, d_ptr->blurBackground);
     settings.endGroup();
 }
 
 void WidgetManager::loadSettings(QSettings &settings)
 {
-    settings.beginGroup("Widget");
-    d_ptr->showMask = settings.value("showMask", true).toBool();
-    d_ptr->blurBackground = settings.value("blurBackground", true).toBool();
+    settings.beginGroup(u"Widget"_s);
+    d_ptr->showMask = settings.value(u"showMask"_s, true).toBool();
+    d_ptr->blurBackground = settings.value(u"blurBackground"_s, true).toBool();
     settings.endGroup();
 }
 

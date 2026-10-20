@@ -1,10 +1,4 @@
-set(PROJECT_SOURCES breakpad.hpp breakpad.cc crashpad.hpp crashpad.cc
-                    dump_global.hpp)
-add_platform_library(dump ${PROJECT_SOURCES})
-target_link_libraries(
-  dump PRIVATE utils Qt::Widgets unofficial::breakpad::libbreakpad
-               unofficial::breakpad::libbreakpad_client crashpad::crashpad)
+set(PROJECT_SOURCES crashpad.hpp crashpad.cc dump_global.hpp)
 
-if(CMAKE_HOST_WIN32)
-  target_compile_definitions(dump PRIVATE "DUMP_LIBRARY")
-endif()
+add_platform_library(dump ${PROJECT_SOURCES})
+target_link_libraries(dump PUBLIC utils Qt::Widgets crashpad::crashpad)

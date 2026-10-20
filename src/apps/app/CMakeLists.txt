@@ -1,9 +1,10 @@
 set(PROJECT_SOURCES main.cc)
 
-if(CMAKE_HOST_WIN32)
-  qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES}
-                    app.rc)
-elseif(CMAKE_HOST_APPLE)
+if(WIN32)
+  list(APPEND PROJECT_SOURCES app.rc)
+endif()
+
+if(APPLE)
   qt_add_executable(${PROJECT_NAME} MACOSX_BUNDLE MANUAL_FINALIZATION
                     ${PROJECT_SOURCES} app.icns PkgInfo)
   set_target_properties(
@@ -19,7 +20,7 @@ elseif(CMAKE_HOST_APPLE)
   set_source_files_properties(app.icns PROPERTIES MACOSX_PACKAGE_LOCATION
                                                   Resources)
   set_source_files_properties(PkgInfo PROPERTIES MACOSX_PACKAGE_LOCATION .)
-elseif(CMAKE_HOST_LINUX)
+else()
   qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
 endif()
 
@@ -29,51 +30,28 @@ target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE dump
           extensionsystem
+          shell
           thirdparty
           widgets
           resource
           utils
           Qt::Network
-          Qt::Core5Compat
           Qt::Widgets
-          crashpad::crashpad
-          tl::expected)
+          crashpad::crashpad)
+
+qtapp_apply_pch(${PROJECT_NAME})
 
 qt_finalize_executable(${PROJECT_NAME})
 
-if(CMAKE_HOST_APPLE)
-  set(CRASHPAD_TARGET_DIR
-      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.app/Contents/MacOS")
-else()
-  set(CRASHPAD_TARGET_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-endif()
+# 用 $<TARGET_FILE_DIR> 而不是手工拼路径：单/多配置、.app bundle 都自动正确
+set(CRASHPAD_TARGET_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 
-setup_crashpad_handler("${CRASHPAD_TARGET_DIR}")
+# 构建后增量同步 crashpad_handler（替代 configure 期的一次性拷贝）
+setup_crashpad_handler(${PROJECT_NAME} "${CRASHPAD_TARGET_DIR}")
 
 install(
   TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION ${MAIN_APP_INSTALL_DIR}
   BUNDLE DESTINATION ${MAIN_APP_INSTALL_DIR})
 
-get_crashpad_tools_path(crash_handler_path)
-
-install(
-  DIRECTORY "${crash_handler_path}/"
-  DESTINATION ${TOOL_INSTALL_DIR}
-  # 设置权限
-  FILE_PERMISSIONS
-    OWNER_READ
-    OWNER_WRITE
-    OWNER_EXECUTE
-    GROUP_READ
-    GROUP_EXECUTE
-    WORLD_READ
-    WORLD_EXECUTE
-  DIRECTORY_PERMISSIONS
-    OWNER_READ
-    OWNER_WRITE
-    OWNER_EXECUTE
-    GROUP_READ
-    GROUP_EXECUTE
-    WORLD_READ
-    WORLD_EXECUTE)
+install_crashpad_handler(${TOOL_INSTALL_DIR})

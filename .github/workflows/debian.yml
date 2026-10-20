@@ -29,7 +29,6 @@ on:
       - "**/README*"
 
 env:
-  PACKET_DIR: ./packaging/packet
   RELEASES_DIR: ./packaging/releases
 
 jobs:
@@ -51,14 +50,7 @@ jobs:
       - name: Create output directories
         shell: bash
         run: |
-          mkdir -p ${{ env.PACKET_DIR }}
           mkdir -p ${{ env.RELEASES_DIR }}
-
-      - name: Download fonts
-        shell: bash
-        working-directory: ${{ env.PACKET_DIR }}
-        run: |
-          cmake -DVERBOSE=1 -P ./../fonts.cmake
 
       - name: Generate Debian package
         shell: bash
@@ -67,17 +59,20 @@ jobs:
           sudo mk-build-deps --install --remove
           chmod +x debian/package.sh
           export DPKG_GENSYMBOLS_CHECK_LEVEL=0
-          export DEB_BUILD_OPTIONS="nocheck parallel=$(( $(getconf _NPROCESSORS_ONLN) + 2 ))"
+          export DEB_BUILD_OPTIONS=nocheck
           dpkg-buildpackage -b -us -uc -jauto
 
       - name: Collect artifacts
         shell: bash
         run: |
-          mv ../*.deb ${{ env.RELEASES_DIR }}/Qt-App.deb
+          # dpkg-buildpackage 的产物是 qt-app_<version>-<rev>_<arch>.deb，
+          # 版本与架构本来就在文件名里，直接搬过来即可
+          mv -v ../*.deb ${{ env.RELEASES_DIR }}/
           chmod -R +x ${{ env.RELEASES_DIR }}
-          ls -al ${{ env.RELEASES_DIR }}
-          dpkg-deb -I ${{ env.RELEASES_DIR }}/Qt-App.deb control
-          lintian -i ${{ env.RELEASES_DIR }}/Qt-App.deb || true
+          echo "=== debian package files ==="
+          ls -lh ${{ env.RELEASES_DIR }}
+          dpkg-deb -I ${{ env.RELEASES_DIR }}/*.deb control
+          lintian -i ${{ env.RELEASES_DIR }}/*.deb || true
 
       - name: Upload Debian packages
         uses: actions/upload-artifact@v7

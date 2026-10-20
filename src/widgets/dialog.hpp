@@ -4,6 +4,8 @@
 
 #include <QDialog>
 
+#include <memory>
+
 namespace Widgets {
 
 #ifndef Q_OS_MACOS
@@ -11,8 +13,6 @@ class WIDGETS_EXPORT Dialog : public MainWidget
 {
     Q_OBJECT
 public:
-    enum ExecFlag : int { Accepted, Rejected, Closed };
-
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog() override;
 
@@ -34,7 +34,7 @@ private:
     void buildConnect();
 
     class DialogPrivate;
-    QScopedPointer<DialogPrivate> d_ptr;
+    std::unique_ptr<DialogPrivate> d_ptr;
 };
 #else
 class WIDGETS_EXPORT Dialog : public QDialog
@@ -43,15 +43,13 @@ class WIDGETS_EXPORT Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = nullptr)
         : QDialog(parent)
-    {
-        setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
-    }
+    { setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint); }
 
     void setMinButtonVisible(bool) {}
     void setRestoreMaxButtonVisible(bool) {}
 
     void setCentralWidget(QWidget *widget);
-    int shadowPadding() { return 0; }
+    [[nodiscard]] auto shadowPadding() const -> int { return 0; }
 };
 #endif
 

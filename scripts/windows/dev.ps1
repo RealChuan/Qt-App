@@ -1,0 +1,91 @@
+<#
+.SYNOPSIS
+  Local development helper: configure / build / run.
+
+.DESCRIPTION
+  ASCII only on purpose: Windows PowerShell 5.1 decodes BOM-less scripts
+  with the ANSI code page, so non-ASCII text would break parsing.
+
+.EXAMPLE
+  .\scripts\windows\dev.ps1
+  .\scripts\windows\dev.ps1 -Action configure
+  .\scripts\windows\dev.ps1 -Action build -Target extensionsystem
+  .\scripts\windows\dev.ps1 -Action run -AppArgs '--console','--log-level=debug'
+#>
+[CmdletBinding()]
+param(
+  [ValidateSet('configure', 'build', 'run')]
+  [string]$Action = 'build',
+  [string]$Target = 'all',
+  [string]$BuildType = 'Debug',
+  [string]$BuildDir = 'build',
+  [string]$QtDir = 'C:\Qt\6.12.0\msvc2022_64',
+  [string[]]$AppArgs = @()
+)
+
+$ErrorActionPreference = 'Stop'
+
+$ProjectDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$BuildPath = Join-Path $ProjectDir $BuildDir
+$CMake = 'C:\Qt\Tools\CMake_64\bin\cmake.exe'
+if (-not (Test-Path $CMake)) { $CMake = 'cmake' }
+
+# PowerShell 5.1 reports native stderr as error records; keep them as plain text
+# and rely on the exit code instead.
+function Invoke-Native {
+  param([string]$Exe, [string[]]$Arguments)
+  $previous = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & $Exe @Arguments 2>&1 | ForEach-Object {
+      if ($_ -is [System.Management.Automation.ErrorRecord]) { Write-Host $_.Exception.Message }
+      else { Write-Host $_ }
+    }
+    return $LASTEXITCODE
+  }
+  finally {
+    $ErrorActionPreference = $previous
+  }
+}
+
+if ($Action -eq 'run') {
+  $exe = Join-Path $ProjectDir "binaries\cmake\x64\bin\$($BuildType.ToLower())\Qt-App.exe"
+  if (-not (Test-Path $exe)) { throw "Not found: $exe (run -Action build first)" }
+  $env:PATH = "$QtDir\bin;$env:PATH"
+  & $exe @AppArgs
+  exit $LASTEXITCODE
+}
+
+& (Join-Path $ProjectDir 'packaging\windows\Enter-VsDevShell.ps1') -Arch x64 -HostArch x64
+if ($LASTEXITCODE) { throw "Failed to enter DevShell (exit $LASTEXITCODE)" }
+
+# 让 cl 的诊断恒为英文：CMake/Ninja 用 "Note: including file:" 建立头文件
+# 依赖，系统语言为中文而编译器输出英文时前缀对不上，会导致改头文件不重编。
+$env:VSLANG = '1033'
+
+if ($Action -eq 'configure') {
+  $ninja = 'C:\Qt\Tools\Ninja\ninja.exe'
+  if (Test-Path $ninja) { $env:CMAKE_MAKE_PROGRAM = $ninja }
+
+  $code = Invoke-Native $CMake @(
+    '-S', $ProjectDir,
+    '-B', $BuildPath,
+    '-G', 'Ninja',
+    "-DCMAKE_BUILD_TYPE=$BuildType",
+    "-DQT_ROOT=$QtDir",
+    '-DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE'
+  )
+  if ($code) { throw "cmake configure failed (exit $code)" }
+  exit 0
+}
+
+if (-not (Test-Path (Join-Path $BuildPath 'CMakeCache.txt'))) {
+  throw "Build directory is not configured, run -Action configure first"
+}
+
+$code = Invoke-Native $CMake @(
+  '--build', $BuildPath,
+  '--config', $BuildType,
+  '--target', $Target
+)
+if ($code) { throw "cmake build failed (exit $code)" }

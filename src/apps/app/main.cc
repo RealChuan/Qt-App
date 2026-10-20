@@ -1,15 +1,15 @@
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
 #include <dump/crashpad.hpp>
-#include <extensionsystem/iplugin.h>
-#include <extensionsystem/pluginmanager.h>
-#include <extensionsystem/pluginspec.h>
+#include <extensionsystem/iplugin.hpp>
+#include <extensionsystem/pluginmanager.hpp>
 #include <resource/resource.hpp>
+#include <shell/host.hpp>
 #include <utils/algorithm.h>
 #include <utils/appdata.hpp>
 #include <utils/appinfo.h>
 #include <utils/asynclog.hpp>
 #include <utils/hostosinfo.h>
-#include <utils/qtcsettings_p.h>
+#include <utils/settings.h>
 #include <utils/singletonmanager.hpp>
 #include <utils/utils.hpp>
 #include <widgets/waitwidget.h>
@@ -159,7 +159,6 @@ void initResource()
     Resource r; // 这样才可以使用qrc
 #ifndef Q_OS_WIN
     Q_INIT_RESOURCE(resource);
-    Q_INIT_RESOURCE(utils);
 #endif
 }
 
@@ -224,70 +223,50 @@ auto main(int argc, char *argv[]) -> int
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     // 等待界面
-    QScopedPointer<Widgets::WaitWidget> waitWidgetPtr(new Widgets::WaitWidget);
-    waitWidgetPtr->show();
+    auto waitWidget = std::make_unique<Widgets::WaitWidget>();
+    waitWidget->show();
     app.processEvents();
 
-    auto *userSettings = new Utils::QtcSettings(Utils::configFilePath(), QSettings::IniFormat);
-    auto *installSettings = new Utils::QtcSettings(QSettings::IniFormat,
-                                                   QSettings::SystemScope,
-                                                   QLatin1String(Utils::organzationName),
-                                                   QLatin1String(Utils::appName));
-    Utils::Internal::SettingsSetup::setupSettings(userSettings, installSettings);
+    auto *userSettings = new QSettings(Utils::configFilePath(), QSettings::IniFormat);
+    auto *installSettings = new QSettings(QSettings::IniFormat,
+                                          QSettings::SystemScope,
+                                          QLatin1String(Utils::organzationName),
+                                          QLatin1String(Utils::appName));
+    Utils::setupSettings(userSettings, installSettings);
 
     ExtensionSystem::PluginManager pluginManager;
-    ExtensionSystem::PluginManager::setPluginIID(QLatin1String("Youth.Qt.plugin"));
-    ExtensionSystem::PluginManager::startProfiling();
-    ExtensionSystem::PluginManager::removePluginsAfterRestart();
-    // We need to install plugins before we scan for them.
-    ExtensionSystem::PluginManager::installPluginsAfterRestart();
-
     ExtensionSystem::PluginManager::setPluginPaths({Utils::appInfo().plugins});
 
-    auto *coreplugin = ExtensionSystem::PluginManager::specById(QLatin1String("CorePlugin"));
-    if (!coreplugin) {
-        const QString pluginPath
-            = ExtensionSystem::PluginManager::pluginPaths().first().toUserOutput();
-        QString nativePaths = QDir::toNativeSeparators(pluginPath);
-        const QString reason = QCoreApplication::translate("Application",
-                                                           "Could not find Core plugin in %1")
-                                   .arg(nativePaths);
-        displayError(msgCoreLoadFailure(reason));
-        return 1;
-    }
-    if (!coreplugin->isEffectivelyEnabled()) {
-        const QString reason = QCoreApplication::translate("Application",
-                                                           "Core plugin is disabled.");
-        displayError(msgCoreLoadFailure(reason));
-        return 1;
-    }
-    if (coreplugin->hasError()) {
-        displayError(msgCoreLoadFailure(coreplugin->errorString()));
+    if (const auto result = ExtensionSystem::PluginManager::loadPlugins(); !result) {
+        displayError(msgCoreLoadFailure(result.error()));
         return 1;
     }
 
-    ExtensionSystem::PluginManager::checkForProblematicPlugins();
-    ExtensionSystem::PluginManager::loadPlugins();
-    if (coreplugin->hasError()) {
-        displayError(msgCoreLoadFailure(coreplugin->errorString()));
+    // 外壳插件缺失或被禁用时没有主窗口，直接报错比留一个空界面更好。
+    if (!Shell::host()) {
+        displayError(
+            QCoreApplication::translate("Application", "Shell plugin (coreplugin) is not available."));
         return 1;
     }
 
-    // Set up remote arguments.
+    // 单实例：第二个进程把已有窗口拉到前台。
     QObject::connect(&app,
                      &SharedTools::QtSingleApplication::messageReceived,
                      &pluginManager,
-                     &ExtensionSystem::PluginManager::remoteArguments);
+                     [] {
+                         if (Shell::host())
+                             Utils::restoreAndActivate(Shell::host()->mainWindow());
+                     });
 
     // shutdown plugin manager on the exit
     QObject::connect(&app, &QCoreApplication::aboutToQuit, &pluginManager, [] {
         ExtensionSystem::PluginManager::shutdown();
-        Utils::Internal::SettingsSetup::destroySettings();
+        Utils::destroySettings();
     });
 
-    waitWidgetPtr->fullProgressBar();
+    waitWidget->fullProgressBar();
     app.processEvents();
-    waitWidgetPtr->close();
+    waitWidget->close();
 
     if (Utils::HostOsInfo::isWindowsHost()) {
         // Workaround for QTBUG-130696 and QTCREATORBUG-31890

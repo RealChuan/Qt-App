@@ -2,9 +2,10 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
-    aboutplugin \
     coreplugin \
-    guiplugin \
-    hashplugin \
     helloplugin \
-    systeminfoplugin
+    particlesplugin \
+    danmakuplugin \
+    pomodoroplugin \
+    fractalplugin \
+    colorpickerplugin

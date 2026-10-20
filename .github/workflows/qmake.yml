@@ -92,12 +92,12 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          cd output/
+          cd binaries/qmake/
           cmd /c tree /f
 
       - name: Display binary directory tree (Unix-like)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
-          cd output/
+          cd binaries/qmake/
           tree

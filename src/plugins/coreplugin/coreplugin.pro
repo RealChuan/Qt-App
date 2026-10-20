@@ -1,12 +1,11 @@
 include(../../../qmake/PlatformLibraries.pri)
 
-QT += widgets network core5compat
+QT += widgets
 
-DEFINES += COREPLUGIN_LIBRARY
-TARGET = $$add_plugin_library(coreplugin)
+TARGET = $$add_app_plugin(coreplugin)
 
 LIBS += \
-    -l$$replaceLibName(core) \
+    -l$$replaceLibName(shell) \
     -l$$replaceLibName(extensionsystem) \
     -l$$replaceLibName(widgets) \
     -l$$replaceLibName(resource) \
@@ -14,21 +13,21 @@ LIBS += \
 
 include(../../../qmake/VcpkgToolchain.pri)
 
-HEADERS += \
-    configwidget.h \
-    coreplugin.hpp \
-    coreplugintr.h \
-    icore.h \
-    mainwindow.h \
-    plugindialog.h
-
 SOURCES += \
-    configwidget.cpp \
-    coreplugin.cpp \
-    icore.cpp \
-    mainwindow.cpp \
-    plugindialog.cpp
+    aboutpage.cc \
+    commandpalette.cc \
+    configpage.cc \
+    coreplugin.cc \
+    mainwindow.cc \
+    pluginpage.cc
+
+HEADERS += \
+    aboutpage.hpp \
+    commandpalette.hpp \
+    configpage.hpp \
+    coreplugin.hpp \
+    mainwindow.hpp \
+    pluginpage.hpp
 
 DISTFILES += \
     coreplugin.json
-    

@@ -19,6 +19,9 @@ check_qt_translations_setup()
 
 # -----------------------------------------------------------------------------
 # 添加Qt翻译支持
+#   .qm 必须落在可执行文件旁（LanguageManager 用 applicationDirPath()/translations），
+#   多配置生成器下因此要带上 <CONFIG> 子目录。
+#   输出目录由 qt_add_translations 在构建期自行创建，这里不预先 file(MAKE_DIRECTORY)。
 # -----------------------------------------------------------------------------
 function(add_translations TARGET_NAME)
   # 参数验证
@@ -29,26 +32,14 @@ function(add_translations TARGET_NAME)
   # 转换目标名称为小写用于翻译文件基名
   string(TOLOWER "${TARGET_NAME}" TS_FILE_BASE)
 
-  # 确定翻译文件的输出位置
-  if(CMAKE_HOST_APPLE)
-    # macOS: 放入App Bundle的Resources目录
+  if(APPLE)
     set(TRANSLATIONS_OUTPUT_DIR
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}.app/Contents/Resources/translations"
+        "${QT_APP_RUNTIME_BASE}/${TARGET_NAME}.app/Contents/Resources/translations"
     )
-  elseif(CMAKE_HOST_WIN32)
-    # Windows: 放入translations目录
-    set(TRANSLATIONS_OUTPUT_DIR
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
   else()
-    # Linux/Unix: 放入translations目录
-    set(TRANSLATIONS_OUTPUT_DIR
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
+    set(TRANSLATIONS_OUTPUT_DIR "${QT_APP_RUNTIME_BASE}/translations")
   endif()
 
-  # 创建输出目录
-  file(MAKE_DIRECTORY "${TRANSLATIONS_OUTPUT_DIR}")
-
-  # 添加Qt翻译
   qt_add_translations(
     ${TARGET_NAME}
     TS_FILE_BASE
@@ -70,9 +61,10 @@ function(add_translations TARGET_NAME)
     FILES_MATCHING
     PATTERN "*.qm")
 
-  # 显示配置信息
+  # 实际参与构建的 ts 文件（TS_FILE_BASE 模式下由 Qt 按语言生成路径）
+  file(GLOB _ts_files "${PROJECT_SOURCE_DIR}/translations/${TS_FILE_BASE}_*.ts")
   message(STATUS "Translations for ${TARGET_NAME}:")
-  message(STATUS "  TS files: ${TS_FILES}")
+  message(STATUS "  TS files: ${_ts_files}")
   message(STATUS "  Output directory: ${TRANSLATIONS_OUTPUT_DIR}")
   message(STATUS "  Install directory: ${TRANSLATION_INSTALL_DIR}")
 endfunction()
@@ -81,23 +73,67 @@ endfunction()
 # 部署Qt应用
 # =============================================================================
 function(deploy_qt_application TARGET)
-  if(NOT TARGET)
-    message(FATAL_ERROR "deploy_qt_application: 必须指定TARGET参数")
+  if(NOT TARGET ${TARGET})
+    message(FATAL_ERROR "deploy_qt_application: 目标不存在: ${TARGET}")
   endif()
 
-  # 设置部署工具选项
-  set(deploy_tool_options_arg "")
+  set(_deploy_tool_options "")
 
   if(WIN32)
-    # Windows平台特定的部署选项
-    set(deploy_tool_options_arg "--compiler-runtime" "--openssl-root"
-                                "${VCPKG_ROOT}/installed/${ARCH_DIR}-windows")
+    # 部署 MSVC 运行时
+    list(APPEND _deploy_tool_options --compiler-runtime)
+
+    # --openssl-root 必须指向「含 DLL 的动态 triplet」：
+    #   本项目链接用的是 *-windows-static-md（静态库，只有 .lib），
+    #   而 Qt 是运行时才动态加载 OpenSSL 的，windeployqt 在静态目录里
+    #   找不到 DLL 会直接以非 0 退出，把 cmake --install 拖挂。
+    set(_openssl_triplet "${VCPKG_TARGET_TRIPLET}")
+    if(_openssl_triplet MATCHES "^(.+)-windows-(static-md|static)$")
+      set(_openssl_triplet "${CMAKE_MATCH_1}-windows")
+    elseif(NOT _openssl_triplet)
+      set(_openssl_triplet "${ARCH_DIR}-windows")
+    endif()
+
+    # 缓存里如果是旧的静态目录（没有 bin/），丢弃重探
+    if(QT_APP_OPENSSL_ROOT AND NOT EXISTS "${QT_APP_OPENSSL_ROOT}/bin")
+      message(
+        STATUS
+          "windeployqt: 忽略没有 DLL 的 QT_APP_OPENSSL_ROOT=${QT_APP_OPENSSL_ROOT}"
+      )
+      unset(QT_APP_OPENSSL_ROOT CACHE)
+    endif()
+
+    if(NOT QT_APP_OPENSSL_ROOT)
+      # manifest 模式装到 <build>/vcpkg_installed/<triplet>，
+      # 经典模式装到 <vcpkg>/installed/<triplet>，两种都尝试一次。
+      foreach(_candidate
+              "${VCPKG_INSTALLED_DIR}/${_openssl_triplet}"
+              "${VCPKG_DEFAULT_ROOT}/installed/${_openssl_triplet}")
+        if(EXISTS "${_candidate}/bin")
+          set(QT_APP_OPENSSL_ROOT
+              "${_candidate}"
+              CACHE PATH "windeployqt --openssl-root")
+          break()
+        endif()
+      endforeach()
+    endif()
+
+    if(QT_APP_OPENSSL_ROOT)
+      message(STATUS "windeployqt: --openssl-root ${QT_APP_OPENSSL_ROOT}")
+      list(APPEND _deploy_tool_options --openssl-root
+           "${QT_APP_OPENSSL_ROOT}")
+    else()
+      message(
+        WARNING
+          "windeployqt: 未找到含 DLL 的 OpenSSL 目录（triplet=${_openssl_triplet}），"
+          "将不部署 OpenSSL，目标机上 HTTPS 可能不可用")
+    endif()
   endif()
 
   # 生成部署脚本
-  qt_generate_deploy_app_script(TARGET ${TARGET} OUTPUT_SCRIPT deploy_script
-                                DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg})
+  qt_generate_deploy_app_script(TARGET ${TARGET} OUTPUT_SCRIPT _deploy_script
+                                DEPLOY_TOOL_OPTIONS ${_deploy_tool_options})
 
   # 安装部署脚本
-  install(SCRIPT ${deploy_script})
+  install(SCRIPT ${_deploy_script})
 endfunction()

@@ -2,7 +2,6 @@ include(../../qmake/PlatformLibraries.pri)
 
 QT += widgets
 
-DEFINES += WIDGETS_LIBRARY
 TARGET = $$add_platform_library(widgets)
 
 LIBS += \
@@ -13,7 +12,7 @@ HEADERS += \
     dialog.hpp \
     mainwidget.hpp \
     messagebox.h \
-    pushbutton.hpp \
+    buttoniconstatemanager.hpp \
     waitwidget.h \
     widgets_global.hpp 
 
@@ -21,5 +20,5 @@ SOURCES += \
     dialog.cc \
     mainwidget.cc \
     messagebox.cpp \
-    pushbutton.cc \
+    buttoniconstatemanager.cc \
     waitwidget.cpp

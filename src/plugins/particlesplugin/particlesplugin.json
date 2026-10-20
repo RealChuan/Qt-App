@@ -1,0 +1,17 @@
+{
+  "Id": "particlesplugin",
+  "DisplayName": "Particles",
+  "Name": "ParticlesPlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Samples",
+  "Description": "Self-drawn particle playground driven by a timer.",
+  "LongDescription": "Shows how a plugin can own an animation: a QTimer advances particles, paintEvent draws them, and the timer stops when the page is hidden.",
+  "Url": "",
+  "DocumentationUrl": ""
+}

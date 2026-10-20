@@ -1,180 +1,45 @@
 set(PROJECT_SOURCES
-    fsengine/diriterator.h
-    fsengine/fileiconprovider.cpp
-    fsengine/fileiconprovider.h
-    fsengine/fileiteratordevicesappender.h
-    fsengine/filepathinfocache.h
-    fsengine/fsengine.cpp
-    fsengine/fsengine.h
-    fsengine/fsenginehandler.cpp
-    fsengine/fsenginehandler.h
-    mimetypes2/mimedatabase_p.h
-    mimetypes2/mimedatabase.cpp
-    mimetypes2/mimedatabase.h
-    mimetypes2/mimeglobpattern_p.h
-    mimetypes2/mimeglobpattern.cpp
-    mimetypes2/mimemagicrule_p.h
-    mimetypes2/mimemagicrule.cpp
-    mimetypes2/mimemagicrulematcher_p.h
-    mimetypes2/mimemagicrulematcher.cpp
-    mimetypes2/mimeprovider_p.h
-    mimetypes2/mimeprovider.cpp
-    mimetypes2/mimetype_p.h
-    mimetypes2/mimetype.cpp
-    mimetypes2/mimetype.h
-    mimetypes2/mimetypeparser_p.h
-    mimetypes2/mimetypeparser.cpp
-    mimetypes2/mimeutils.cpp
     algorithm.h
     appdata.hpp
     appinfo.cpp
     appinfo.h
     asynclog.cc
     asynclog.hpp
-    benchmarker.cpp
-    benchmarker.h
-    builderutils.h
-    camelcasecursor.cpp
-    camelcasecursor.h
-    categorysortfiltermodel.cpp
-    categorysortfiltermodel.h
-    commandline.cpp
-    commandline.h
-    completinglineedit.cpp
-    completinglineedit.h
-    devicefileaccess.cpp
-    devicefileaccess.h
-    elidinglabel.cpp
-    elidinglabel.h
-    environment.cpp
-    environment.h
-    environmentfwd.h
-    execmenu.cpp
-    execmenu.h
-    expected.h
-    fancylineedit.cpp
-    fancylineedit.h
     filepath.cpp
     filepath.h
-    filepathinfo.h
-    fileutils.cpp
-    fileutils.h
-    futuresynchronizer.cpp
-    futuresynchronizer.h
-    guard.cpp
-    guard.h
-    guiutils.cpp
-    guiutils.h
-    historycompleter.cpp
-    historycompleter.h
     hostosinfo.cpp
     hostosinfo.h
-    icon.cpp
-    icon.h
-    icondisplay.cpp
-    icondisplay.h
-    indexedcontainerproxyconstiterator.h
-    infolabel.cpp
-    infolabel.h
-    itemviews.cpp
-    itemviews.h
     languagemanager.cc
     languagemanager.hpp
-    layoutbuilder.cpp
-    layoutbuilder.h
     logbuffer.cc
     logbuffer.hpp
     logsink.cc
     logsink.hpp
-    macroexpander.cpp
-    macroexpander.h
-    mimeutils.h
-    multitextcursor.cpp
-    multitextcursor.h
-    namevaluedictionary.cpp
-    namevaluedictionary.h
-    namevalueitem.cpp
-    namevalueitem.h
     osspecificaspects.h
     predicates.h
-    processenums.h
-    processhelper.cpp
-    processhelper.h
-    processinterface.cpp
-    processinterface.h
-    processreaper.cpp
-    processreaper.h
     qtcassert.cpp
     qtcassert.h
-    qtcprocess.cpp
-    qtcprocess.h
-    qtcsettings_p.h
-    qtcsettings.cpp
-    qtcsettings.h
     result.cpp
     result.h
-    savefile.cpp
-    savefile.h
-    shutdownguard.cpp
-    shutdownguard.h
+    settings.cpp
+    settings.h
     singleton.hpp
     singletonmanager.cc
     singletonmanager.hpp
-    store.cpp
-    store.h
-    storekey.h
-    stringutils.cpp
-    stringutils.h
-    stylehelper.cpp
-    stylehelper.h
-    temporarydirectory.cpp
-    temporarydirectory.h
-    temporaryfile.cpp
-    temporaryfile.h
-    textcodec.cpp
-    textcodec.h
-    threadutils.cpp
-    threadutils.h
-    treemodel.cpp
-    treemodel.h
-    utils_global.h
     utils.cc
     utils.hpp
-    utilsicons.cpp
-    utilsicons.h
+    utils_global.h
     utilstr.h
-    utiltypes.h
-    validator.cc
-    validator.hpp
     widgetmanager.cc
     widgetmanager.hpp)
 
-if(CMAKE_HOST_APPLE)
-  list(APPEND PROJECT_SOURCES fileutils_mac.mm fileutils_mac.h)
-endif()
+add_platform_library(utils ${PROJECT_SOURCES})
+target_link_libraries(utils PUBLIC Qt::Widgets)
 
-qt_add_resources(RESOURCE_SOURCES utils.qrc)
-
-add_platform_library(utils ${PROJECT_SOURCES} ${RESOURCE_SOURCES})
-target_link_libraries(
-  utils
-  PRIVATE spinner
-          tasking
-          Qt::Network
-          Qt::Widgets
-          Qt::Concurrent
-          Qt::Core5Compat
-          Qt::CorePrivate
-          tl::expected)
-
-if(CMAKE_HOST_WIN32)
-  target_compile_definitions(utils PRIVATE "UTILS_LIBRARY")
-  target_link_libraries(utils PRIVATE dbghelp user32 shell32)
-elseif(CMAKE_HOST_APPLE)
-  find_library(Foundation_LIBRARY Foundation)
-  find_library(AppKit_LIBRARY AppKit)
-  target_link_libraries(utils PRIVATE ${Foundation_LIBRARY} ${AppKit_LIBRARY})
-  target_compile_definitions(utils PRIVATE "UTILS_STATIC_LIBRARY")
-else()
-  target_compile_definitions(utils PRIVATE "UTILS_STATIC_LIBRARY")
+if(WIN32)
+  target_link_libraries(utils PUBLIC dbghelp user32 shell32)
+elseif(APPLE)
+  find_library(Foundation_LIBRARY Foundation REQUIRED)
+  find_library(AppKit_LIBRARY AppKit REQUIRED)
+  target_link_libraries(utils PUBLIC ${Foundation_LIBRARY} ${AppKit_LIBRARY})
 endif()

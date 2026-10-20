@@ -1,6 +1,6 @@
 include(../../../qmake/PlatformLibraries.pri)
 
-QT       += core gui network widgets core5compat concurrent core-private
+QT       += core gui network widgets
 
 macx {
     CONFIG -= app_bundle

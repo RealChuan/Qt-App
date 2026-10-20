@@ -2,6 +2,8 @@
 
 #include <utils/utils.hpp>
 
+#include <QEventLoop>
+#include <QHBoxLayout>
 #include <QtWidgets>
 
 namespace Widgets {
@@ -10,19 +12,13 @@ namespace Widgets {
 class Dialog::DialogPrivate
 {
 public:
-    explicit DialogPrivate(Dialog *q)
-        : q_ptr(q)
-    {}
-
-    Dialog *q_ptr;
-
     QEventLoop loop;
-    Dialog::ExecFlag flag = Dialog::ExecFlag::Closed;
+    int flag = QDialog::Rejected;
 };
 
 Dialog::Dialog(QWidget *parent)
     : MainWidget(parent)
-    , d_ptr(new DialogPrivate(this))
+    , d_ptr(std::make_unique<DialogPrivate>())
 {
     setMinButtonVisible(false);
     setRestoreMaxButtonVisible(false);
@@ -45,41 +41,39 @@ auto Dialog::exec() -> int
     raise();
     activateWindow();
 
-    d_ptr->flag = Closed;
+    d_ptr->flag = QDialog::Rejected;
     d_ptr->loop.exec();
 
     hide();
-
     return d_ptr->flag;
 }
 
 void Dialog::accept()
 {
-    d_ptr->flag = Accepted;
+    d_ptr->flag = QDialog::Accepted;
     d_ptr->loop.quit();
 }
 
 void Dialog::reject()
 {
-    d_ptr->flag = Rejected;
+    d_ptr->flag = QDialog::Rejected;
     d_ptr->loop.quit();
 }
 
 void Dialog::onClosed()
 {
-    d_ptr->flag = Closed;
+    d_ptr->flag = QDialog::Rejected;
     d_ptr->loop.quit();
 }
 
 void Dialog::onMoveParentCenter()
 {
-    auto *parentWidget = this->parentWidget();
-    if (parentWidget) {
-        auto center = parentWidget->mapToGlobal(parentWidget->rect().center());
-        auto rect = this->rect();
-        auto x = center.x() - rect.width() / 2;
-        auto y = center.y() - rect.height() / 2;
-        move(x, y);
+    if (QWidget *owner = parentWidget()) {
+        const QRect target = QStyle::alignedRect(Qt::LeftToRight,
+                                                 Qt::AlignCenter,
+                                                 size(),
+                                                 owner->geometry());
+        move(target.topLeft());
     } else {
         Utils::windowCenter(this);
     }

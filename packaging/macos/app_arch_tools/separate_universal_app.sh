@@ -40,7 +40,7 @@ detect_app_architecture() {
 	# 检查所有 Mach-O 文件
 	while IFS= read -r -d '' file; do
 		if is_macho_file "$file"; then
-			((macho_files_count++))
+			macho_files_count=$((macho_files_count + 1))
 			local arches=$(get_file_architectures "$file")
 			log_debug "文件 $(basename "$file") 架构: $arches"
 

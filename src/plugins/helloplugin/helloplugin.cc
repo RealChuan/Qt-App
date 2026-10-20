@@ -1,40 +1,71 @@
+#include "helloplugin.hpp"
+
 #include "hellowidget.hpp"
 
-#include <core/corewidget.hpp>
-#include <extensionsystem/iplugin.h>
+#include <extensionsystem/plugincontext.hpp>
+#include <shell/command.hpp>
+#include <shell/registry.hpp>
 
-#include <QPushButton>
+#include <QSettings>
 
-namespace Plugin {
+namespace Hello {
 
-class HelloPluginWidget : public Core::CoreWidget
+namespace {
+constexpr auto kCountKey = "count";
+}
+
+// 命令面板里的一条命令。命令对象由插件持有，生命周期与插件一致。
+class IncrementCommand final : public Shell::ICommand
 {
-    Q_OBJECT
 public:
-    explicit HelloPluginWidget(QObject *parent = nullptr)
+    explicit IncrementCommand(HelloPlugin *plugin)
+        : m_plugin(plugin)
+    {}
+
+    auto id() const -> QString override { return QStringLiteral("helloplugin.increment"); }
+    auto title() const -> QString override { return QStringLiteral("Hello: increment counter"); }
+    auto subtitle() const -> QString override
     {
-        setWidget(new HelloWidget);
-        setButton(new QPushButton(tr("Hello")), Core::CoreWidget::Main);
+        return QStringLiteral("helloplugin.page");
     }
+    auto shortcut() const -> QKeySequence override
+    {
+        return QKeySequence(QStringLiteral("Ctrl+Alt+H"));
+    }
+    void execute() override { m_plugin->increment(); }
+
+private:
+    HelloPlugin *m_plugin;
 };
 
-class HelloPlugin : public ExtensionSystem::IPlugin
+HelloPlugin::HelloPlugin() = default;
+
+HelloPlugin::~HelloPlugin() = default;
+
+auto HelloPlugin::initialize(const ExtensionSystem::PluginContext &context) -> Utils::Result<>
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "helloplugin.json")
+    m_settings = context.settings();
+    m_widget = new HelloWidget;
+    m_widget->setCount(m_settings->value(kCountKey, 0).toInt());
+    m_command = std::make_unique<IncrementCommand>(this);
 
-    ~HelloPlugin() override = default;
+    connect(m_widget, &HelloWidget::countChanged, this, [this](int count) {
+        m_settings->setValue(kCountKey, count);
+    });
 
-    Utils::Result<> initialize(const QStringList &arguments) override
-    {
-        m_helloPluginWidgetPtr.reset(new HelloPluginWidget(this));
-        Core::addCoreWidget(m_helloPluginWidgetPtr.data());
-        return Utils::ResultOk;
-    }
+    return Utils::ResultOk;
+}
 
-    QScopedPointer<HelloPluginWidget> m_helloPluginWidgetPtr;
-};
+void HelloPlugin::extensionsInitialized()
+{
+    auto *registry = Shell::Registry::instance();
+    registry->addPage(m_widget);
+    registry->addCommand(m_command.get());
+}
 
-} // namespace Plugin
+void HelloPlugin::increment()
+{
+    m_widget->increment();
+}
 
-#include "helloplugin.moc"
+} // namespace Hello

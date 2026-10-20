@@ -1,5 +1,5 @@
 #include "mainwidget.hpp"
-#include "pushbutton.hpp"
+#include "buttoniconstatemanager.hpp"
 
 #include <utils/utils.hpp>
 
@@ -47,10 +47,10 @@ public:
     MainWidget *q_ptr;
 
     QPushButton *titleButton;
-    PushButton *minButton;
-    PushButton *maxButton;
-    PushButton *restoreButton;
-    PushButton *closeButton;
+    QToolButton *minButton;
+    QToolButton *maxButton;
+    QToolButton *restoreButton;
+    QToolButton *closeButton;
     QWidget *titleWidget;
     QWidget *centralWidget;
     QWidget *titleBar;
@@ -81,79 +81,68 @@ private:
 
     void initTitleButton()
     {
-        minButton = createPushButton({":/icon/icon/mactitle/titlebutton-minimize.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-alt@2.png"},
-                                     {":/icon/icon/mactitle/titlebutton-minimize-hover.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-hover@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-hover-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-hover-alt@2.png"},
-                                     {":/icon/icon/mactitle/titlebutton-minimize-active.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-active@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-active-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-active-alt@2.png"},
-                                     q_ptr);
-
-        maxButton = createPushButton({":/icon/icon/mactitle/titlebutton-maximize.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-alt@2.png"},
-                                     {":/icon/icon/mactitle/titlebutton-maximize-hover.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-hover@2.png",
-                                      /*":/icon/icon/mactitle/titlebutton-maximize-hover-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-hover-alt@2.png"*/},
-                                     {":/icon/icon/mactitle/titlebutton-maximize-active.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-active@2.png",
-                                      /*":/icon/icon/mactitle/titlebutton-maximize-active-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-active-alt@2.png"*/},
-                                     q_ptr);
-        restoreButton = createPushButton({":/icon/icon/mactitle/titlebutton-restore.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore@2.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-alt.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-alt@2.png"},
-                                         {":/icon/icon/mactitle/titlebutton-restore-hover.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-hover@2.png",
-                                          /*":/icon/icon/mactitle/titlebutton-restore-hover-alt.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-hover-alt@2.png"*/},
-                                         {":/icon/icon/mactitle/titlebutton-restore-active.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-active@2.png",
-                                          /*":/icon/icon/mactitle/titlebutton-restore-active-alt.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-active-alt@2.png"*/},
-                                         q_ptr);
-        closeButton = createPushButton({":/icon/icon/mactitle/titlebutton-close.png",
-                                        ":/icon/icon/mactitle/titlebutton-close@2.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-alt.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-alt@2.png"},
-                                       {":/icon/icon/mactitle/titlebutton-close-hover.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-hover@2.png",
-                                        /*":/icon/icon/mactitle/titlebutton-close-hover-alt.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-hover-alt@2.png"*/},
-                                       {":/icon/icon/mactitle/titlebutton-close-active.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-active@2.png",
-                                        /*":/icon/icon/mactitle/titlebutton-close-active-alt.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-active-alt@2.png"*/},
-                                       q_ptr);
-
+        constexpr auto kTitleButton = "TitleButton";
         const QSize size{18, 18};
-        titleButton->setIconSize(size);
-        minButton->setFixedSize(size);
-        maxButton->setFixedSize(size);
-        restoreButton->setFixedSize(size);
-        closeButton->setFixedSize(size);
 
-        const auto *const objectName("TitleButton");
-        titleButton->setObjectName(objectName);
-        minButton->setObjectName(objectName);
-        maxButton->setObjectName(objectName);
-        restoreButton->setObjectName(objectName);
-        closeButton->setObjectName(objectName);
+        // 统一前缀
+        const QString basePath = QStringLiteral(":/icon/icon/mactitle/titlebutton-");
+
+        // 后缀表：普通态总是 4 个（含 alt）；hover / pressed 分「带 alt」与「不带 alt」两种
+        const QStringList kNormalSuffix{".png", "@2.png", "-alt.png", "-alt@2.png"};
+        const QStringList kHoverSuffix{"-hover.png", "-hover@2.png"};
+        const QStringList kHoverSuffixAlt{"-hover.png",
+                                          "-hover@2.png",
+                                          "-hover-alt.png",
+                                          "-hover-alt@2.png"};
+        const QStringList kPressedSuffix{"-active.png", "-active@2.png"};
+        const QStringList kPressedSuffixAlt{"-active.png",
+                                            "-active@2.png",
+                                            "-active-alt.png",
+                                            "-active-alt@2.png"};
+
+        auto buildPaths = [&](const QString &name, const QStringList &suffixes) {
+            QStringList paths;
+            paths.reserve(suffixes.size());
+            for (const QString &suffix : suffixes) {
+                paths.append(basePath + name + suffix);
+            }
+            return paths;
+        };
+
+        // 通用工厂：new QToolButton + 公共属性 + 状态管理器一次完成
+        auto createTitleButton = [&](const QString &name,
+                                     const QStringList &hoverSuffixes,
+                                     const QStringList &pressedSuffixes) {
+            auto *button = new QToolButton(q_ptr);
+            button->setObjectName(kTitleButton);
+            button->setFixedSize(size);
+            button->setIconSize(size);
+            button->setFocusPolicy(Qt::NoFocus);
+
+            // manager 以 button 为 QObject parent，随 button 生命周期自动释放
+            auto *manager = new ButtonIconStateManager(button);
+            manager->setNormalIcon(buildPaths(name, kNormalSuffix));
+            manager->setHoverIcon(buildPaths(name, hoverSuffixes));
+            manager->setPressedIcon(buildPaths(name, pressedSuffixes));
+
+            return button;
+        };
+
+        minButton = createTitleButton(QStringLiteral("minimize"),
+                                      kHoverSuffixAlt,
+                                      kPressedSuffixAlt);
+        maxButton = createTitleButton(QStringLiteral("maximize"), kHoverSuffix, kPressedSuffix);
+        restoreButton = createTitleButton(QStringLiteral("restore"), kHoverSuffix, kPressedSuffix);
+        closeButton = createTitleButton(QStringLiteral("close"), kHoverSuffix, kPressedSuffix);
+
+        // titleButton 是独立的菜单按钮，只共用 iconSize
+        titleButton->setIconSize(size);
     }
 };
 
 MainWidget::MainWidget(QWidget *parent)
-    : QWidget{parent}
-    , d_ptr(new MainWidgetPrivate(this))
+    : QWidget(parent)
+    , d_ptr(std::make_unique<MainWidgetPrivate>(this))
 {
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint
                    | Qt::MSWindowsFixedSizeDialogHint);
@@ -184,9 +173,7 @@ void MainWidget::setRestoreMaxButtonVisible(bool visible)
 }
 
 void MainWidget::setMinButtonVisible(bool visible)
-{
-    d_ptr->minButton->setVisible(visible);
-}
+{ d_ptr->minButton->setVisible(visible); }
 
 void MainWidget::setCentralWidget(QWidget *centralWidget)
 {
@@ -205,14 +192,10 @@ void MainWidget::setTitleBar(QWidget *titleBar)
 }
 
 auto MainWidget::shadowPadding() -> int
-{
-    return d_ptr->layout->contentsMargins().left();
-}
+{ return d_ptr->layout->contentsMargins().left(); }
 
 void MainWidget::setSizeGripVisible(bool visible)
-{
-    d_ptr->sizeGrip->setVisible(visible);
-}
+{ d_ptr->sizeGrip->setVisible(visible); }
 
 void MainWidget::onShowMaximized()
 {
@@ -249,8 +232,7 @@ void MainWidget::mousePressEvent(QMouseEvent *event)
 
 void MainWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    if (isMaximized() || isFullScreen()) {
-    } else if (!d_ptr->lastPoint.isNull()) {
+    if (!isMaximized() && !isFullScreen() && !d_ptr->lastPoint.isNull()) {
         // ubuntu24.04 not working
         // 在main函数开始设置qputenv("QT_QPA_PLATFORM", "xcb");可以解决
         move(event->globalPosition().toPoint() - d_ptr->lastPoint);

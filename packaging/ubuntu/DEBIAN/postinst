@@ -3,7 +3,7 @@ set -e
 
 APP_NAME="Qt-App"
 APP_DIR="/opt/${APP_NAME}"
-DESK="/usr/share/applications/${APP_NAME}.desktop""
+DESK="/usr/share/applications/${APP_NAME}.desktop"
 
 case "$1" in
     configure)

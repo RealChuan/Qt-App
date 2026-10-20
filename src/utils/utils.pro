@@ -1,16 +1,9 @@
 include(../../qmake/PlatformLibraries.pri)
 
-include(mimetypes2/mimetypes.pri)
-include(fsengine/fsengine.pri)
+QT += widgets
 
-QT += widgets core5compat concurrent network core-private
-
-DEFINES += UTILS_LIBRARY
+# 导出宏由 add_platform_library() 统一写入（UTILS_LIBRARY / UTILS_STATIC_LIBRARY）
 TARGET = $$add_platform_library(utils)
-
-LIBS += \
-    -l$$replaceLibName(spinner) \
-    -l$$replaceLibName(tasking)
 
 include(../../qmake/VcpkgToolchain.pri)
 
@@ -24,56 +17,16 @@ win32 {
 SOURCES += \
     appinfo.cpp \
     asynclog.cc \
-    benchmarker.cpp \
-    camelcasecursor.cpp \
-    categorysortfiltermodel.cpp \
-    commandline.cpp \
-    completinglineedit.cpp \
-    devicefileaccess.cpp \
-    elidinglabel.cpp \
-    environment.cpp \
-    execmenu.cpp \
-    fancylineedit.cpp \
     filepath.cpp \
-    fileutils.cpp \
-    futuresynchronizer.cpp \
-    guard.cpp \
-    guiutils.cpp \
-    historycompleter.cpp \
     hostosinfo.cpp \
-    icon.cpp \
-    icondisplay.cpp \
-    infolabel.cpp \
-    itemviews.cpp \
     languagemanager.cc \
-    layoutbuilder.cpp \
     logbuffer.cc \
     logsink.cc \
-    macroexpander.cpp \
-    multitextcursor.cpp \
-    namevaluedictionary.cpp \
-    namevalueitem.cpp \
-    processhelper.cpp \
-    processinterface.cpp \
-    processreaper.cpp \
     qtcassert.cpp \
-    qtcprocess.cpp \
-    qtcsettings.cpp \
     result.cpp \
-    savefile.cpp \
-    shutdownguard.cpp \
+    settings.cpp \
     singletonmanager.cc \
-    store.cpp \
-    stringutils.cpp \
-    stylehelper.cpp \
-    temporarydirectory.cpp \
-    temporaryfile.cpp \
-    textcodec.cpp \
-    threadutils.cpp \
-    treemodel.cpp \
     utils.cc \
-    utilsicons.cpp \
-    validator.cc \
     widgetmanager.cc
 
 HEADERS += \
@@ -81,77 +34,19 @@ HEADERS += \
     appdata.hpp \
     appinfo.h \
     asynclog.hpp \
-    benchmarker.h \
-    builderutils.h \
-    camelcasecursor.h \
-    categorysortfiltermodel.h \
-    commandline.h \
-    completinglineedit.h \
-    devicefileaccess.h \
-    elidinglabel.h \
-    environment.h \
-    environmentfwd.h \
-    execmenu.h \
-    expected.h \
-    fancylineedit.h \
     filepath.h \
-    filepathinfo.h \
-    fileutils.h \
-    futuresynchronizer.h \
-    guard.h \
-    guiutils.h \
-    historycompleter.h \
     hostosinfo.h \
-    icon.h \
-    icondisplay.h \
-    indexedcontainerproxyconstiterator.h \
-    infolabel.h \
-    itemviews.h \
     languagemanager.hpp \
-    layoutbuilder.h \
     logbuffer.hpp \
     logsink.hpp \
-    macroexpander.h \
-    mimeutils.h \
-    multitextcursor.h \
-    namevaluedictionary.h \
-    namevalueitem.h \
     osspecificaspects.h \
     predicates.h \
-    processenums.h \
-    processhelper.h \
-    processinterface.h \
-    processreaper.h \
     qtcassert.h \
-    qtcprocess.h \
-    qtcsettings.h \
-    qtcsettings_p.h \
     result.h \
-    savefile.h \
-    shutdownguard.h \
+    settings.h \
     singleton.hpp \
     singletonmanager.hpp \
-    store.h \
-    storekey.h \
-    stringutils.h \
-    stylehelper.h \
-    temporarydirectory.h \
-    temporaryfile.h \
-    textcodec.h \
-    threadutils.h \
-    treemodel.h \
     utils_global.h \
     utils.hpp \
-    utilsicons.h \
     utilstr.h \
-    utiltypes.h \
-    validator.hpp \
     widgetmanager.hpp
-
-RESOURCES += \
-    utils.qrc
-
-macx {
-    SOURCES += fileutils_mac.mm
-    HEADERS += fileutils_mac.h
-}

@@ -53,8 +53,4 @@
     <upgrade-bundle>
         <bundle id="org.qt-app.client" path="/Applications/Qt-App.app" />
     </upgrade-bundle>
-    <!-- ==================== 安装后自动打开（可选） ==================== -->
-    <post-install>
-        <open-file path="/Applications/Qt-App.app" />
-    </post-install>
 </installer-gui-script>

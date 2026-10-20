@@ -5,12 +5,13 @@
 
 #include "utils_global.h"
 
-#include "expected.h"
 #include "qtcassert.h"
 
 #include <QObject>
 #include <QPointer>
 #include <QString>
+
+#include <expected>
 
 namespace Utils {
 
@@ -20,8 +21,10 @@ class Result
 {};
 #endif
 
+// C++23 std::expected：成功值类型 T，错误类型固定为可展示给用户的 QString。
+// 没有具体成功值时用 Result<>（即 expected<void, QString>），配 Utils::ResultOk 返回。
 template<typename T = void>
-using Result = Utils::expected<T, QString>;
+using Result = std::expected<T, QString>;
 
 template<typename T = void>
 class Continuation
@@ -80,7 +83,7 @@ public:
     template<typename T>
     operator Result<T>() const
     {
-        return tl::make_unexpected(m_error);
+        return std::unexpected(m_error);
     }
 
 private:
@@ -89,10 +92,10 @@ private:
 
 #define QTC_ASSERT_AND_ERROR_OUT(cond) \
     QTC_ASSERT(cond, \
-               return Result::Error(QString("The condition %1 failed unexpectedly in %2:%3") \
-                                        .arg(#cond) \
-                                        .arg(__FILE__) \
-                                        .arg(__LINE__)))
+               return ::Utils::ResultError( \
+                   QStringLiteral("The condition %1 failed unexpectedly in %2:%3") \
+                       .arg(QStringLiteral(#cond), QStringLiteral(__FILE__)) \
+                       .arg(__LINE__)))
 
 } // namespace Utils
 
@@ -101,7 +104,7 @@ private:
     if (Q_LIKELY(result)) { \
     } else { \
         ::Utils::writeAssertLocation( \
-            QString("%1:%2: %3").arg(__FILE__).arg(__LINE__).arg(result.error()).toUtf8().data()); \
+            QStringLiteral("%1:%2: %3").arg(QStringLiteral(__FILE__)).arg(__LINE__).arg(result.error()).toUtf8().data()); \
         action; \
     } \
     do { \
@@ -111,7 +114,7 @@ private:
     if (Q_LIKELY(result)) { \
     } else { \
         ::Utils::writeAssertLocation( \
-            QString("%1:%2: %3").arg(__FILE__).arg(__LINE__).arg(result.error()).toUtf8().data()); \
+            QStringLiteral("%1:%2: %3").arg(QStringLiteral(__FILE__)).arg(__LINE__).arg(result.error()).toUtf8().data()); \
     } \
     do { \
     } while (0)

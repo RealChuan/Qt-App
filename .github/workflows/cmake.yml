@@ -30,136 +30,19 @@ on:
 
 env:
   MACOSX_DEPLOYMENT_TARGET: "14.4"
-  PACKET_DIR: packaging/packet
   RELEASES_DIR: packaging/releases
-  BUILD_DIR: build
-  BUILD_TYPE: RelWithDebInfo
 
 jobs:
   build:
-    name: Build (${{ matrix.os }} - ${{ matrix.arch }})
+    name: Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - windows-latest
-          - ubuntu-latest
           - macos-latest
-        generators:
-          - "Ninja"
-        arch:
-          - x86_64
-        include:
-          - os: macos-latest
-            generators: "Ninja"
-            arch: arm64
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - uses: ./.github/actions/install-dependencies
-
-      - name: Configure and build windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          .\packaging\windows\Enter-VsDevShell.ps1
-          cmake `
-            -S . `
-            -B "${{ env.BUILD_DIR }}" `
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -G "${{ matrix.generators }}"
-          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
-
-      - name: Configure and build ubuntu
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          cmake \
-            -S . \
-            -B "${{ env.BUILD_DIR }}" \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -G "${{ matrix.generators }}"
-          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
-
-      - name: Configure and build macos
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          cmake \
-            -S . \
-            -B "${{ env.BUILD_DIR }}" \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
-            -G "${{ matrix.generators }}"
-          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
-
-      - name: Run Installation Test (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          .\packaging\windows\Enter-VsDevShell.ps1
-          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}\install" -v
-          cmd /c tree /f "${{ github.workspace }}\install"
-
-      - name: Run Installation Test (Unix-like)
-        if: runner.os == 'macOS' || runner.os == 'Linux'
-        shell: bash
-        run: |
-          cmake --install "${{ env.BUILD_DIR }}" --prefix "${{ github.workspace }}/install" -v
-          tree "${{ github.workspace }}/install"
-
-      - name: Prepare packaging directory
-        shell: bash
-        run: |
-          mkdir -p "${{ env.PACKET_DIR }}" "${{ env.RELEASES_DIR }}"
-          cp -avf binaries/*/bin/*/* ${{ env.PACKET_DIR }}/
-          ls -al ${{ env.PACKET_DIR }}
-
-      - name: Download fonts
-        shell: bash
-        working-directory: ${{ env.PACKET_DIR }}
-        run: |
-          cmake -DVERBOSE=1 -P ../fonts.cmake
-
-      - name: Packaging windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          packaging\windows\package.ps1
-      - name: Packaging macos
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          chmod +x packaging/macos/package.sh
-          packaging/macos/package.sh
-      - name: Packaging ubuntu
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          chmod +x packaging/ubuntu/package.sh
-          packaging/ubuntu/package.sh
-
-      - name: Verify artifacts
-        shell: bash
-        run: |
-          echo "Package directory contents:"
-          ls -la "${{ env.PACKET_DIR }}/"
-          echo "Release directory contents:"
-          ls -la "${{ env.RELEASES_DIR }}/"
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ matrix.os }}-${{matrix.arch}}-${{ env.BUILD_TYPE }}
-          path: ${{ env.RELEASES_DIR }}
-
-  macos-universal-bundle:
-    name: Create macOS universal bundle
-    needs: build
-    runs-on: macos-latest
+          - ubuntu-latest
 
     steps:
       - uses: actions/checkout@v6
@@ -167,46 +50,52 @@ jobs:
           fetch-depth: 1
 
       - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+
+      - name: Build and package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: packaging\windows\package.ps1
+
+      - name: Build and package (macOS)
+        if: runner.os == 'macOS'
         shell: bash
         run: |
-          brew install tree
+          chmod +x packaging/macos/package.sh
+          packaging/macos/package.sh
 
-      - name: Create releases directory
+      - name: Build and package (Ubuntu)
+        if: runner.os == 'Linux'
         shell: bash
         run: |
-          mkdir -p "${{ env.PACKET_DIR }}" "${{ env.RELEASES_DIR }}"
+          chmod +x packaging/ubuntu/package.sh
+          packaging/ubuntu/package.sh
 
-      - name: Download platform artifacts
-        uses: actions/download-artifact@v8
-        with:
-          path: ${{ env.PACKET_DIR }}
-
-      - name: Create universal macos Package
+      - name: List release artifacts
         shell: bash
         run: |
-          chmod +x packaging/macos/package_universal.sh
-          packaging/macos/package_universal.sh
+          echo "=== ${{ matrix.os }} release files ==="
+          ls -lh "${{ env.RELEASES_DIR }}"
 
-      - name: Verify universal bundle
-        shell: bash
-        run: |
-          echo "Package directory contents:"
-          ls -la "${{ env.PACKET_DIR }}/"
-          echo "Release directory contents:"
-          tree "${{ env.RELEASES_DIR }}/"
-
-      - name: Upload universal artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: macos-latest-universal-${{ env.BUILD_TYPE }}
+          name: ${{ matrix.os }}-package
           path: ${{ env.RELEASES_DIR }}
 
+  # ============================================================
+  # GitHub Release
+  #   触发条件：push tag（refs/tags/*）
+  #   依赖：build（三 OS 全部完成）
+  #   流程：下载三份 artifact → 直接发布（文件名已由打包脚本写入版本与日期）
+  # ============================================================
   github-release:
-    name: Create gitHub release
-    needs: macos-universal-bundle
+    name: Create GitHub Release
+    needs: build
     if: startsWith(github.ref, 'refs/tags/')
-
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v6
@@ -223,12 +112,18 @@ jobs:
         with:
           path: ${{ env.RELEASES_DIR }}
 
-      - name: Standardize package names
+      - name: Flatten release artifacts
         working-directory: ${{ github.workspace }}/packaging
         shell: bash
         run: |
-          chmod +x rename_packages.sh
-          ./rename_packages.sh
+          chmod +x flatten_releases.sh
+          ./flatten_releases.sh
+
+      - name: Verify release contents
+        shell: bash
+        run: |
+          echo "=== Release files ==="
+          ls -lh "${{ env.RELEASES_DIR }}/"
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3

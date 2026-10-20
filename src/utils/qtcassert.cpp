@@ -46,13 +46,12 @@ void dumpBacktrace(int maxdepth)
     return;
 #endif
     static QMutex mutex;
-    mutex.lock();
+    const QMutexLocker locker(&mutex);
     HANDLE process = GetCurrentProcess();
     HANDLE thread = GetCurrentThread();
     CONTEXT ctx;
     RtlCaptureContext(&ctx);
-    STACKFRAME64 frame;
-    memset(&frame, 0, sizeof(STACKFRAME64));
+    STACKFRAME64 frame{};
     frame.AddrPC.Mode = AddrModeFlat;
     frame.AddrStack.Mode = AddrModeFlat;
     frame.AddrFrame.Mode = AddrModeFlat;
@@ -99,12 +98,12 @@ void dumpBacktrace(int maxdepth)
         IMAGEHLP_LINE64 lineInfo;
         SymSetOptions(SYMOPT_LOAD_LINES);
 
-        QString out = QString("  %1: 0x%2 at %3")
+        QString out = QStringLiteral("  %1: 0x%2 at %3")
                           .arg(depth)
                           .arg(QString::number(pSymbol->Address, 16))
                           .arg(QString::fromLatin1(&pSymbol->Name[0], pSymbol->NameLen));
         if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &symDisplacement, &lineInfo)) {
-            out.append(QString(" at %3:%4")
+            out.append(QStringLiteral(" (%1:%2)")
                            .arg(QString::fromLatin1(lineInfo.FileName),
                                 QString::number(lineInfo.LineNumber)));
         }
@@ -112,7 +111,6 @@ void dumpBacktrace(int maxdepth)
         if (depth == maxdepth)
             break;
     }
-    mutex.unlock();
 #endif
 }
 

@@ -102,11 +102,18 @@ debian/*.substvars
 *.upload
 obj-x86_64-linux-gnu/
 
+# deb tooling leftovers (the real dir is packaging/debian; ./debian is a CI symlink)
+packaging/debian/.debhelper/
+packaging/debian/tmp/
+packaging/debian/files
+packaging/debian/*.log
+packaging/debian/*.substvars
+packaging/debian/debhelper-build-stamp
+
 # Others
 .cache
 .vscode
 binaries
-output
 packet
 releases
 install

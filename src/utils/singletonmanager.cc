@@ -1,7 +1,8 @@
 #include "singletonmanager.hpp"
+
 #include "utils.hpp"
 
-#include <QSettings>
+using namespace Qt::StringLiterals;
 
 namespace Utils {
 
@@ -9,23 +10,20 @@ class SingletonManager::SingletonManagerPrivate
 {
 public:
     explicit SingletonManagerPrivate(SingletonManager *q)
-        : q_ptr(q)
-        , languageManager(new LanguageManager(q_ptr))
-        , widgetManager(new WidgetManager(q_ptr))
+        : languageManager(new LanguageManager(q))
+        , widgetManager(new WidgetManager(q))
     {}
 
-    SingletonManager *q_ptr;
-
-    LanguageManager *languageManager;
-    WidgetManager *widgetManager;
+    LanguageManager *languageManager = nullptr;
+    WidgetManager *widgetManager = nullptr;
 };
 
-LanguageManager *SingletonManager::languageManager()
+auto SingletonManager::languageManager() -> LanguageManager *
 {
     return d_ptr->languageManager;
 }
 
-WidgetManager *SingletonManager::widgetManager()
+auto SingletonManager::widgetManager() -> WidgetManager *
 {
     return d_ptr->widgetManager;
 }
@@ -38,8 +36,8 @@ void SingletonManager::saveSettings()
 }
 
 SingletonManager::SingletonManager(QObject *parent)
-    : QObject{parent}
-    , d_ptr(new SingletonManagerPrivate(this))
+    : QObject(parent)
+    , d_ptr(std::make_unique<SingletonManagerPrivate>(this))
 {
     loadSettings();
 }

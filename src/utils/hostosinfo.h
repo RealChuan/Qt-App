@@ -32,7 +32,7 @@ public:
         return OsTypeWindows;
 #elif defined(Q_OS_LINUX)
         return OsTypeLinux;
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_MACOS)
         return OsTypeMac;
 #elif defined(Q_OS_UNIX)
         return OsTypeOtherUnix;
@@ -92,9 +92,7 @@ public:
     }
 
     static QString withExecutableSuffix(const QString &executable)
-    {
-        return OsSpecificAspects::withExecutableSuffix(hostOs(), executable);
-    }
+    { return OsSpecificAspects::withExecutableSuffix(hostOs(), executable); }
 
     static void setOverrideFileNameCaseSensitivity(Qt::CaseSensitivity sensitivity);
     static void unsetOverrideFileNameCaseSensitivity();
@@ -107,14 +105,10 @@ public:
     }
 
     static constexpr QChar pathListSeparator()
-    {
-        return OsSpecificAspects::pathListSeparator(hostOs());
-    }
+    { return OsSpecificAspects::pathListSeparator(hostOs()); }
 
     static constexpr Qt::KeyboardModifier controlModifier()
-    {
-        return OsSpecificAspects::controlModifier(hostOs());
-    }
+    { return OsSpecificAspects::controlModifier(hostOs()); }
 
     static std::optional<quint64> totalMemoryInstalledInBytes();
 

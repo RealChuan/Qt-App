@@ -1,132 +1,171 @@
 #include "crashpad.hpp"
-#include "breakpad.hpp"
-
-#include <utils/utils.hpp>
 
 #include <crashpad/client/crash_report_database.h>
 #include <crashpad/client/crashpad_client.h>
 #include <crashpad/client/settings.h>
 
+#include <QLoggingCategory>
+#include <QString>
+
 #include <filesystem>
-#include <iostream>
+#include <string>
+#include <system_error>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+Q_LOGGING_CATEGORY(lcCrashpad, "qtapp.crashpad", QtInfoMsg)
 
 namespace Dump {
+
+namespace {
+
+#ifdef _WIN32
+auto toWide(std::string_view text) -> std::wstring
+{
+    if (text.empty())
+        return {};
+
+    const int size = MultiByteToWideChar(CP_UTF8,
+                                         0,
+                                         text.data(),
+                                         static_cast<int>(text.size()),
+                                         nullptr,
+                                         0);
+    if (size <= 0)
+        return {};
+
+    std::wstring wide(static_cast<std::size_t>(size), L'\0');
+    MultiByteToWideChar(CP_UTF8,
+                        0,
+                        text.data(),
+                        static_cast<int>(text.size()),
+                        wide.data(),
+                        size);
+    return wide;
+}
+
+auto toBaseFilePath(std::string_view utf8) -> base::FilePath
+{
+    return base::FilePath(toWide(utf8));
+}
+#else
+auto toBaseFilePath(std::string_view utf8) -> base::FilePath
+{
+    return base::FilePath(std::string(utf8));
+}
+#endif
+
+} // namespace
 
 class Crashpad::CrashpadPrivate
 {
 public:
-    explicit CrashpadPrivate(const std::string &dumpPath,
-                             const std::string &libexecPath,
-                             const std::string &reportUrl,
-                             bool crashReportingEnabled,
-                             Crashpad *q)
-        : q_ptr(q)
-        , dumpPath(dumpPath)
-        , libexecPath(libexecPath)
-        , reportUrl(reportUrl)
-        , crashReportingEnabled(crashReportingEnabled)
+    CrashpadPrivate(std::string_view dumpDir,
+                    std::string_view libexecDir,
+                    std::string_view url,
+                    bool reportingEnabled)
+        : dumpPath(dumpDir)
+        , libexecPath(libexecDir)
+        , reportUrl(url)
+        , crashReportingEnabled(reportingEnabled)
     {
-        if (!initialize()) {
-            throw std::runtime_error("Failed to initialize Crashpad");
-        }
+        valid = initialize();
     }
-    ~CrashpadPrivate() = default;
 
-    bool initialize()
+    auto initialize() -> bool
     {
-        try {
-            std::filesystem::create_directories(dumpPath);
-        } catch (const std::filesystem::filesystem_error &e) {
-            std::cerr << "Failed to create dump directory: " << e.what() << std::endl;
+        std::error_code error;
+        std::filesystem::create_directories(dumpPath, error);
+        if (error) {
+            qCWarning(lcCrashpad).noquote()
+                << "cannot create dump directory" << QString::fromStdString(dumpPath)
+                << QString::fromStdString(error.message());
             return false;
         }
 
-        // 构建handler路径
-        auto handlerPath = libexecPath + "/crashpad_handler";
-
+        std::filesystem::path handlerPath(libexecPath);
+        handlerPath /= "crashpad_handler";
 #ifdef _WIN32
         handlerPath += ".exe";
-        base::FilePath database(toWide(dumpPath));
-        base::FilePath handler(toWide(handlerPath));
-#else
-        base::FilePath database(dumpPath);
-        base::FilePath handler(handlerPath);
 #endif
+
+        const base::FilePath database = toBaseFilePath(dumpPath);
+        const base::FilePath handler = toBaseFilePath(handlerPath.string());
 
         databasePtr = crashpad::CrashReportDatabase::Initialize(database);
         if (!databasePtr) {
-            std::cerr << "Failed to initialize CrashReportDatabase" << std::endl;
+            qCWarning(lcCrashpad) << "failed to initialize CrashReportDatabase";
             return false;
         }
-
-        if (auto *settings = databasePtr->GetSettings()) {
+        if (auto *settings = databasePtr->GetSettings())
             settings->SetUploadsEnabled(crashReportingEnabled);
-        }
 
 #ifdef __linux__
-        bool asynchronous_start = false;
+        constexpr bool asynchronousStart = false;
 #else
-        bool asynchronous_start = true;
+        constexpr bool asynchronousStart = true;
 #endif
 
-        // 启动Crashpad handler
-        crashpadClientPtr = std::make_unique<crashpad::CrashpadClient>();
-        bool success = crashpadClientPtr->StartHandler(handler,
-                                                       database,
-                                                       database,
-                                                       reportUrl,
-                                                       {},                  // annotations
-                                                       {"--no-rate-limit"}, // arguments
-                                                       true,                // restartable
-                                                       asynchronous_start);
-
-        if (!success) {
-            std::cerr << "Failed to start Crashpad handler" << std::endl;
+        clientPtr = std::make_unique<crashpad::CrashpadClient>();
+        const bool started = clientPtr->StartHandler(handler,
+                                                     database,
+                                                     database,
+                                                     reportUrl,
+                                                     {},                  // annotations
+                                                     {"--no-rate-limit"}, // arguments
+                                                     true,                // restartable
+                                                     asynchronousStart);
+        if (!started) {
+            qCWarning(lcCrashpad) << "failed to start crashpad handler at"
+                                  << QString::fromStdString(handlerPath.string());
             return false;
         }
 
-        std::cout << "Crashpad initialized successfully" << std::endl;
-        std::cout << "Dump path: " << dumpPath << std::endl;
-        std::cout << "Report URL: " << reportUrl << std::endl;
-        std::cout << "Reporting enabled: " << (crashReportingEnabled ? "yes" : "no") << std::endl;
-
+        qCInfo(lcCrashpad).noquote() << "crashpad ready: dumps ->"
+                                     << QString::fromStdString(dumpPath) << "| reporting:"
+                                     << (crashReportingEnabled ? "on" : "off");
         return true;
     }
-
-    Crashpad *q_ptr;
 
     std::string dumpPath;
     std::string libexecPath;
     std::string reportUrl;
-    bool crashReportingEnabled;
-    std::unique_ptr<crashpad::CrashpadClient> crashpadClientPtr;
+    bool crashReportingEnabled = false;
+    bool valid = false;
+    std::unique_ptr<crashpad::CrashpadClient> clientPtr;
     std::unique_ptr<crashpad::CrashReportDatabase> databasePtr;
 };
 
-Crashpad::Crashpad(const std::string &dumpPath,
-                   const std::string &libexecPath,
-                   const std::string &reportUrl,
+Crashpad::Crashpad(std::string_view dumpPath,
+                   std::string_view libexecPath,
+                   std::string_view reportUrl,
                    bool crashReportingEnabled)
     : d_ptr(std::make_unique<CrashpadPrivate>(dumpPath,
                                               libexecPath,
                                               reportUrl,
-                                              crashReportingEnabled,
-                                              this))
+                                              crashReportingEnabled))
 {}
 
 Crashpad::~Crashpad() = default;
 
-std::string Crashpad::getDumpPath() const
+auto Crashpad::isValid() const -> bool
+{
+    return d_ptr->valid;
+}
+
+auto Crashpad::dumpPath() const -> std::string
 {
     return d_ptr->dumpPath;
 }
 
-std::string Crashpad::getReportUrl() const
+auto Crashpad::reportUrl() const -> std::string
 {
     return d_ptr->reportUrl;
 }
 
-bool Crashpad::isReportingEnabled() const
+auto Crashpad::isReportingEnabled() const -> bool
 {
     return d_ptr->crashReportingEnabled;
 }
