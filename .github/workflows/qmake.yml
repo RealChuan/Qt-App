@@ -6,10 +6,10 @@ on:
       - "cmake/**"
       - "docs/**"
       - "packaging/**"
+      - "tests/**"
       - "translations/**"
       - "**/CMakeLists.txt"
       - "**/*.md"
-      - "**/*.txt"
       - "**/.clang-*"
       - "**/.gitignore"
       - "**/LICENSE*"
@@ -20,10 +20,10 @@ on:
       - "cmake/**"
       - "docs/**"
       - "packaging/**"
+      - "tests/**"
       - "translations/**"
       - "**/CMakeLists.txt"
       - "**/*.md"
-      - "**/*.txt"
       - "**/.clang-*"
       - "**/.gitignore"
       - "**/LICENSE*"
@@ -31,7 +31,8 @@ on:
       - "vcpkg.json"
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 14.4
+  MACOSX_DEPLOYMENT_TARGET: "14.4"
+  VCPKG_OSX_DEPLOYMENT_TARGET: "14.4"
   BUILD_DIR: build
 
 jobs:
@@ -44,14 +45,9 @@ jobs:
           - windows-latest
           - ubuntu-latest
           - macos-latest
-        arch:
-          - x86_64
-        include:
-          - os: macos-latest
-            arch: arm64
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -80,24 +76,32 @@ jobs:
           qmake ../.
           make -j $(nproc)
 
+      # 一台机器连续编两个架构：依赖本来就按架构装了两套（x64-osx / arm64-osx），
+      # 产物落在 binaries/qmake/<arch>/ 互不覆盖，但每个架构必须有自己的构建目录，
+      # 否则 Makefile 与 .qmake.stash 会互相覆盖。
       - name: Build macos
         if: runner.os == 'macOS'
-        working-directory: ${{ env.BUILD_DIR }}
         shell: bash
         run: |
-          qmake QMAKE_APPLE_DEVICE_ARCHS="${{ matrix.arch }}" ../.
-          make -j $(sysctl -n hw.ncpu)
+          for arch in x86_64 arm64; do
+            mkdir -p "${BUILD_DIR}/macos-${arch}"
+            (
+              cd "${BUILD_DIR}/macos-${arch}"
+              qmake QMAKE_APPLE_DEVICE_ARCHS="${arch}" ../../.
+              make -j "$(sysctl -n hw.ncpu)"
+            )
+          done
 
       - name: Display binary directory tree (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          cd output/
+          cd binaries/qmake/
           cmd /c tree /f
 
       - name: Display binary directory tree (Unix-like)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
-          cd output/
+          cd binaries/qmake/
           tree

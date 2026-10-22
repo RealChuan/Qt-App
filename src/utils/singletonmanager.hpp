@@ -2,7 +2,12 @@
 
 #include "languagemanager.hpp"
 #include "singleton.hpp"
+#include "theme.hpp"
 #include "widgetmanager.hpp"
+
+#include <QObject>
+
+#include <memory>
 
 namespace Utils {
 
@@ -10,24 +15,42 @@ class UTILS_EXPORT SingletonManager : public QObject
 {
     Q_OBJECT
 public:
-    LanguageManager *languageManager();
-    WidgetManager *widgetManager();
+    [[nodiscard]] auto languageManager() -> LanguageManager *;
+    [[nodiscard]] auto widgetManager() -> WidgetManager *;
+    [[nodiscard]] auto theme() -> Theme *;
 
     void saveSettings();
 
 private:
     explicit SingletonManager(QObject *parent = nullptr);
-    ~SingletonManager();
+    ~SingletonManager() override;
 
     void loadSettings();
 
     class SingletonManagerPrivate;
-    QScopedPointer<SingletonManagerPrivate> d_ptr;
+    std::unique_ptr<SingletonManagerPrivate> d_ptr;
 
     SINGLETON(SingletonManager)
 };
 
-} // namespace Utils
+inline SingletonManager *singletonManager() noexcept
+{
+    return SingletonManager::instance();
+}
 
-#define LANGUAGE_MANAGER Utils::SingletonManager::instance()->languageManager()
-#define WIDGET_MANAGER Utils::SingletonManager::instance()->widgetManager()
+inline Utils::LanguageManager *languageManager() noexcept
+{
+    return singletonManager()->languageManager();
+}
+
+inline Utils::WidgetManager *widgetManager() noexcept
+{
+    return singletonManager()->widgetManager();
+}
+
+inline Utils::Theme *theme() noexcept
+{
+    return singletonManager()->theme();
+}
+
+} // namespace Utils

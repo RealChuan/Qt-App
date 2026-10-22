@@ -1,13 +1,10 @@
 set(PROJECT_SOURCES
-    qtsingleapplication/qtsingleapplication.cpp
-    qtsingleapplication/qtsingleapplication.h
-    qtsingleapplication/qtlocalpeer.cpp
-    qtsingleapplication/qtlocalpeer.h
+    qtsingleapplication/qtsingleapplication.cc
+    qtsingleapplication/qtsingleapplication.hpp
+    qtsingleapplication/qtlocalpeer.cc
+    qtsingleapplication/qtlocalpeer.hpp
     thirdparty_global.hpp)
 
-add_platform_library(thirdparty ${PROJECT_SOURCES})
-target_link_libraries(thirdparty PRIVATE utils Qt::Network Qt::Widgets)
-
-if(CMAKE_HOST_WIN32)
-  target_compile_definitions(thirdparty PRIVATE "THRIDPARTY_LIBRARY")
-endif()
+# 目录名 3rdparty / target thirdparty / 宏 THIRDPARTY_* 三者对齐。
+add_platform_library(thirdparty EXPORT_MACRO THIRDPARTY ${PROJECT_SOURCES})
+target_link_libraries(thirdparty PUBLIC utils Qt::Network Qt::Widgets)

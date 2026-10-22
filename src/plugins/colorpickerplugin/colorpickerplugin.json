@@ -1,0 +1,17 @@
+{
+  "Id": "colorpickerplugin",
+  "DisplayName": "Color Picker",
+  "Name": "ColorPickerPlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Tools",
+  "Description": "Screen color picker with a magnifier, copying HEX to the clipboard.",
+  "LongDescription": "Demonstrates a plugin that owns a top-level tool window and polls the cursor, instead of only contributing a page to the main window.",
+  "Url": "",
+  "DocumentationUrl": ""
+}

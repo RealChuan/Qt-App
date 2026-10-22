@@ -1,5 +1,4 @@
 #!/bin/bash -ex
 # 安装前把旧进程杀掉，忽略不存在时的报错
-killall -9 Qt-App      2>/dev/null || true
-killall -9 CrashReport 2>/dev/null || true
+killall -9 Qt-App 2>/dev/null || true
 exit 0

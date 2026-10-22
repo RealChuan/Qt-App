@@ -3,17 +3,15 @@ set(PROJECT_SOURCES
     mainwidget.hpp
     dialog.cc
     dialog.hpp
-    messagebox.cpp
-    messagebox.h
-    pushbutton.cc
-    pushbutton.hpp
-    waitwidget.cpp
-    waitwidget.h
+    messagebox.cc
+    messagebox.hpp
+    buttoniconstatemanager.cc
+    buttoniconstatemanager.hpp
+    treemodel.cc
+    treemodel.hpp
+    waitwidget.cc
+    waitwidget.hpp
     widgets_global.hpp)
 
 add_platform_library(widgets ${PROJECT_SOURCES})
-target_link_libraries(widgets PRIVATE resource utils Qt::Widgets)
-
-if(CMAKE_HOST_WIN32)
-  target_compile_definitions(widgets PRIVATE "WIDGETS_LIBRARY")
-endif()
+target_link_libraries(widgets PUBLIC resource utils Qt::Widgets)

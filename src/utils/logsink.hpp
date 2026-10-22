@@ -26,9 +26,8 @@ class ConsoleSink final : public ISink
 public:
     // truncateBytes > 0 时每行截断到该字节数（按字节截断可能切断 UTF-8 序列，
     // 控制台展示可接受；文件 sink 始终写全量）
-    explicit ConsoleSink(std::size_t truncateBytes = 0,
-                         std::FILE *out = stdout,
-                         std::FILE *err = stderr);
+    explicit ConsoleSink(
+        std::size_t truncateBytes = 0, std::FILE *out = stdout, std::FILE *err = stderr);
     ~ConsoleSink() override;
 
     void write(std::span<const char> bytes, bool isError) override;

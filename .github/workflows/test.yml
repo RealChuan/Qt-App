@@ -1,0 +1,92 @@
+name: Unit Tests
+
+# 只跑测试：不 install、不打包，与 cmake.yml 的三平台打包链完全解耦。
+# 测试本身是 opt-in 的（QT_APP_BUILD_TESTS 默认 OFF），所以这里显式打开。
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "packaging/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "packaging/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
+
+env:
+  MACOSX_DEPLOYMENT_TARGET: "14.4"
+  VCPKG_OSX_DEPLOYMENT_TARGET: "14.4"
+  BUILD_DIR: build
+  BUILD_TYPE: Debug
+  CMAKE_GENERATOR: Ninja
+  # runner 没有显示器：QApplication 走 offscreen 平台插件（tst_registry 需要）
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - uses: ./.github/actions/install-dependencies
+
+      # 配置、编译、跑测试必须放在同一个 step 里：Enter-VsDevShell 改的是当前
+      # 进程的环境变量，跨 step 不保留。
+      - name: Configure, build and test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\packaging\windows\Enter-VsDevShell.ps1 -Arch x64 -HostArch x64
+          if ($LASTEXITCODE) { throw "Enter-VsDevShell failed" }
+          # 让 cl 的诊断恒为英文，否则 Ninja 记不到头文件依赖
+          $env:VSLANG = '1033'
+
+          cmake -S . -B $env:BUILD_DIR -G $env:CMAKE_GENERATOR `
+            "-DCMAKE_BUILD_TYPE=$env:BUILD_TYPE" `
+            -DQT_APP_BUILD_TESTS=ON `
+            -DQT_ROOT="$env:QT_ROOT_X64"
+          if ($LASTEXITCODE) { throw "cmake configure failed" }
+
+          cmake --build $env:BUILD_DIR --config $env:BUILD_TYPE
+          if ($LASTEXITCODE) { throw "cmake build failed" }
+
+          ctest --test-dir $env:BUILD_DIR --build-config $env:BUILD_TYPE --output-on-failure
+
+      - name: Configure, build and test (macOS / Linux)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          cmake -S . -B "$BUILD_DIR" -G "$CMAKE_GENERATOR" \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            -DQT_APP_BUILD_TESTS=ON
+          cmake --build "$BUILD_DIR"
+          ctest --test-dir "$BUILD_DIR" --output-on-failure

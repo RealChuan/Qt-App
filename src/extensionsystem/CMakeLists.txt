@@ -1,35 +1,16 @@
 set(PROJECT_SOURCES
-    extensionsystem_global.h
-    extensionsystemtr.h
-    invoker.cpp
-    invoker.h
-    iplugin.cpp
-    iplugin.h
-    optionsparser.cpp
-    optionsparser.h
-    plugindetailsview.cpp
-    plugindetailsview.h
-    pluginerroroverview.cpp
-    pluginerroroverview.h
-    pluginerrorview.cpp
-    pluginerrorview.h
-    pluginmanager.cpp
-    pluginmanager.h
-    pluginmanager_p.h
-    pluginspec.cpp
-    pluginspec.h
-    pluginview.cpp
-    pluginview.h)
+    extensionsystem_global.hpp
+    extensionsystemtr.hpp
+    iplugin.hpp
+    iplugin.cc
+    plugincontext.hpp
+    plugincontext.cc
+    pluginmanager.hpp
+    pluginmanager.cc
+    pluginspec.hpp
+    pluginspec.cc)
 
-set_property(SOURCE pluginmanager.cpp PROPERTY SKIP_AUTOMOC ON)
-
-add_shared_library(extensionsystem ${PROJECT_SOURCES} ${SOURCE})
-target_link_libraries(extensionsystem PRIVATE aggregation utils Qt::Core5Compat
-                                              Qt::Widgets tl::expected)
-
-if(CMAKE_HOST_WIN32)
-  target_compile_definitions(extensionsystem PRIVATE "EXTENSIONSYSTEM_LIBRARY")
-else()
-  target_compile_definitions(extensionsystem
-                             PRIVATE "EXTENSIONSYSTEM_STATIC_LIBRARY")
-endif()
+add_shared_library(extensionsystem ${PROJECT_SOURCES})
+# iplugin.hpp / plugincontext.hpp 的公开头文件里 include 了 utils/filepath.hpp，
+# 所以 utils 必须 PUBLIC：否则使用者得自己再链一次 utils 才能解析这些符号。
+target_link_libraries(extensionsystem PUBLIC utils Qt::Core)

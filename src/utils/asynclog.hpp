@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils_global.h"
+#include "utils_global.hpp"
 
 #include <QObject>
 #include <QString>
@@ -68,9 +68,8 @@ private:
     class LoggerPrivate;
     std::unique_ptr<LoggerPrivate> d_ptr;
 
-    friend void messageHandler(QtMsgType type,
-                               const QMessageLogContext &context,
-                               const QString &message);
+    friend void messageHandler(
+        QtMsgType type, const QMessageLogContext &context, const QString &message);
 };
 
 // qInstallMessageHandler 的目标函数，单测可直接调用以覆盖 fatal 路径

@@ -1,8 +1,17 @@
-# =============================================================================
+# cmake-format: off
 # Output Directory Configuration
-# =============================================================================
+#
+#   TARGET_ARCH 由 ArchitectureDetection.cmake 统一检测产出（已归一化为
+#   x86_64/arm64/x86/universal）。这里只做「目录映射」。
+#
+#   产物布局（packaging/ 与 CI 依赖，勿改）：
+#     binaries/cmake/<ARCH_DIR>/bin/<config>/
+#     binaries/cmake/<ARCH_DIR>/lib/<config>/
+#
+#   根目录下按构建系统分家（cmake/ 与 qmake/）：两条链的产物同名（都带 d 后缀），
+#   合到一个目录会互相覆盖，隔离后也便于确认产物来自哪条链。
+# cmake-format: on
 
-# 确定架构目录名
 if(TARGET_ARCH STREQUAL "x86_64")
   set(ARCH_DIR "x64")
 elseif(TARGET_ARCH STREQUAL "arm64")
@@ -13,76 +22,56 @@ elseif(TARGET_ARCH STREQUAL "x86")
   set(ARCH_DIR "x86")
 else()
   set(ARCH_DIR "unknown")
+  message(
+    WARNING
+      "OutputDirectories: 未知 TARGET_ARCH=${TARGET_ARCH}，产物将落到 binaries/unknown/"
+  )
 endif()
 
-function(setup_output_directories)
-  # 基础输出路径
-  set(BASE_OUTPUT_DIR "${PROJECT_SOURCE_DIR}/binaries/${ARCH_DIR}")
+set(PROJECT_OUTPUT_ROOT "${PROJECT_SOURCE_DIR}/binaries/cmake/${ARCH_DIR}")
 
-  if(CMAKE_CONFIGURATION_TYPES)
-    # 多配置生成器（Visual Studio, Xcode）
-    foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
-      string(TOUPPER "${config}" CONFIG_UPPER)
+if(CMAKE_CONFIGURATION_TYPES)
+  # 多配置生成器（Visual Studio, Xcode）：每个配置单独目录
+  foreach(_config IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER "${_config}" _config_upper)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_config_upper}
+        "${PROJECT_OUTPUT_ROOT}/lib/${_config}")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_config_upper}
+        "${PROJECT_OUTPUT_ROOT}/lib/${_config}")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_config_upper}
+        "${PROJECT_OUTPUT_ROOT}/bin/${_config}")
+  endforeach()
 
-      set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_UPPER}
-          "${BASE_OUTPUT_DIR}/lib/${config}"
-          PARENT_SCOPE)
-      set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER}
-          "${BASE_OUTPUT_DIR}/lib/${config}"
-          PARENT_SCOPE)
-      set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER}
-          "${BASE_OUTPUT_DIR}/bin/${config}"
-          PARENT_SCOPE)
-    endforeach()
+  # 未指定 --config 时的默认目录
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_OUTPUT_ROOT}/lib")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_OUTPUT_ROOT}/lib")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_OUTPUT_ROOT}/bin")
 
-    # 设置默认目录
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-        "${BASE_OUTPUT_DIR}/lib"
-        PARENT_SCOPE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-        "${BASE_OUTPUT_DIR}/lib"
-        PARENT_SCOPE)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-        "${BASE_OUTPUT_DIR}/bin"
-        PARENT_SCOPE)
-
+  # 插件等子目录按配置追加 /<CONFIG>（由 _set_target_output_dir 负责拼接）
+  set(PROJECT_RUNTIME_BASE "${PROJECT_OUTPUT_ROOT}/bin")
+else()
+  # 单配置生成器（Makefile, Ninja）
+  if(CMAKE_BUILD_TYPE STREQUAL "None" OR NOT CMAKE_BUILD_TYPE)
+    set(_output_suffix "none")
   else()
-    # 单配置生成器（Makefile, Ninja）
-    if(CMAKE_BUILD_TYPE STREQUAL "None")
-      set(OUTPUT_SUFFIX "none")
-    else()
-      string(TOLOWER "${CMAKE_BUILD_TYPE}" OUTPUT_SUFFIX)
-    endif()
-
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-        "${BASE_OUTPUT_DIR}/lib/${OUTPUT_SUFFIX}"
-        PARENT_SCOPE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-        "${BASE_OUTPUT_DIR}/lib/${OUTPUT_SUFFIX}"
-        PARENT_SCOPE)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-        "${BASE_OUTPUT_DIR}/bin/${OUTPUT_SUFFIX}"
-        PARENT_SCOPE)
+    string(TOLOWER "${CMAKE_BUILD_TYPE}" _output_suffix)
   endif()
 
-  # 创建目录
-  file(MAKE_DIRECTORY "${BASE_OUTPUT_DIR}/bin")
-  file(MAKE_DIRECTORY "${BASE_OUTPUT_DIR}/lib")
-endfunction()
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+      "${PROJECT_OUTPUT_ROOT}/lib/${_output_suffix}")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
+      "${PROJECT_OUTPUT_ROOT}/lib/${_output_suffix}")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+      "${PROJECT_OUTPUT_ROOT}/bin/${_output_suffix}")
 
-function(setup_link_directories)
-  # 添加库搜索路径
-  if(CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-    link_directories("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
-  endif()
+  # 单配置生成器下 CMAKE_RUNTIME_OUTPUT_DIRECTORY 已含配置后缀
+  set(PROJECT_RUNTIME_BASE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
 
-  if(CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    link_directories("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-  endif()
+file(MAKE_DIRECTORY "${PROJECT_OUTPUT_ROOT}/bin")
+file(MAKE_DIRECTORY "${PROJECT_OUTPUT_ROOT}/lib")
 
-  message(STATUS "Static library directory: ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
-  message(STATUS "Shared library directory: ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-endfunction()
-
-setup_output_directories()
-setup_link_directories()
+message(
+  STATUS
+    "Output: ${PROJECT_OUTPUT_ROOT}/{bin,lib}/ (ARCH_DIR=${ARCH_DIR}, TARGET_ARCH=${TARGET_ARCH})"
+)

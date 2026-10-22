@@ -1,0 +1,203 @@
+/******************************************************************************
+*   shell.css —— 外壳：无边框窗口、标题栏、侧边栏、页面框架
+*****************************************************************************/
+
+/******************************************************************************
+*   窗口
+*****************************************************************************/
+
+#TitleWidget {
+    background: @@surface@@;
+    border-bottom: 1px solid @@border@@;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    min-height: 44px;
+    max-height: 44px;
+}
+
+#CentralWidget {
+    background: @@window@@;
+    border-bottom-right-radius: 10px;
+}
+
+/* 左上角是应用图标 + 名称，做成一个可点击的弱按钮 */
+#AppButton {
+    color: @@text@@;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#AppButton:hover {
+    background: @@surfaceAlt@@;
+}
+
+#AppButton:pressed {
+    background: @@surfaceSunken@@;
+}
+
+/* 标题栏里的两个开关：主题、语言。
+   必须带一圈边框和底色，否则在白色标题栏上只是一段灰字。 */
+#TitleBarButton {
+    color: @@textMuted@@;
+    background: @@surfaceAlt@@;
+    border: 1px solid @@borderStrong@@;
+    border-radius: 6px;
+    padding: 0 9px;
+    min-width: 44px;
+    min-height: 26px;
+    max-height: 26px;
+    font-size: 13px;
+}
+
+#TitleBarButton:hover {
+    color: @@text@@;
+    background: @@surfaceSunken@@;
+}
+
+#TitleBarButton:pressed {
+    background: @@surfaceSunken@@;
+    border-color: @@textSubtle@@;
+}
+
+/* 最小化 / 最大化 / 关闭：只有图标，交给图标自带的悬停态 */
+#WindowButton {
+    background: transparent;
+    border: none;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+}
+
+#WindowButton:hover,
+#WindowButton:pressed {
+    background: transparent;
+}
+
+/******************************************************************************
+*   侧边栏
+*****************************************************************************/
+
+#MenuWidget {
+    background: @@surface@@;
+    border-right: 1px solid @@border@@;
+    border-bottom-left-radius: 10px;
+    min-width: 216px;
+    max-width: 216px;
+}
+
+/* 命令面板入口：看起来像输入框，实际是按钮 */
+#CommandButton {
+    background: @@surfaceAlt@@;
+    border: 1px solid @@border@@;
+    border-radius: 8px;
+    min-width: 0;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 0;
+    text-align: left;
+}
+
+#CommandButton:hover {
+    background: @@surface@@;
+    border-color: @@borderStrong@@;
+}
+
+#CommandButton:pressed {
+    background: @@surfaceSunken@@;
+}
+
+#CommandHint {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+#CommandShortcut {
+    color: @@textSubtle@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+}
+
+/* 分组标题：只是一个说明，不再折叠 */
+#SidebarSection {
+    color: @@textSubtle@@;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 16px 12px 6px 12px;
+}
+
+#SidebarButton {
+    color: @@textMuted@@;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    min-width: 0;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 0 10px;
+    text-align: left;
+    font-size: 14px;
+}
+
+#SidebarButton:hover {
+    color: @@text@@;
+    background: @@surfaceAlt@@;
+}
+
+#SidebarButton:pressed {
+    background: @@surfaceSunken@@;
+}
+
+#SidebarButton:checked {
+    color: @@accentText@@;
+    background: @@accentSoft@@;
+    font-weight: 600;
+}
+
+#SidebarFooter {
+    color: @@textSubtle@@;
+    font-size: 12px;
+    padding: 10px 14px;
+}
+
+/******************************************************************************
+*   页面
+*****************************************************************************/
+
+QStackedWidget {
+    background: transparent;
+}
+
+#PageFrame {
+    background: transparent;
+}
+
+#PageTitle {
+    color: @@text@@;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#PageSubtitle {
+    color: @@textMuted@@;
+    font-size: 14px;
+}
+
+/* 状态提示条：贴在内容区底部，只在有消息时出现 */
+#StatusLabel {
+    color: @@textMuted@@;
+    background: @@surface@@;
+    border-top: 1px solid @@border@@;
+    padding: 0 18px;
+    min-height: 28px;
+    max-height: 28px;
+    font-size: 13px;
+}

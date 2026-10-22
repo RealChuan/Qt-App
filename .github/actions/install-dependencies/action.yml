@@ -5,7 +5,7 @@ inputs:
   vcpkg_libs:
     description: "vcpkg libraries to install"
     required: false
-    default: "breakpad crashpad openssl tl-expected"
+    default: "crashpad openssl"
     type: string
   qt_modules:
     description: "Qt modules to install"
@@ -59,12 +59,14 @@ runs:
         cmake --version
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows-static-md || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-windows-static-md || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on macos
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        brew install python-setuptools tree
+        brew install python-setuptools tree p7zip
         ninja --version
         cmake --version
         clang --version
@@ -76,7 +78,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang lintian tree fakeroot
+        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang lintian tree fakeroot p7zip-full
         ninja --version
         cmake --version
         gcc --version
@@ -100,9 +102,34 @@ runs:
         chmod +x packaging/ubuntu/build_libtiff.sh
         packaging/ubuntu/build_libtiff.sh
 
+    # ---------------- Qt ----------------
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
         cache: true
+        aqtsource: "git+https://github.com/miurahr/aqtinstall.git@076e1659807d0b362a3ed684d54c2e9c775eb9c7" # Fix 6.12.x windows install
+
+    # Windows 需要 arm64 Qt；先保留 x64 路径，再装 arm64 并保留
+    - name: Save Qt x64 root (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        "QT_ROOT_X64=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    # - name: Install Qt arm64 (Windows)
+    #   if: runner.os == 'Windows'
+    #   uses: jurplel/install-qt-action@v4
+    #   with:
+    #     version: ${{ inputs.qt_ver }}
+    #     arch: win64_msvc2022_arm64
+    #     modules: ${{ inputs.qt_modules }}
+    #     cache: true
+    #     aqtsource: "git+https://github.com/miurahr/aqtinstall.git@076e1659807d0b362a3ed684d54c2e9c775eb9c7" # Fix 6.12.x windows install
+
+    # - name: Save Qt arm64 root (Windows)
+    #   if: runner.os == 'Windows'
+    #   shell: pwsh
+    #   run: |
+    #     "QT_ROOT_ARM64=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append

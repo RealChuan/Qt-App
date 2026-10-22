@@ -1,0 +1,17 @@
+{
+  "Id": "danmakuplugin",
+  "DisplayName": "Danmaku",
+  "Name": "DanmakuPlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Services",
+  "Description": "Provides the IDanmaku service and a transparent overlay.",
+  "LongDescription": "A service provider: implements Danmaku::IDanmaku, registers it in the PluginManager object pool, and floats messages across the main window. Other plugins consume the service without linking against this library.",
+  "Url": "",
+  "DocumentationUrl": ""
+}

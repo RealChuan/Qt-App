@@ -84,10 +84,11 @@
         <file>icon/crash.png</file>
     </qresource>
     <qresource prefix="/qss">
-        <file>qss/common.css</file>
-        <file>qss/mainwidget.css</file>
-        <file>qss/sidebarbutton.css</file>
-        <file>qss/specific.css</file>
+        <file>qss/base.css</file>
+        <file>qss/shell.css</file>
+        <file>qss/pages.css</file>
+        <file>qss/light.theme</file>
+        <file>qss/dark.theme</file>
     </qresource>
     <qresource prefix="/common">
         <file>icon/common/checkbox-checked.png</file>

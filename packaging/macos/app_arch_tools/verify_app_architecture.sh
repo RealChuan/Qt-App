@@ -220,14 +220,14 @@ verify_app() {
 	# 查找并验证所有 Mach-O 文件
 	while IFS= read -r -d '' file; do
 		if is_macho_file "$file"; then
-			((total_macho_count++))
+			total_macho_count=$((total_macho_count + 1))
 
 			if [[ "$summary_only" == "true" ]]; then
 				# 在摘要模式下，静默检查
 				if verify_file_architecture "$file" "$target_arch" "false" >/dev/null 2>&1; then
-					((passed_count++))
+					passed_count=$((passed_count + 1))
 				else
-					((failed_count++))
+					failed_count=$((failed_count + 1))
 					local relative_path="${file#$app_path/}"
 					local arches=$(get_file_architectures "$file")
 					failed_files_list+="  - $relative_path (架构: $arches)"$'\n'
@@ -235,9 +235,9 @@ verify_app() {
 			else
 				# 详细模式
 				if verify_file_architecture "$file" "$target_arch" "$verbose"; then
-					((passed_count++))
+					passed_count=$((passed_count + 1))
 				else
-					((failed_count++))
+					failed_count=$((failed_count + 1))
 					local relative_path="${file#$app_path/}"
 					local arches=$(get_file_architectures "$file")
 					failed_files_list+="  - $relative_path (架构: $arches)"$'\n'

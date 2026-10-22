@@ -2,14 +2,12 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
-    solutions \
     utils \
-    dump \
+    crashpadclient \
     resource \
     widgets \
     3rdparty \
-    aggregation \
     extensionsystem \
-    core \
+    shell \
     plugins \
     apps

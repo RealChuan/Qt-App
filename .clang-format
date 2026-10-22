@@ -1,18 +1,18 @@
 ---
-BasedOnStyle: LLVM
+Language: Cpp
 AccessModifierOffset: -4
-AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
 AlignEscapedNewlines: DontAlign
-AlignOperands: true
+AlignOperands: Align
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortBlocksOnASingleLine: true
-AllowShortCaseLabelsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
@@ -20,29 +20,29 @@ BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
   AfterClass: true
-  AfterControlStatement: false
+  AfterControlStatement: Never
   AfterEnum: false
   AfterFunction: true
   AfterNamespace: false
   AfterObjCDeclaration: false
   AfterStruct: true
   AfterUnion: false
-  AfterExternBlock: false
   BeforeCatch: false
   BeforeElse: false
   IndentBraces: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
-BreakAfterJavaFieldAnnotations: false
 BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
+BreakBeforeInheritanceComma: false
 BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: BeforeComma
-BreakInheritanceList: BeforeColon
+BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit: 100
-CommentPragmas: '^ IWYU pragma:'
+CommentPragmas: "^ IWYU pragma:"
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
@@ -53,61 +53,53 @@ DisableFormat: false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
 ForEachMacros:
-  - forever
+  - forever # avoids { wrapped to next line
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-IncludeBlocks: Preserve
 IncludeCategories:
-  - Regex:           '^<Q.*'
-    Priority:        200
-    SortPriority:    0
-IncludeIsMainRegex: '(Test)?$'
+  - Regex: "^<Q.*"
+    Priority: 200
+IncludeIsMainRegex: "(Test)?$"
 IndentCaseLabels: false
-IndentPPDirectives: None
 IndentWidth: 4
 IndentWrappedFunctionNames: false
+InsertBraces: false
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: false
-Language: Cpp
-MacroBlockBegin: ''
-MacroBlockEnd: ''
+# Keep whatever line ending a file already uses: the checkout is CRLF on Windows.
+LineEnding: DeriveLF
+# Do not add QT_BEGIN_NAMESPACE/QT_END_NAMESPACE as this will indent lines in between.
+MacroBlockBegin: ""
+MacroBlockEnd: ""
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
-ObjCBinPackProtocolList: Auto
 ObjCBlockIndentWidth: 4
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
-PenaltyBreakAssignment: 150
+PenaltyBreakAssignment: 88
 PenaltyBreakBeforeFirstCallParameter: 300
 PenaltyBreakComment: 500
 PenaltyBreakFirstLessLess: 400
 PenaltyBreakString: 600
-PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 50
 PenaltyReturnTypeOnItsOwnLine: 300
 PointerAlignment: Right
 ReflowComments: false
-SortIncludes: true
+SortIncludes: CaseSensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCpp11BracedList: false
-SpaceBeforeCtorInitializerColon: true
-SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
-SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
-SpacesInAngles: false
-SpacesInCStyleCastParentheses: false
+SpacesInAngles: Never
 SpacesInContainerLiterals: false
+SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-StatementMacros:
-  - Q_UNUSED
-  - QT_REQUIRE_VERSION
+Standard: Latest
 TabWidth: 4
 UseTab: Never

@@ -1,0 +1,44 @@
+#!/bin/sh
+set -e
+
+APP_NAME="Qt-App"
+
+# 与 packaging/ubuntu/DEBIAN/postrm 保持一致：两边打的都是同一个应用，
+# 用户数据落点相同，卸载时的删除清单也必须相同。
+#
+# 需要清理的三个根（对应 C++ 侧 configPath()/logPath()/cachePath()）：
+#   ~/.config/Youth/<app>          配置
+#   ~/.local/state/Youth/<app>     状态（日志、崩溃转储）
+#   ~/.cache/Youth/<app>           缓存
+
+# 遍历真实用户家目录：dpkg 以 root 执行，~ 和 ${HOME} 都指向 /root，不能直接用。
+remove_user_files() {
+    home="$1"
+    [ -d "$home" ] || return 0
+
+    rm -f "$home/.local/share/applications/${APP_NAME}.desktop"
+
+    rm -rf "$home/.config/Youth/${APP_NAME}"
+    rm -rf "$home/.local/state/Youth/${APP_NAME}"
+    rm -rf "$home/.cache/Youth/${APP_NAME}"
+
+    return 0
+}
+
+case "$1" in
+    remove | purge)
+        for home in /home/* /root; do
+            [ "$home" = "/home/*" ] && continue   # glob 未展开
+            remove_user_files "$home"
+        done
+        ;;
+
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        # 升级不删任何文件。
+        ;;
+
+    *)
+        ;;
+esac
+
+exit 0

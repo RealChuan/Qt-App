@@ -1,7 +1,18 @@
 PROJECT_NAME = Qt-App
 
+# -----------------------------------------------------------------------------
+# 版本号唯一来源：packaging/version.txt（与 CMake 侧读同一个文件）
+#   允许命令行覆盖：qmake VERSION=1.2.3
+# -----------------------------------------------------------------------------
+isEmpty(VERSION) {
+    QT_APP_VERSION_LINES = $$cat($$PWD/../packaging/version.txt, lines)
+    VERSION = $$first(QT_APP_VERSION_LINES)
+    isEmpty(VERSION): error("无法从 packaging/version.txt 读取版本号")
+    # Windows 资源文件需要 4 段版本号
+    VERSION = $${VERSION}.0
+}
+
 isEmpty(RC_LANG): RC_LANG = 0x0004
-isEmpty(VERSION): VERSION = 0.2.1.0
 CONFIG += skip_target_version_ext
 
 isEmpty(QMAKE_TARGET_COMPANY): QMAKE_TARGET_COMPANY = The Youth.

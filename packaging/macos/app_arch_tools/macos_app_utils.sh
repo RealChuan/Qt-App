@@ -154,9 +154,9 @@ verify_permissions() {
 	local non_executable_files=()
 
 	while IFS= read -r -d '' file; do
-		((total_files++))
+		total_files=$((total_files + 1))
 		if [[ -x "$file" ]]; then
-			((executable_files++))
+			executable_files=$((executable_files + 1))
 		else
 			non_executable_files+=("${file#$app_path/}")
 		fi

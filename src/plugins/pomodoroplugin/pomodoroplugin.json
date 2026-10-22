@@ -1,0 +1,20 @@
+{
+  "Id": "pomodoroplugin",
+  "DisplayName": "Pomodoro",
+  "Name": "PomodoroPlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Services",
+  "Description": "Countdown timer driven by a QTimer, reporting through the danmaku service.",
+  "LongDescription": "A service consumer: the countdown lives in a QTimer owned by the plugin (no extra thread), and when it finishes the plugin looks up Danmaku::IDanmaku at runtime. If that plugin is not loaded it degrades to a shell status message, which is what the optional dependency declaration describes.",
+  "Url": "",
+  "DocumentationUrl": "",
+  "Dependencies": [
+    { "Id": "danmakuplugin", "Version": "0.2.1", "Type": "optional" }
+  ]
+}

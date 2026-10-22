@@ -1,6 +1,6 @@
 add_library(shared_qtsingleapplication STATIC
-  qtsingleapplication.cpp qtsingleapplication.h
-  qtlocalpeer.cpp qtlocalpeer.h
+  qtsingleapplication.cc qtsingleapplication.hpp
+  qtlocalpeer.cc qtlocalpeer.hpp
 )
 target_link_libraries(shared_qtsingleapplication Qt::Core Qt::Network Qt::Widgets)
 target_include_directories(shared_qtsingleapplication PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

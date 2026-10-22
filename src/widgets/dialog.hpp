@@ -4,18 +4,21 @@
 
 #include <QDialog>
 
+#include <memory>
+
 namespace Widgets {
 
 #ifndef Q_OS_MACOS
+// 模态对话框：在 MainWidget 外壳上把最大化/还原/尺寸手柄关掉，
+// exec() 用局部事件循环实现（非 macOS 侧没有 QDialog）。
 class WIDGETS_EXPORT Dialog : public MainWidget
 {
     Q_OBJECT
 public:
-    enum ExecFlag : int { Accepted, Rejected, Closed };
-
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog() override;
 
+    // 阻塞直到 accept()/reject()/关闭，返回 QDialog::Accepted 或 Rejected。
     auto exec() -> int;
 
 signals:
@@ -30,11 +33,16 @@ private slots:
     void onClosed();
     void onMoveParentCenter();
 
+protected:
+    // Alt+F4 / 系统关闭都走 close()，不会发 aboutToClose；
+    // 没有这条，exec() 的局部事件循环会一直挂着，窗口没了进程却卡死。
+    void closeEvent(QCloseEvent *event) override;
+
 private:
-    void buildConnect();
+    void setupConnections();
 
     class DialogPrivate;
-    QScopedPointer<DialogPrivate> d_ptr;
+    std::unique_ptr<DialogPrivate> d_ptr;
 };
 #else
 class WIDGETS_EXPORT Dialog : public QDialog
@@ -51,7 +59,7 @@ public:
     void setRestoreMaxButtonVisible(bool) {}
 
     void setCentralWidget(QWidget *widget);
-    int shadowPadding() { return 0; }
+    [[nodiscard]] auto shadowPadding() const -> int { return 0; }
 };
 #endif
 

@@ -10,8 +10,12 @@ class LogBuffer::LogBufferPrivate
 {
 public:
     LogBufferPrivate(LogBuffer *q, std::size_t highWater, std::chrono::milliseconds deadline)
-        : q_ptr(q), highWaterBytes(highWater), blockDeadline(deadline)
-    { items.reserve(1024); }
+        : q_ptr(q)
+        , highWaterBytes(highWater)
+        , blockDeadline(deadline)
+    {
+        items.reserve(1024);
+    }
 
     LogBuffer *q_ptr;
     const std::size_t highWaterBytes;
@@ -23,7 +27,7 @@ public:
     std::vector<LogRecord> items;    // 生产 push / 消费 swap
     std::size_t bytes = 0;           // items 当前积压字节估计
     std::size_t dropped = 0;
-    bool degraded = false;           // 降级期：低级别直接丢弃
+    bool degraded = false; // 降级期：低级别直接丢弃
     bool closed = false;
 };
 
@@ -80,8 +84,8 @@ bool LogBuffer::popBatch(std::vector<LogRecord> &out, std::chrono::milliseconds 
     if (d->items.empty()) {
         return !d->closed; // close 且排空 → 后端退出；超时空等 → 继续
     }
-    out.swap(d->items);    // O(1)：旧缓冲的容量留给下一批生产
-    d->items.clear();      // 丢弃换入的上一批残余（调用方处理完已清空时为空操作）
+    out.swap(d->items); // O(1)：旧缓冲的容量留给下一批生产
+    d->items.clear();   // 丢弃换入的上一批残余（调用方处理完已清空时为空操作）
     d->bytes = 0;
     d->cvSpace.notify_all();
     return true;

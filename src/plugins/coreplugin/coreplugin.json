@@ -9,9 +9,9 @@
   "Vendor": "Youth",
   "Copyright": "(C) 2026 The Youth Ltd",
   "License": "GNU General Public License v3.0",
-  "Category": "Core",
-  "Description": "Essential framework and foundational services",
-  "LongDescription": "The Core plugin provides the fundamental infrastructure and essential services required for the application to function. It includes basic UI components, plugin management, and system-level functionalities that other plugins depend on.",
+  "Category": "Main",
+  "Description": "Application shell: main window, command palette, plugin list.",
+  "LongDescription": "The shell plugin owns the main window and exposes Shell::Host to other plugins. It also contributes the appearance settings page, the plugin list page and the about page.",
   "Url": "",
   "DocumentationUrl": ""
 }

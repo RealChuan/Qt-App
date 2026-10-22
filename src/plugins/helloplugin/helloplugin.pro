@@ -1,12 +1,11 @@
 include(../../../qmake/PlatformLibraries.pri)
 
-QT += widgets network core5compat
+QT += widgets
 
-DEFINES += HELLOPLUGIN_LIBRARY
-TARGET = $$add_plugin_library(helloplugin)
+TARGET = $$add_app_plugin(helloplugin)
 
 LIBS += \
-    -l$$replaceLibName(core) \
+    -l$$replaceLibName(shell) \
     -l$$replaceLibName(extensionsystem) \
     -l$$replaceLibName(utils)
 
@@ -14,10 +13,11 @@ include(../../../qmake/VcpkgToolchain.pri)
 
 SOURCES += \
     helloplugin.cc \
-    hellowidget.cc
+    hellopage.cc
 
 HEADERS += \
-    hellowidget.hpp
+    helloplugin.hpp \
+    hellopage.hpp
 
 DISTFILES += \
     helloplugin.json

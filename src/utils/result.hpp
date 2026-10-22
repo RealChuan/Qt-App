@@ -1,0 +1,131 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
+#pragma once
+
+#include "utils_global.hpp"
+
+#include "qtcassert.hpp"
+
+#include <QObject>
+#include <QPointer>
+#include <QString>
+
+#include <expected>
+
+namespace Utils {
+
+#ifdef Q_QDOC
+template<typename T = void>
+class Result
+{};
+#endif
+
+// C++23 std::expected：成功值类型 T，错误类型固定为可展示给用户的 QString。
+// 没有具体成功值时用 Result<>（即 expected<void, QString>），配 Utils::ResultOk 返回。
+template<typename T = void>
+using Result = std::expected<T, QString>;
+
+template<typename T = void>
+class Continuation
+{
+public:
+    Continuation() = default;
+
+    Continuation(const std::function<void(const Result<T> &)> &callback)
+        : m_unguarded(true)
+        , m_callback(callback)
+    {
+        QTC_CHECK(callback);
+    }
+
+    Continuation(QObject *guard, const std::function<void(const Result<T> &)> &callback)
+        : m_guarded(true)
+        , m_guard(guard)
+        , m_callback(callback)
+    {
+        QTC_CHECK(guard);
+        QTC_CHECK(callback);
+    }
+
+    void operator()(const Result<T> &result) const
+    {
+        if (m_unguarded || (m_guarded && m_guard)) {
+            QTC_ASSERT(m_callback, return);
+            m_callback(result);
+        }
+    }
+
+    QObject *guard() const { return m_guard.get(); }
+
+private:
+    bool m_guarded = false;
+    bool m_unguarded = false;
+    QPointer<QObject> m_guard;
+    std::function<void(const Result<T> &)> m_callback;
+};
+
+UTILS_EXPORT extern const Result<> ResultOk;
+
+UTILS_EXPORT Result<> makeResult(bool ok, const QString &errorMessage);
+
+enum ResultSpecialErrorCode {
+    ResultAssert,
+    ResultUnimplemented,
+};
+
+class UTILS_EXPORT ResultError
+{
+public:
+    ResultError(const QString &errorMessage);
+    ResultError(ResultSpecialErrorCode code, const QString &errorMessage = {});
+
+    template<typename T>
+    operator Result<T>() const
+    {
+        return std::unexpected(m_error);
+    }
+
+private:
+    QString m_error;
+};
+
+#define QTC_ASSERT_AND_ERROR_OUT(cond) \
+    QTC_ASSERT( \
+        cond, \
+        return ::Utils::ResultError(QStringLiteral("The condition %1 failed unexpectedly in %2:%3") \
+                                        .arg(QStringLiteral(#cond), QStringLiteral(__FILE__)) \
+                                        .arg(__LINE__)))
+
+} // namespace Utils
+
+//! If \a result has an error the error will be printed and the \a action will be executed.
+#define QTC_ASSERT_RESULT(result, action) \
+    if (Q_LIKELY(result)) { \
+    } else { \
+        ::Utils::writeAssertLocation(QStringLiteral("%1:%2: %3") \
+                                         .arg(QStringLiteral(__FILE__)) \
+                                         .arg(__LINE__) \
+                                         .arg(result.error()) \
+                                         .toUtf8() \
+                                         .data()); \
+        action; \
+    } \
+    do { \
+    } while (0)
+
+#define QTC_CHECK_RESULT(result) \
+    if (Q_LIKELY(result)) { \
+    } else { \
+        ::Utils::writeAssertLocation(QStringLiteral("%1:%2: %3") \
+                                         .arg(QStringLiteral(__FILE__)) \
+                                         .arg(__LINE__) \
+                                         .arg(result.error()) \
+                                         .toUtf8() \
+                                         .data()); \
+    } \
+    do { \
+    } while (0)
+
+#define QVERIFY_RESULT(result) \
+    QVERIFY2(result, result ? #result : static_cast<const char *>(result.error().toUtf8()))

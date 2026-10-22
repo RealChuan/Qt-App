@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils_global.hpp"
+
 #include <chrono>
 #include <cstddef>
 #include <memory>
@@ -15,11 +17,16 @@ namespace AsyncLog {
 [[nodiscard]] constexpr int severity(QtMsgType type)
 {
     switch (type) {
-    case QtDebugMsg: return 0;
-    case QtInfoMsg: return 1;
-    case QtWarningMsg: return 2;
-    case QtCriticalMsg: return 3;
-    case QtFatalMsg: return 4;
+    case QtDebugMsg:
+        return 0;
+    case QtInfoMsg:
+        return 1;
+    case QtWarningMsg:
+        return 2;
+    case QtCriticalMsg:
+        return 3;
+    case QtFatalMsg:
+        return 4;
     }
     return 5;
 }
@@ -30,14 +37,16 @@ struct LogRecord
     qint64 timestampNs{0}; // std::chrono::system_clock 纳秒
     QtMsgType type{QtDebugMsg};
     QString message;
-    quintptr threadId{0};      // 原生线程 id，后端以 {:x} 格式化
+    quintptr threadId{0}; // 原生线程 id，后端以 {:x} 格式化
     const char *category{"default"};
     const char *file{nullptr}; // 仅 debug 构建有效，release 可能为 nullptr
     int line{0};
 
     // 积压量的粗略估计，仅用于饱和判断（sizeof + UTF-16 字符数据）
     [[nodiscard]] std::size_t estimateBytes() const
-    { return sizeof(LogRecord) + std::size_t(message.size()) * 2; }
+    {
+        return sizeof(LogRecord) + std::size_t(message.size()) * 2;
+    }
 };
 
 // MPSC 日志队列：多个生产线程 push，单个后端线程 popBatch 整批取走。
@@ -47,11 +56,14 @@ struct LogRecord
 //   2. 等待超时进入降级期：WARNING 及以上无条件收下（错误级绝不丢），
 //      DEBUG/INFO 丢弃并计数，生产者不再阻塞
 //   3. 后端恢复后通过 takeDropped() 取走计数并补报
-class LogBuffer
+// 导出：否则 Windows 下 DLL 外的单元测试链接不到这些符号（头文件是公开的，
+// 但实际只有 utils 内部与测试在用）。
+class UTILS_EXPORT LogBuffer
 {
 public:
-    explicit LogBuffer(std::size_t highWaterBytes = 32 * 1024 * 1024,
-                       std::chrono::milliseconds blockDeadline = std::chrono::milliseconds{1000});
+    explicit LogBuffer(
+        std::size_t highWaterBytes = 32 * 1024 * 1024,
+        std::chrono::milliseconds blockDeadline = std::chrono::milliseconds{1000});
     ~LogBuffer();
 
     LogBuffer(const LogBuffer &) = delete;

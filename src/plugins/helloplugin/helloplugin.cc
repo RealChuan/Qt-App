@@ -1,40 +1,66 @@
-#include "hellowidget.hpp"
+#include "helloplugin.hpp"
 
-#include <core/corewidget.hpp>
-#include <extensionsystem/iplugin.h>
+#include "hellopage.hpp"
 
-#include <QPushButton>
+#include <extensionsystem/plugincontext.hpp>
+#include <shell/functioncommand.hpp>
+#include <shell/registry.hpp>
 
-namespace Plugin {
+#include <QSettings>
 
-class HelloPluginWidget : public Core::CoreWidget
+namespace Hello {
+
+namespace {
+constexpr QLatin1StringView kCountKey("count");
+}
+
+class HelloPlugin::HelloPluginPrivate
 {
-    Q_OBJECT
 public:
-    explicit HelloPluginWidget(QObject *parent = nullptr)
-    {
-        setWidget(new HelloWidget);
-        setButton(new QPushButton(tr("Hello")), Core::CoreWidget::Main);
-    }
+    QSettings *settings = nullptr;
+    HelloPage *page = nullptr;
+    std::unique_ptr<Shell::FunctionCommand> command;
 };
 
-class HelloPlugin : public ExtensionSystem::IPlugin
+HelloPlugin::HelloPlugin()
+    : d_ptr(std::make_unique<HelloPluginPrivate>())
+{}
+
+HelloPlugin::~HelloPlugin() = default;
+
+auto HelloPlugin::initialize(const ExtensionSystem::PluginContext &context) -> Utils::Result<>
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "Youth.Qt.plugin" FILE "helloplugin.json")
+    d_ptr->settings = context.settings();
+    d_ptr->page = new HelloPage;
+    d_ptr->page->setCount(d_ptr->settings->value(kCountKey, 0).toInt());
 
-    ~HelloPlugin() override = default;
+    // 命令对象由插件持有，生命周期与插件一致。
+    d_ptr->command = std::make_unique<Shell::FunctionCommand>(
+        QStringLiteral("helloplugin.increment"),
+        tr("Hello: increment counter"),
+        std::bind_front(&HelloPlugin::increment, this));
+    d_ptr->command->withShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+H")));
 
-    Utils::Result<> initialize(const QStringList &arguments) override
-    {
-        m_helloPluginWidgetPtr.reset(new HelloPluginWidget(this));
-        Core::addCoreWidget(m_helloPluginWidgetPtr.data());
-        return Utils::ResultOk;
-    }
+    connect(d_ptr->page, &HelloPage::countChanged, this, &HelloPlugin::onCountChanged);
 
-    QScopedPointer<HelloPluginWidget> m_helloPluginWidgetPtr;
-};
+    return Utils::ResultOk;
+}
 
-} // namespace Plugin
+void HelloPlugin::extensionsInitialized()
+{
+    auto *registry = Shell::Registry::instance();
+    registry->addPage(d_ptr->page);
+    registry->addCommand(d_ptr->command.get());
+}
 
-#include "helloplugin.moc"
+void HelloPlugin::onCountChanged(int count)
+{
+    d_ptr->settings->setValue(kCountKey, count);
+}
+
+void HelloPlugin::increment()
+{
+    d_ptr->page->increment();
+}
+
+} // namespace Hello

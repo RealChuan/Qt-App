@@ -7,6 +7,7 @@ VERSION="v4.4.0"
 TARGET_DIR="libtiff"
 INSTALL_PREFIX="/usr/local"
 LIB_NAME="libtiff.so.5"
+FORCE=false
 
 cd "$(dirname "$0")"
 cd ../..
@@ -131,8 +132,8 @@ verify_installation() {
 main() {
 	log_info "开始检查 libtiff 安装状态..."
 
-	# 检查是否已安装
-	if check_libtiff_exists; then
+	# 检查是否已安装（--force 时跳过检查，强制重编）
+	if [ "$FORCE" != "true" ] && check_libtiff_exists; then
 		log_info "系统中已存在 $LIB_NAME，跳过安装过程"
 
 		# 验证 tiffinfo 是否可用
@@ -187,7 +188,7 @@ case "${1:-}" in
 	;;
 -f | --force)
 	log_info "强制安装模式，跳过库检查"
-	# 继续执行安装流程
+	FORCE=true
 	;;
 *)
 	# 默认行为：先检查库是否存在

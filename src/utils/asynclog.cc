@@ -10,8 +10,8 @@
 #include <QMetaMethod>
 #include <QRegularExpression>
 #include <QSysInfo>
-#include <QtGlobal>
 #include <QThread>
+#include <QtGlobal>
 
 #include <atomic>
 #include <chrono>
@@ -61,13 +61,14 @@ void appendLine(std::string &out, const LogRecord &record)
 {
     thread_local TimestampFormatter formatter;
     const qint64 ms = (record.timestampNs % qint64{1'000'000'000}) / qint64{1'000'000};
-    std::format_to(std::back_inserter(out),
-                   "{}.{:03} [{}] [t {:x}] [{}] ",
-                   formatter.seconds(record.timestampNs),
-                   static_cast<quint64>(ms),
-                   kLevelTag[severity(record.type)],
-                   record.threadId,
-                   record.category);
+    std::format_to(
+        std::back_inserter(out),
+        "{}.{:03} [{}] [t {:x}] [{}] ",
+        formatter.seconds(record.timestampNs),
+        static_cast<quint64>(ms),
+        kLevelTag[severity(record.type)],
+        record.threadId,
+        record.category);
     const auto message = record.message.toUtf8();
     out.append(message.constData(), static_cast<std::size_t>(message.size()));
     if (record.file != nullptr) { // release 下 QT_MESSAGELOGCONTEXT 未定义时为 nullptr
@@ -84,7 +85,8 @@ void appendLine(std::string &out, const LogRecord &record)
     static const QRegularExpression invalid(R"([<>:"/\\|?*\s])");
     auto cleaned = version.trimmed();
     cleaned.replace(invalid, QStringLiteral("-"));
-    return QString("%1_%2").arg(baseName, cleaned.isEmpty() ? QStringLiteral("unknown") : cleaned);
+    return QStringLiteral("%1_%2")
+        .arg(baseName, cleaned.isEmpty() ? QStringLiteral("unknown") : cleaned);
 }
 
 // —— FileSink：滚动文件 sink，纯内部实现，整个类只在 .cc 可见 ——
@@ -113,7 +115,8 @@ public:
     {
         QDir dir(params.dir);
         if (!dir.exists() && !dir.mkpath(".")) {
-            return std::unexpected(QString("cannot create log directory: %1").arg(params.dir));
+            return std::unexpected(
+                QStringLiteral("cannot create log directory: %1").arg(params.dir));
         }
         auto sink = std::make_unique<FileSink>(params);
         {
@@ -121,7 +124,7 @@ public:
             sink->rollFile(); // 打开首个日志文件，失败在下面报告
         }
         if (!sink->file.isOpen()) {
-            return std::unexpected(QString("cannot open log file in: %1").arg(params.dir));
+            return std::unexpected(QStringLiteral("cannot open log file in: %1").arg(params.dir));
         }
         return sink;
     }
@@ -129,7 +132,9 @@ public:
     ~FileSink() override { flush(); }
 
     explicit FileSink(const Params &p)
-        : params(p), namePrefix(makeNamePrefix(p.baseName, p.version)), dir(p.dir)
+        : params(p)
+        , namePrefix(makeNamePrefix(p.baseName, p.version))
+        , dir(p.dir)
     {}
 
     void write(std::span<const char> bytes, bool /*isError*/) override
@@ -205,13 +210,15 @@ private:
         }
 
         const auto nowSecs = QDateTime::currentSecsSinceEpoch();
-        QString name = QString("%1_%2_%3_%4")
-                           .arg(namePrefix,
-                                hostName,
-                                pid,
-                                QDateTime::fromSecsSinceEpoch(nowSecs).toString("yyyyMMdd_hhmmss"));
+        QString name = QStringLiteral("%1_%2_%3_%4")
+                           .arg(
+                               namePrefix,
+                               hostName,
+                               pid,
+                               QDateTime::fromSecsSinceEpoch(nowSecs).toString(
+                                   QStringLiteral("yyyyMMdd_hhmmss")));
         if (nowSecs == lastNameSec) {
-            name += QString("_%1").arg(++rollSeq); // 同秒滚动加序号
+            name += QStringLiteral("_%1").arg(++rollSeq); // 同秒滚动加序号
         } else {
             rollSeq = 0;
             lastNameSec = nowSecs;
@@ -234,9 +241,10 @@ private:
     // 本应用任意历史进程、任意历史版本留下的日志都算“自己的”
     [[nodiscard]] QRegularExpression ownNamePattern() const
     {
-        return QRegularExpression(QRegularExpression::anchoredPattern(
-            QString("%1_.+_\\d{8}_\\d{6}(_\\d+)?\\.log")
-                .arg(QRegularExpression::escape(params.baseName))));
+        return QRegularExpression(
+            QRegularExpression::anchoredPattern(
+                QStringLiteral("%1_.+_\\d{8}_\\d{6}(_\\d+)?\\.log")
+                    .arg(QRegularExpression::escape(params.baseName))));
     }
 
     // 清理只针对匹配自身命名模式的过期日志，绝不波及目录里其他文件
@@ -266,7 +274,7 @@ private:
     qint64 currentDay = 0;   // 当天时段（epoch 秒 / 86400）
     qint64 lastNameSec = 0;  // 上次命名的秒值，同秒加序号
     int rollSeq = 0;
-    std::mutex mutex;        // fatal 同步路径可能从其他线程调用
+    std::mutex mutex; // fatal 同步路径可能从其他线程调用
 };
 
 } // namespace
@@ -274,7 +282,9 @@ private:
 class Logger::LoggerPrivate
 {
 public:
-    explicit LoggerPrivate(Logger *q) : q_ptr(q) {}
+    explicit LoggerPrivate(Logger *q)
+        : q_ptr(q)
+    {}
 
     Logger *q_ptr;
     std::atomic<QtMsgType> level{QtInfoMsg};
@@ -294,10 +304,15 @@ Logger *Logger::instance()
     return &inst;
 }
 
-Logger::Logger(QObject *parent) : QObject(parent), d_ptr(std::make_unique<LoggerPrivate>(this)) {}
+Logger::Logger(QObject *parent)
+    : QObject(parent)
+    , d_ptr(std::make_unique<LoggerPrivate>(this))
+{}
 
 Logger::~Logger()
-{ shutdown(); }
+{
+    shutdown();
+}
 
 void Logger::start(const Config &config)
 {
@@ -311,16 +326,18 @@ void Logger::start(const Config &config)
 
     d->sinks.clear();
     if (config.console) {
-        d->sinks.push_back(std::make_unique<ConsoleSink>(
-            config.consoleTruncate > 0 ? static_cast<std::size_t>(config.consoleTruncate)
-                                       : std::size_t{0}));
+        d->sinks.push_back(
+            std::make_unique<ConsoleSink>(
+                config.consoleTruncate > 0 ? static_cast<std::size_t>(config.consoleTruncate)
+                                           : std::size_t{0}));
     }
     if (config.file) {
-        auto sink = FileSink::create({.dir = config.logPath,
-                                      .baseName = QCoreApplication::applicationName(),
-                                      .version = QCoreApplication::applicationVersion(),
-                                      .maxFileSize = config.maxFileSize,
-                                      .keepDays = config.keepDays});
+        auto sink = FileSink::create(
+            {.dir = config.logPath,
+             .baseName = QCoreApplication::applicationName(),
+             .version = QCoreApplication::applicationVersion(),
+             .maxFileSize = config.maxFileSize,
+             .keepDays = config.keepDays});
         if (sink) {
             d->fileSink = sink->get();
             d->sinks.push_back(std::move(*sink));
@@ -338,8 +355,8 @@ void Logger::start(const Config &config)
         QStringList lines;
         while (d->buffer.popBatch(batch, std::chrono::seconds{3})) {
             // 无人订阅时跳过批次的字符串构建
-            const bool emitBatch
-                = this->isSignalConnected(QMetaMethod::fromSignal(&Logger::batchReady));
+            const bool emitBatch = this->isSignalConnected(
+                QMetaMethod::fromSignal(&Logger::batchReady));
             lines.clear();
             for (auto &record : batch) {
                 line.clear();
@@ -385,7 +402,7 @@ void Logger::shutdown()
     qInstallMessageHandler(nullptr); // 新消息回归 Qt 默认路径，不再入队
     d->buffer.close();               // 拒收并唤醒后端做最终排空
     if (d->backend && d->backend->joinable()) {
-        d->backend->join();          // 后端排空后自行退出；std::thread 不 join 会 terminate
+        d->backend->join(); // 后端排空后自行退出；std::thread 不 join 会 terminate
     }
     d->backend.reset();
     {
@@ -397,13 +414,19 @@ void Logger::shutdown()
 }
 
 void Logger::setLevel(QtMsgType level)
-{ d_ptr->level.store(level, std::memory_order_relaxed); }
+{
+    d_ptr->level.store(level, std::memory_order_relaxed);
+}
 
 auto Logger::level() const -> QtMsgType
-{ return d_ptr->level.load(std::memory_order_relaxed); }
+{
+    return d_ptr->level.load(std::memory_order_relaxed);
+}
 
 auto Logger::isRunning() const -> bool
-{ return d_ptr->running.load(std::memory_order_relaxed); }
+{
+    return d_ptr->running.load(std::memory_order_relaxed);
+}
 
 auto Logger::purgeLogFiles() -> int
 {

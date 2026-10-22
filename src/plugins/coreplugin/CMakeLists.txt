@@ -1,23 +1,27 @@
 set(PROJECT_SOURCES
-    configwidget.cpp
-    configwidget.h
-    coreplugin.cpp
+    aboutpage.hpp
+    aboutpage.cc
+    appearancepage.hpp
+    appearancepage.cc
+    commandpalette.hpp
+    commandpalette.cc
     coreplugin.hpp
-    coreplugintr.h
-    icore.cpp
-    icore.h
-    mainwindow.cpp
-    mainwindow.h
-    plugindialog.cpp
-    plugindialog.h)
+    coreplugin.cc
+    mainwindow.hpp
+    mainwindow.cc
+    plugindetailsview.hpp
+    plugindetailsview.cc
+    pluginpage.hpp
+    pluginpage.cc
+    pluginview.hpp
+    pluginview.cc)
 
-add_platform_plugin(coreplugin ${PROJECT_SOURCES})
+add_app_plugin(coreplugin ${PROJECT_SOURCES})
 target_link_libraries(
   coreplugin
-  PRIVATE core
+  PRIVATE shell
           extensionsystem
           widgets
           resource
           utils
-          Qt::Widgets
-          tl::expected)
+          Qt::Widgets)

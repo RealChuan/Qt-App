@@ -1,0 +1,866 @@
+/******************************************************************************
+*   base.css —— Qt 基础控件的通用样式
+*
+*   颜色与图标全部写成令牌占位符，由 Utils::Theme 在加载时按当前方案
+*   （light.theme / dark.theme）替换，因此同一份文件可以服务深浅两套主题。
+*
+*   移植到别的 Qt 程序：把 base.css 与两个 .theme 一起放进它的 qrc，然后
+*       Utils::theme()->setConfig({":/qss/", {"base.css", "myapp.css"}});
+*       Utils::theme()->apply();
+*   myapp.css 里继续用同一批令牌即可跟随深浅色，也可以直接写死颜色。
+*
+*   约定：
+*     - 圆角统一 6px（控件）、12px（卡片，定义在 pages.css）
+*     - 控件高度统一 28px，主要行高 32px
+*     - 选中/焦点只用一个强调色，不做多色装饰
+******************************************************************************/
+
+/******************************************************************************
+*   QWidget
+*****************************************************************************/
+
+QWidget {
+    color: @@text@@;
+    font-size: 14px;
+}
+
+QWidget:disabled {
+    color: @@textDisabled@@;
+}
+
+QMainWindow,
+QDialog {
+    background: @@surface@@;
+}
+
+QScrollArea {
+    background: transparent;
+    border: none;
+}
+
+/* QScrollArea 的 viewport 默认会画一层底色，卡片内需要透明 */
+QScrollArea > QWidget > QWidget {
+    background: transparent;
+}
+
+QAbstractScrollArea::corner {
+    background: transparent;
+    border: none;
+}
+
+/******************************************************************************
+*   QLabel
+*****************************************************************************/
+
+QLabel {
+    background: transparent;
+}
+
+/******************************************************************************
+*   QPushButton / QToolButton
+*****************************************************************************/
+
+QPushButton,
+QToolButton {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@borderStrong@@;
+    border-radius: 6px;
+    min-width: 64px;
+    min-height: 28px;
+    padding: 0 14px;
+}
+
+QPushButton:hover,
+QToolButton:hover {
+    background: @@surfaceAlt@@;
+}
+
+QPushButton:pressed,
+QToolButton:pressed {
+    background: @@surfaceSunken@@;
+}
+
+QPushButton:focus,
+QToolButton:focus {
+    border-color: @@accent@@;
+}
+
+QPushButton:disabled,
+QToolButton:disabled {
+    color: @@textDisabled@@;
+    background: @@surfaceSunken@@;
+    border-color: @@border@@;
+}
+
+/* 主操作：整个界面里最重的颜色只出现在这里 */
+QPushButton#PrimaryButton,
+QToolButton#PrimaryButton,
+QPushButton#BlueButton {
+    color: @@onAccent@@;
+    background: @@accent@@;
+    border-color: @@accent@@;
+    font-weight: 600;
+}
+
+QPushButton#PrimaryButton:hover,
+QToolButton#PrimaryButton:hover,
+QPushButton#BlueButton:hover {
+    background: @@accentHover@@;
+    border-color: @@accentHover@@;
+}
+
+QPushButton#PrimaryButton:pressed,
+QToolButton#PrimaryButton:pressed,
+QPushButton#BlueButton:pressed {
+    background: @@accentPressed@@;
+    border-color: @@accentPressed@@;
+}
+
+QPushButton#PrimaryButton:disabled,
+QToolButton#PrimaryButton:disabled,
+QPushButton#BlueButton:disabled,
+QPushButton#GrayButton {
+    color: @@textDisabled@@;
+    background: @@surfaceSunken@@;
+    border-color: @@border@@;
+}
+
+/* 次级操作：保留边框，不抢主按钮的注意力 */
+QPushButton#GrayButton:hover {
+    background: @@surfaceAlt@@;
+}
+
+/* 说明：不再提供“纯文字按钮”样式。没有边框和底色的按钮在浅色卡片上
+   和普通文字无法区分，用户不会认为它可以点。弱操作请直接用默认的次级按钮。 */
+
+/******************************************************************************
+*   QLineEdit / QTextEdit / QPlainTextEdit
+*****************************************************************************/
+
+QLineEdit {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 6px;
+    min-height: 28px;
+    padding: 0 9px;
+    selection-background-color: @@accent@@;
+    selection-color: @@onAccent@@;
+    placeholder-text-color: @@textSubtle@@;
+}
+
+QLineEdit:hover {
+    border-color: @@borderStrong@@;
+}
+
+QLineEdit:focus {
+    border-color: @@accent@@;
+}
+
+QLineEdit:read-only {
+    color: @@textMuted@@;
+    background: @@surfaceAlt@@;
+}
+
+QLineEdit:disabled {
+    color: @@textDisabled@@;
+    background: @@surfaceSunken@@;
+    border-color: @@border@@;
+}
+
+QLineEdit[echoMode="2"] {
+    lineedit-password-character: 9679;
+}
+
+QTextEdit,
+QPlainTextEdit {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 6px;
+    padding: 6px 8px;
+    selection-background-color: @@accent@@;
+    selection-color: @@onAccent@@;
+}
+
+QTextEdit:focus,
+QPlainTextEdit:focus {
+    border-color: @@accent@@;
+}
+
+QTextEdit:read-only,
+QPlainTextEdit:read-only {
+    background: @@surfaceAlt@@;
+}
+
+/******************************************************************************
+*   QComboBox
+*****************************************************************************/
+
+QComboBox {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 6px;
+    min-width: 96px;
+    min-height: 28px;
+    padding: 0 26px 0 9px;
+    combobox-popup: 0;
+}
+
+QComboBox:hover {
+    border-color: @@borderStrong@@;
+}
+
+QComboBox:focus,
+QComboBox:on {
+    border-color: @@accent@@;
+}
+
+QComboBox:disabled {
+    color: @@textDisabled@@;
+    background: @@surfaceSunken@@;
+    border-color: @@border@@;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 24px;
+    border: none;
+    background: transparent;
+}
+
+QComboBox::down-arrow {
+    width: 10px;
+    height: 6px;
+    image: @@arrowDown@@;
+}
+
+QComboBox QAbstractItemView {
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 8px;
+    padding: 4px;
+    outline: none;
+    selection-background-color: @@accentSoft@@;
+    selection-color: @@accentText@@;
+}
+
+QComboBox QAbstractItemView::item {
+    min-height: 28px;
+    padding-left: 8px;
+    border-radius: 5px;
+}
+
+/******************************************************************************
+*   QSpinBox / QDoubleSpinBox / QDateEdit / QTimeEdit / QDateTimeEdit
+*****************************************************************************/
+
+QAbstractSpinBox {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 6px;
+    min-height: 28px;
+    min-width: 72px;
+    padding: 0 4px 0 9px;
+    selection-background-color: @@accent@@;
+    selection-color: @@onAccent@@;
+}
+
+QAbstractSpinBox:hover {
+    border-color: @@borderStrong@@;
+}
+
+QAbstractSpinBox:focus {
+    border-color: @@accent@@;
+}
+
+QAbstractSpinBox:disabled {
+    color: @@textDisabled@@;
+    background: @@surfaceSunken@@;
+    border-color: @@border@@;
+}
+
+QAbstractSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    border: none;
+    background: transparent;
+}
+
+QAbstractSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    border: none;
+    background: transparent;
+}
+
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover {
+    background: @@surfaceAlt@@;
+}
+
+QAbstractSpinBox::up-arrow {
+    width: 8px;
+    height: 5px;
+    image: @@arrowUp@@;
+}
+
+QAbstractSpinBox::down-arrow {
+    width: 8px;
+    height: 5px;
+    image: @@arrowDown@@;
+}
+
+/******************************************************************************
+*   QCheckBox / QRadioButton
+*****************************************************************************/
+
+QCheckBox,
+QRadioButton {
+    background: transparent;
+    spacing: 8px;
+}
+
+QCheckBox:disabled,
+QRadioButton:disabled {
+    color: @@textDisabled@@;
+}
+
+QCheckBox::indicator,
+QRadioButton::indicator {
+    subcontrol-origin: border;
+    subcontrol-position: left center;
+    width: 18px;
+    height: 18px;
+}
+
+QCheckBox::indicator:unchecked {
+    border-image: @@checkUnchecked@@ 0 0 0 0 stretch stretch;
+}
+
+QCheckBox::indicator:checked {
+    border-image: @@checkChecked@@ 0 0 0 0 stretch stretch;
+}
+
+QCheckBox::indicator:indeterminate {
+    border-image: @@checkPartial@@ 0 0 0 0 stretch stretch;
+}
+
+QCheckBox::indicator:unchecked:disabled {
+    border-image: @@checkDisabled@@ 0 0 0 0 stretch stretch;
+}
+
+QCheckBox::indicator:checked:disabled {
+    border-image: @@checkCheckedDisabled@@ 0 0 0 0 stretch stretch;
+}
+
+QRadioButton::indicator:unchecked {
+    border-image: @@radioUnchecked@@ 0 0 0 0 stretch stretch;
+}
+
+QRadioButton::indicator:checked {
+    border-image: @@radioChecked@@ 0 0 0 0 stretch stretch;
+}
+
+QRadioButton::indicator:checked:disabled {
+    border-image: @@radioCheckedDisabled@@ 0 0 0 0 stretch stretch;
+}
+
+/******************************************************************************
+*   QAbstractItemView（QListView / QTreeView / QTableView）
+*****************************************************************************/
+
+QAbstractItemView {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 0;
+    alternate-background-color: @@surfaceAlt@@;
+    selection-background-color: @@accentSoft@@;
+    selection-color: @@accentText@@;
+    outline: none;
+}
+
+/* 注意：QTreeView / QTableView 的每个单元格都是独立绘制的 item，
+   给 ::item 加圆角会在相邻列之间留下透明缝隙（单行选中时尤其明显）。
+   圆角只给“整行就是一个 item”的单列列表，例如下拉框和命令面板。 */
+QAbstractItemView::item {
+    min-height: 28px;
+    padding-left: 6px;
+    border: none;
+    color: @@text@@;
+}
+
+QAbstractItemView::item:hover {
+    background: @@surfaceAlt@@;
+}
+
+QAbstractItemView::item:selected {
+    background: @@accentSoft@@;
+    color: @@accentText@@;
+}
+
+/* 表格 / 列表里的勾选框（插件列表的“启用”列用它） */
+QAbstractItemView::indicator {
+    width: 16px;
+    height: 16px;
+    border-width: 0;
+}
+
+QAbstractItemView::indicator:unchecked {
+    border-image: @@checkUnchecked@@ 0 0 0 0 stretch stretch;
+}
+
+QAbstractItemView::indicator:checked {
+    border-image: @@checkChecked@@ 0 0 0 0 stretch stretch;
+}
+
+QAbstractItemView::indicator:indeterminate {
+    border-image: @@checkPartial@@ 0 0 0 0 stretch stretch;
+}
+
+/* 树的缩进区也要跟着选中行上色，否则选中条会从第一个单元格才开始，
+   左侧留一截空白，看起来像两条。 */
+QTreeView::branch {
+    background: transparent;
+}
+
+QTreeView::branch:selected {
+    background: @@accentSoft@@;
+}
+
+QTreeView::branch:has-children:closed {
+    image: @@branchClosed@@;
+}
+
+QTreeView::branch:has-children:open {
+    image: @@branchOpen@@;
+}
+
+QHeaderView {
+    background: transparent;
+    border: none;
+}
+
+QHeaderView::section {
+    color: @@textSubtle@@;
+    background: @@surface@@;
+    border: none;
+    border-bottom: 1px solid @@border@@;
+    padding: 0 8px;
+    min-height: 30px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QHeaderView::section:hover {
+    color: @@textMuted@@;
+}
+
+QTableCornerButton::section {
+    background: @@surface@@;
+    border: none;
+    border-bottom: 1px solid @@border@@;
+}
+
+/******************************************************************************
+*   QTabWidget / QTabBar
+*****************************************************************************/
+
+QTabWidget::pane {
+    background: transparent;
+    border: none;
+}
+
+QTabWidget::tab-bar {
+    alignment: left;
+}
+
+QTabBar {
+    background: transparent;
+    qproperty-drawBase: 0;
+}
+
+QTabBar::tab {
+    color: @@textMuted@@;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 6px 14px;
+    margin-right: 4px;
+}
+
+QTabBar::tab:hover {
+    color: @@text@@;
+}
+
+QTabBar::tab:selected {
+    color: @@accentText@@;
+    border-bottom-color: @@accent@@;
+}
+
+QTabBar::tab:disabled {
+    color: @@textDisabled@@;
+}
+
+/******************************************************************************
+*   QScrollBar
+*****************************************************************************/
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 12px;
+    margin: 0;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: @@scrollHandle@@;
+    border-radius: 3px;
+    margin: 2px 3px;
+    min-height: 28px;
+}
+
+QScrollBar::handle:horizontal {
+    background: @@scrollHandle@@;
+    border-radius: 3px;
+    margin: 3px 2px;
+    min-width: 28px;
+}
+
+QScrollBar::handle:hover {
+    background: @@scrollHandleHover@@;
+}
+
+QScrollBar::sub-line,
+QScrollBar::add-line {
+    width: 0;
+    height: 0;
+    border: none;
+    background: transparent;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: transparent;
+}
+
+/******************************************************************************
+*   QMenu / QMenuBar
+*****************************************************************************/
+
+QMenu {
+    color: @@text@@;
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+QMenu::item {
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 26px 6px 12px;
+}
+
+QMenu::item:selected {
+    background: @@accentSoft@@;
+    color: @@accentText@@;
+}
+
+QMenu::item:disabled {
+    color: @@textDisabled@@;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: @@border@@;
+    margin: 5px 8px;
+}
+
+QMenu::icon {
+    padding-left: 8px;
+}
+
+QMenu::indicator {
+    width: 15px;
+    height: 15px;
+    padding-left: 8px;
+}
+
+QMenu::indicator:non-exclusive:unchecked,
+QMenu::indicator:exclusive:unchecked {
+    image: url(":/common/icon/common/checkbox-unchecked@2.png");
+}
+
+QMenu::indicator:non-exclusive:checked,
+QMenu::indicator:exclusive:checked {
+    image: url(":/common/icon/common/checkbox-checked-selectionmode@2.png");
+}
+
+QMenuBar {
+    background: transparent;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 4px 10px;
+    border-radius: 5px;
+}
+
+QMenuBar::item:selected {
+    background: @@surfaceAlt@@;
+}
+
+/******************************************************************************
+*   QProgressBar
+*****************************************************************************/
+
+QProgressBar {
+    color: @@textMuted@@;
+    background: @@surfaceSunken@@;
+    border: none;
+    border-radius: 3px;
+    min-height: 6px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background: @@accent@@;
+    border-radius: 3px;
+}
+
+/******************************************************************************
+*   QSlider
+*****************************************************************************/
+
+QSlider {
+    background: transparent;
+}
+
+QSlider::groove:horizontal {
+    height: 4px;
+    background: @@surfaceSunken@@;
+    border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal {
+    background: @@accent@@;
+    border-radius: 2px;
+}
+
+QSlider::add-page:horizontal {
+    background: @@surfaceSunken@@;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    width: 14px;
+    height: 14px;
+    margin: -5px 0;
+    border-radius: 7px;
+    background: @@surface@@;
+    border: 2px solid @@accent@@;
+}
+
+QSlider::groove:vertical {
+    width: 4px;
+    background: @@surfaceSunken@@;
+    border-radius: 2px;
+}
+
+QSlider::add-page:vertical {
+    background: @@accent@@;
+    border-radius: 2px;
+}
+
+QSlider::sub-page:vertical {
+    background: @@surfaceSunken@@;
+    border-radius: 2px;
+}
+
+QSlider::handle:vertical {
+    width: 14px;
+    height: 14px;
+    margin: 0 -5px;
+    border-radius: 7px;
+    background: @@surface@@;
+    border: 2px solid @@accent@@;
+}
+
+/******************************************************************************
+*   QGroupBox
+*****************************************************************************/
+
+QGroupBox {
+    border: 1px solid @@border@@;
+    border-radius: 10px;
+    margin-top: 14px;
+    padding: 14px 16px 16px 16px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 12px;
+    padding: 0 6px;
+    color: @@textMuted@@;
+    font-weight: 600;
+    background: @@surface@@;
+}
+
+/******************************************************************************
+*   QSplitter
+*****************************************************************************/
+
+QSplitter {
+    background: transparent;
+}
+
+QSplitter::handle {
+    background: transparent;
+}
+
+QSplitter::handle:horizontal {
+    width: 12px;
+}
+
+QSplitter::handle:vertical {
+    height: 12px;
+}
+
+/******************************************************************************
+*   QToolBox
+*****************************************************************************/
+
+QToolBox {
+    border: 1px solid @@border@@;
+    border-radius: 10px;
+    background: @@surface@@;
+}
+
+QToolBox::tab {
+    color: @@textMuted@@;
+    background: transparent;
+    border-bottom: 1px solid @@border@@;
+    padding: 8px 10px;
+}
+
+QToolBox::tab:selected {
+    color: @@text@@;
+    font-weight: 600;
+}
+
+/******************************************************************************
+*   QToolBar / QStatusBar / QDockWidget
+*****************************************************************************/
+
+QToolBar {
+    background: @@surface@@;
+    border: none;
+    border-bottom: 1px solid @@border@@;
+    spacing: 4px;
+    padding: 3px 6px;
+}
+
+QToolBar::separator {
+    background: @@border@@;
+    width: 1px;
+    margin: 4px 6px;
+}
+
+QStatusBar {
+    color: @@textMuted@@;
+    background: @@surface@@;
+    border-top: 1px solid @@border@@;
+}
+
+QStatusBar::item {
+    border: none;
+}
+
+QDockWidget {
+    color: @@text@@;
+    titlebar-close-icon: none;
+    titlebar-normal-icon: none;
+}
+
+QDockWidget::title {
+    background: @@surfaceAlt@@;
+    border-bottom: 1px solid @@border@@;
+    padding: 6px 10px;
+}
+
+/******************************************************************************
+*   QToolTip
+*****************************************************************************/
+
+QToolTip {
+    color: @@tooltipText@@;
+    background: @@tooltipBg@@;
+    border: 1px solid @@tooltipBg@@;
+    border-radius: 6px;
+    padding: 5px 8px;
+}
+
+/******************************************************************************
+*   其它零散控件
+*****************************************************************************/
+
+QSizeGrip {
+    width: 12px;
+    height: 12px;
+    background: transparent;
+}
+
+QFocusFrame {
+    border: 1px solid @@accent@@;
+}
+
+QLCDNumber {
+    color: @@text@@;
+    background: @@surfaceSunken@@;
+    border-radius: 6px;
+}
+
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background: @@surfaceAlt@@;
+    border-bottom: 1px solid @@border@@;
+}
+
+QCalendarWidget QAbstractItemView {
+    background: @@surface@@;
+    color: @@text@@;
+    border: none;
+    selection-background-color: @@accent@@;
+    selection-color: @@onAccent@@;
+}
+
+/******************************************************************************
+*   QDialogButtonBox / QMessageBox
+*****************************************************************************/
+
+QDialogButtonBox QPushButton {
+    min-width: 84px;
+}
+
+QMessageBox {
+    background: @@surface@@;
+}
+
+QMessageBox QLabel {
+    color: @@text@@;
+    font-size: 14px;
+}

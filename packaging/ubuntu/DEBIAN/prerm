@@ -30,7 +30,6 @@ stop_process() {
 case "$1" in
     remove|purge|upgrade|deconfigure)
         stop_process "${APP_NAME}"
-        stop_process "CrashReport"
         ;;
     failed-upgrade)
         # 升级失败时 dpkg 会重调 prerm；不要在这里杀进程，

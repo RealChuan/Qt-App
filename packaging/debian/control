@@ -4,9 +4,12 @@ Priority: optional
 Maintainer: RealChuan <sun1070753498@163.com>
 Rules-Requires-Root: no
 Build-Depends:
- debhelper-compat (= 13),
  cmake,
+ curl,
+ debhelper-compat (= 13),
+ file,
  ninja-build,
+ p7zip-full,
 Standards-Version: 4.6.2
 Homepage: https://github.com/RealChuan/Qt-App
 

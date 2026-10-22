@@ -1,8 +1,8 @@
 #include "utils.hpp"
-#include "hostosinfo.h"
-#include "utilstr.h"
 
-#include <QTextCodec>
+#include "hostosinfo.hpp"
+#include "utilstr.hpp"
+
 #include <QtWidgets>
 
 // clang-format off
@@ -12,88 +12,94 @@
 #endif
 // clang-format on
 
+#include <array>
+#include <memory>
+#include <ranges>
+#include <vector>
+
+using namespace Qt::StringLiterals;
+
 namespace Utils {
 
-void setUTF8Code()
-{
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-}
+namespace {
 
-void setQSS(const QStringList &qssFilePaths)
+// Windows 句柄用 RAII 管住，避免每个提前返回分支都要手写 CloseHandle。
+#ifdef Q_OS_WIN
+using UniqueHandle = std::unique_ptr<void, decltype(&::CloseHandle)>;
+
+auto makeHandle(HANDLE handle) -> UniqueHandle
 {
-    QStringList qssFiles;
-    for (const auto &path : std::as_const(qssFilePaths)) {
-        QFile file(path);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qWarning() << QString("Cannot open the file: %1").arg(path) << file.errorString();
-            continue;
-        }
-        qInfo() << QString("Load QSS: %1").arg(path);
-        qssFiles.append(QLatin1String(file.readAll()));
-        file.close();
-    }
-    if (qssFiles.isEmpty()) {
-        return;
-    }
-    qApp->setStyleSheet(qssFiles.join("\n"));
+    return UniqueHandle(handle, &::CloseHandle);
 }
+#endif
+
+} // namespace
 
 void loadFonts(const QString &fontPath)
 {
     const QDir dir(fontPath);
-    if (!dir.exists()) {
+    if (!dir.exists())
         return;
-    }
-    // QFontDatabase::removeAllApplicationFonts();
-    const auto fonts = dir.entryInfoList(QStringList("*.ttf"), QDir::Files);
-    for (const auto &fileInfo : std::as_const(fonts)) {
-        int fontId = QFontDatabase::addApplicationFont(fileInfo.absoluteFilePath());
+
+    const QFileInfoList fonts = dir.entryInfoList({u"*.ttf"_s}, QDir::Files);
+    for (const QFileInfo &info : fonts) {
+        const int fontId = QFontDatabase::addApplicationFont(info.absoluteFilePath());
         if (fontId == -1) {
-            qWarning() << QString("Loading Fonts file: %1 Failed.").arg(fileInfo.fileName());
-        } else {
-            qInfo() << QString("Loading Fonts file: %1.").arg(fileInfo.fileName())
-                    << QFontDatabase::applicationFontFamilies(fontId);
+            qWarning().noquote() << u"Loading Fonts file: %1 Failed."_s.arg(info.fileName());
+            continue;
         }
+        qInfo().noquote() << u"Loading Fonts file: %1."_s.arg(info.fileName())
+                          << QFontDatabase::applicationFontFamilies(fontId);
     }
 }
 
 void windowCenter(QWidget *child, QWidget *parent)
 {
-    const QSize size = parent->size() - child->size();
-    int x = qMax(0, size.width() / 2);
-    int y = qMax(0, size.height() / 2);
-    child->move(x, y);
+    const QRect target
+        = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, child->size(), parent->rect());
+    child->move(target.topLeft());
 }
 
 void windowCenter(QWidget *window)
 {
-    const QRect rect = qApp->primaryScreen()->availableGeometry();
-    int x = (rect.width() - window->width()) / 2 + rect.x();
-    int y = (rect.height() - window->height()) / 2 + rect.y();
-    x = qMax(0, x);
-    y = qMax(0, y);
-    window->move(x, y);
+    const QScreen *screen = window->screen() ? window->screen() : QGuiApplication::primaryScreen();
+    if (!screen)
+        return;
+
+    const QRect target = QStyle::alignedRect(
+        Qt::LeftToRight, Qt::AlignCenter, window->size(), screen->availableGeometry());
+    window->move(target.topLeft());
 }
 
 auto compilerString() -> QString
 {
 #if defined(__apple_build_version__) // Apple clang has other version numbers
-    QString isAppleString = QLatin1String(" (Apple)");
-    return QLatin1String("Clang ") + QString::number(__clang_major__) + QLatin1Char('.')
-           + QString::number(__clang_minor__) + isAppleString;
+    return u"Clang %1.%2 (Apple)"_s.arg(__clang_major__).arg(__clang_minor__);
 #elif defined(Q_CC_GNU)
-    return QLatin1String("GCC ") + QLatin1String(__VERSION__);
+    return u"GCC %1"_s.arg(QLatin1StringView(__VERSION__));
 #elif defined(Q_CC_MSVC)
-    return QString("MSVC Version: %1").arg(_MSC_VER);
+    return u"MSVC Version: %1"_s.arg(_MSC_VER);
+#else
+    return u"<unknown compiler>"_s;
 #endif
-    return QLatin1String("<unknown compiler>");
+}
+
+static QWidget *(*s_dialogParentGetter)() = nullptr;
+
+void setDialogParentGetter(QWidget *(*getter)())
+{
+    s_dialogParentGetter = getter;
+}
+
+auto dialogParent() -> QWidget *
+{
+    return s_dialogParentGetter ? s_dialogParentGetter() : nullptr;
 }
 
 void restoreAndActivate(QWidget *window)
 {
-    if (window->isMinimized()) {
+    if (window->isMinimized())
         window->setWindowState(window->windowState() & ~Qt::WindowMinimized);
-    }
 
     window->show();
     window->raise();
@@ -102,53 +108,41 @@ void restoreAndActivate(QWidget *window)
 
 void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
 {
+    // 用半透明黑而不是纯灰：深色主题下灰边会亮得像一圈描边。
     auto *effect = new QGraphicsDropShadowEffect(widget);
-    effect->setOffset(0, 0);
-    effect->setColor(Qt::gray);
-    effect->setBlurRadius(blurRadius);
+    effect->setOffset(0, 2);
+    effect->setColor(QColor(0, 0, 0, 70));
+    effect->setBlurRadius(blurRadius * 2);
     widget->setGraphicsEffect(effect);
 }
 
 auto systemInfo() -> QString
 {
-    auto text = QString("%1 (%2) on %3 (%4) with CPU Cores: %5")
-                    .arg(QSysInfo::prettyProductName(),
-                         QSysInfo::kernelVersion(),
-                         QSysInfo::currentCpuArchitecture(),
-                         QSysInfo::machineHostName(),
-                         QString::number(QThread::idealThreadCount()))
-                + "\n"
-                + QString("Build with: Qt %1 (%2, %3)")
-                      .arg(qVersion(), compilerString(), QSysInfo::buildAbi());
-    return text;
+    const QStringList lines{
+        u"%1 (%2) on %3 (%4) with CPU Cores: %5"_s.arg(
+            QSysInfo::prettyProductName(),
+            QSysInfo::kernelVersion(),
+            QSysInfo::currentCpuArchitecture(),
+            QSysInfo::machineHostName(),
+            QString::number(QThread::idealThreadCount())),
+        u"Build with: Qt %1 (%2, %3)"_s
+            .arg(QString::fromLatin1(qVersion()), compilerString(), QSysInfo::buildAbi()),
+    };
+    return lines.join(u"\n"_s);
 }
 
-void setHighDpiEnvironmentVariable()
+void setupHighDpi()
 {
 #ifdef Q_OS_WIN
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (!qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") // legacy in 5.6, but still functional
-        && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
-        && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
-        && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    }
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
-
-#endif // Q_OS_WIN
 }
 
 void reboot()
 {
-    QProcess::startDetached(QApplication::applicationFilePath(),
-                            QApplication::arguments(),
-                            QDir::currentPath());
+    QProcess::startDetached(
+        QApplication::applicationFilePath(), QApplication::arguments(), QDir::currentPath());
     QApplication::exit();
 }
 
@@ -159,13 +153,13 @@ auto createDirectoryRecursively(const QString &path) -> bool
 
 auto removeDirectory(const QString &path) -> bool
 {
-    if (path.isEmpty()) { // QDir("") points to the working directory! We never want to remove that one.
+    // QDir("") 指向工作目录，永远不要删它。
+    if (path.isEmpty())
         return false;
-    }
 
     QDir dir(path);
     if (!dir.exists()) {
-        qWarning() << Tr::tr("Directory does not exist: %1").arg(path);
+        qWarning().noquote() << Tr::tr("Directory does not exist: %1").arg(path);
         return false;
     }
     return dir.removeRecursively();
@@ -173,112 +167,84 @@ auto removeDirectory(const QString &path) -> bool
 
 auto removeFile(const QString &path) -> bool
 {
-    if (path.isEmpty()) {
+    if (path.isEmpty())
+        return false;
+    if (!QFile::exists(path)) {
+        qWarning().noquote() << Tr::tr("File does not exist: %1").arg(path);
         return false;
     }
-    QFile file(path);
-    if (!file.exists()) {
-        qWarning() << Tr::tr("File does not exist: %1").arg(path);
-        return false;
-    }
-    return file.remove();
+    return QFile::remove(path);
 }
 
-QString formatBytes(qint64 bytes, int precision)
+auto formatBytes(qint64 bytes, int precision) -> QString
 {
-    const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
-    const int unit = 1024;
-    int index = 0;
-    double size = bytes;
-    while (size >= unit) {
+    static constexpr std::array<const char *, 9>
+        units{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    constexpr double unit = 1024.0;
+
+    double size = static_cast<double>(bytes);
+    std::size_t index = 0;
+    while (size >= unit && index + 1 < units.size()) {
         size /= unit;
-        index++;
+        ++index;
     }
-    Q_ASSERT_X(index < list.size(), "formatBytes", "size is too large");
-    return QString("%1 %2").arg(QString::number(size, 'f', precision)).arg(list.at(index));
+
+    return u"%1 %2"_s.arg(QString::number(size, 'f', precision), QLatin1StringView(units[index]));
 }
 
-auto jsonFromFile(const QString &filePath) -> QJsonObject
+auto jsonFromFile(const QString &filePath) -> Result<QJsonObject>
 {
     QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << Tr::tr("Cannot open the file: %1").arg(filePath);
-        return {};
-    }
-    const QByteArray buf(file.readAll());
-    file.close();
-    return jsonFromBytes(buf);
+    if (!file.open(QIODevice::ReadOnly))
+        return ResultError(Tr::tr("Cannot open the file: %1").arg(filePath));
+    return jsonFromBytes(file.readAll());
 }
 
-auto jsonFromBytes(const QByteArray &bytes) -> QJsonObject
+auto jsonFromBytes(const QByteArray &bytes) -> Result<QJsonObject>
 {
-    QJsonParseError jsonParseError;
-    auto jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
-    if (QJsonParseError::NoError != jsonParseError.error) {
-        qWarning() << Tr::tr("%1\nOffset: %2")
-                          .arg(jsonParseError.errorString(), jsonParseError.offset);
-        return {};
+    QJsonParseError parseError;
+    const QJsonDocument document = QJsonDocument::fromJson(bytes, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        return ResultError(
+            Tr::tr("%1\nOffset: %2")
+                .arg(parseError.errorString(), QString::number(parseError.offset)));
     }
-    return jsonDocument.object();
+    return document.object();
 }
 
-auto configLocation() -> QString
-{
-    static QString path;
-    if (path.isEmpty()) {
-        path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-        if (path.isEmpty()) {
-            path = QDir::homePath();
-        }
-    }
-    //qInfo() << path;
-    createDirectoryRecursively(path);
-    return path;
-}
-
-auto getPidFromProcessName(const QString &processName) -> qint64
+auto getPidFromProcessName(QStringView processName) -> qint64
 {
 #if defined(Q_OS_WIN)
-    auto *hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE) {
+    const UniqueHandle snapshot = makeHandle(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
+    if (!snapshot || snapshot.get() == INVALID_HANDLE_VALUE)
         return -1;
-    }
-    PROCESSENTRY32 pe;
-    pe.dwSize = sizeof(PROCESSENTRY32);
-    if (!Process32First(hSnapshot, &pe)) {
-        CloseHandle(hSnapshot);
+
+    PROCESSENTRY32 entry{};
+    entry.dwSize = sizeof(PROCESSENTRY32);
+    if (!Process32First(snapshot.get(), &entry))
         return -1;
-    }
+
     do {
-        if (QString::fromWCharArray(pe.szExeFile) == processName) {
-            CloseHandle(hSnapshot);
-            return pe.th32ProcessID;
-        }
-    } while (Process32Next(hSnapshot, &pe));
-    CloseHandle(hSnapshot);
+        if (QString::fromWCharArray(entry.szExeFile) == processName)
+            return entry.th32ProcessID;
+    } while (Process32Next(snapshot.get(), &entry));
     return -1;
 #else
-    // 创建一个QProcess对象
     QProcess process;
-    // 启动ps -A命令
-    process.start("ps -A");
-    // 等待命令执行完成
-    process.waitForFinished();
-    // 读取命令输出并转换为QString
-    auto output = QString::fromLocal8Bit(process.readAllStandardOutput());
-    // 按行分割输出
-    auto lines = output.split("\n");
-    // 创建一个正则表达式对象，匹配以空格+processName结尾的字符串
-    QRegularExpression re("\\s" + processName + "$");
-    // 遍历输出的每一行
-    for (const auto &line : lines) {
-        // 如果匹配成功
-        if (re.match(line).hasMatch()) {
-            // 按空格分割字符串
-            auto parts = line.split(" ");
-            // 返回pid
-            return parts.at(0).toLongLong();
-        }
+    process.start(u"ps"_s, {u"-A"_s});
+    if (!process.waitForFinished())
+        return -1;
+
+    const QString output = QString::fromLocal8Bit(process.readAllStandardOutput());
+    const QRegularExpression pattern(
+        u"\\s%1$"_s.arg(QRegularExpression::escape(processName.toString())));
+    const QStringList lines = output.split(u'\n');
+    for (const QString &line : lines) {
+        if (!pattern.match(line).hasMatch())
+            continue;
+        const QStringList parts = line.split(u' ', Qt::SkipEmptyParts);
+        if (!parts.isEmpty())
+            return parts.constFirst().toLongLong();
     }
     return -1;
 #endif
@@ -286,29 +252,26 @@ auto getPidFromProcessName(const QString &processName) -> qint64
 
 auto killProcess(qint64 pid) -> bool
 {
-    qWarning() << "kill process: " << pid;
+    qWarning().noquote() << "kill process:" << pid;
 #if defined(Q_OS_WIN)
-    auto *hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-    if (hProcess == nullptr) {
+    const UniqueHandle process = makeHandle(OpenProcess(PROCESS_TERMINATE, FALSE, DWORD(pid)));
+    if (!process)
         return false;
-    }
-    auto result = TerminateProcess(hProcess, 0);
-    CloseHandle(hProcess);
-    return result != 0;
+    return TerminateProcess(process.get(), 0) != 0;
 #else
-    return QProcess::execute("kill", QStringList() << QString::number(pid)) == 0;
+    return QProcess::execute(u"kill"_s, {QString::number(pid)}) == 0;
 #endif
 }
 
 void setMacComboBoxStyle(QWidget *parent)
 {
-#ifndef Q_OS_MACOS
-    return;
+#ifdef Q_OS_MACOS
+    const auto comboBoxes = parent->findChildren<QComboBox *>();
+    for (QComboBox *comboBox : comboBoxes)
+        comboBox->setStyle(QStyleFactory::create(u"Fusion"_s));
+#else
+    Q_UNUSED(parent)
 #endif
-    auto comboBoxs = parent->findChildren<QComboBox *>();
-    for (auto *const comboBox : comboBoxs) {
-        comboBox->setStyle(QStyleFactory::create("Fusion"));
-    }
 }
 
 void quitApplication()
@@ -316,110 +279,72 @@ void quitApplication()
     QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
-auto crashPath() -> QString
-{
-    const auto path = configLocation() + "/crash";
-    createDirectoryRecursively(path);
-    return path;
-}
-
-auto logPath() -> QString
-{
-    const auto path = configLocation() + "/log";
-    createDirectoryRecursively(path);
-    return path;
-}
-
-auto configPath() -> QString
-{
-    const auto path = configLocation() + "/config";
-    createDirectoryRecursively(path);
-    return path;
-}
-
-auto configFilePath() -> QString
-{
-    return (configPath() + "/config.ini");
-}
-
-auto cachePath() -> QString
-{
-    const auto path = configLocation() + "/cache";
-    createDirectoryRecursively(path);
-    return path;
-}
-
 auto calculateDirectoryStats(const QString &path) -> DirectoryStats
 {
     DirectoryStats stats;
-    if (path.isEmpty() || !QDir(path).exists()) {
+    if (path.isEmpty() || !QDir(path).exists())
         return stats;
-    }
 
-    QDirIterator it(path,
-                    QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot,
-                    QDirIterator::Subdirectories);
+    QDirIterator
+        it(path,
+           QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot,
+           QDirIterator::Subdirectories);
     while (it.hasNext()) {
         const QFileInfo info(it.next());
         if (info.isDir()) {
-            stats.folders++;
+            ++stats.folders;
         } else {
+            ++stats.files;
             stats.size += info.size();
-            stats.files++;
         }
     }
     return stats;
 }
 
-QByteArray generateRandomData(int size)
+namespace {
+
+auto generateRandomData(int size) -> QByteArray
 {
-    const int numWords = (size + sizeof(quint32) - 1) / sizeof(quint32);
-    QVector<quint32> buffer(numWords);
-    QRandomGenerator::global()->fillRange(buffer.data(), numWords);
-    QByteArray data(reinterpret_cast<const char *>(buffer.constData()), numWords * sizeof(quint32));
+    const auto numWords = static_cast<std::size_t>((size + sizeof(quint32) - 1) / sizeof(quint32));
+    std::vector<quint32> buffer(numWords);
+    QRandomGenerator::global()->fillRange(buffer.data(), qsizetype(numWords));
+
+    QByteArray
+        data(reinterpret_cast<const char *>(buffer.data()), qsizetype(numWords * sizeof(quint32)));
     data.resize(size);
     return data;
 }
 
-double cpuBenchOnce(int durationMs, QCryptographicHash::Algorithm algorithm, const QByteArray &data)
+auto hashBenchOnce(int durationMs, QCryptographicHash::Algorithm algorithm, const QByteArray &data)
+    -> double
 {
     QElapsedTimer timer;
     timer.start();
 
-    int totalBytes = 0;
-    volatile char dummy = 0; // 防止编译器优化
-
+    qint64 totalBytes = 0;
     while (timer.elapsed() < durationMs) {
-        QByteArray hashResult = QCryptographicHash::hash(data, algorithm);
-        if (!hashResult.isEmpty()) {
-            dummy = hashResult.constData()[0]; // 强制使用哈希结果
-        }
+        // 只算输入字节：摘要输出不属于被处理的吞吐量。
+        QCryptographicHash::hash(data, algorithm);
         totalBytes += data.size();
     }
 
-    double elapsedSeconds = timer.elapsed() / 1000.0;
-    if (elapsedSeconds <= 0.0) {
-        return 0.0;
-    }
-    return (totalBytes / elapsedSeconds) / (1024 * 1024); // MB/s
+    const double elapsedSeconds = timer.elapsed() / 1000.0;
+    return elapsedSeconds <= 0.0 ? 0.0 : (double(totalBytes) / elapsedSeconds) / (1024.0 * 1024.0);
 }
 
-double cpuBench(int iterations,
-                int durationMs,
-                int dataSize,
-                QCryptographicHash::Algorithm algorithm)
+} // namespace
+
+auto hashBench(int iterations, int durationMs, int dataSize, QCryptographicHash::Algorithm algorithm)
+    -> double
 {
-    double maxSpeed = 0.0;
+    // 数据只生成一次：每轮重新填随机数会把内存分配算进耗时，短测试尤其明显。
+    const QByteArray data = generateRandomData(dataSize);
 
-    for (int i = 0; i < iterations; ++i) {
-        auto data = generateRandomData(dataSize);
-        double speed = cpuBenchOnce(durationMs, algorithm, data);
-        if (speed > maxSpeed) {
-            maxSpeed = speed;
-        }
-    }
-
-    return maxSpeed;
+    // 多轮取最好值：第一轮包含升频，取平均反而把噪声算进来。
+    double best = 0.0;
+    for (int i = 0; i < iterations; ++i)
+        best = (std::ranges::max) (best, hashBenchOnce(durationMs, algorithm, data));
+    return best;
 }
 
 void setPixmapCacheLimit()
@@ -427,7 +352,7 @@ void setPixmapCacheLimit()
     const int originalLimit = QPixmapCache::cacheLimit();
     const qreal dpr = qApp->devicePixelRatio();
     const qreal multiplier = std::clamp(dpr * dpr, 1.0, 4.0);
-    QPixmapCache::setCacheLimit(originalLimit * multiplier);
+    QPixmapCache::setCacheLimit(qRound(originalLimit * multiplier));
 }
 
 } // namespace Utils

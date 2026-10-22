@@ -1,18 +1,22 @@
 #!/usr/bin/make -f
 
-# See debhelper(7) (uncomment to enable).
-#export DH_VERBOSE = 1
-
-BUILD_TYPE ?= RelWithDebInfo
-
-APP_NAME = Qt-App
-INSTALL_ROOT = /opt/$(APP_NAME)
-PACKET_DIR = packaging/packet
+BUILD_TYPE   ?= RelWithDebInfo
+APP_NAME      = Qt-App
+BINARY_PKG    = qt-app
+PACKET_DIR    = packaging/packet/deb
+VERSION_FILE  = packaging/version.txt
 
 %:
 	dh $@ --buildsystem=cmake+ninja
 
+# 版本号唯一来源 packaging/version.txt；debian/changelog 必须与之一致
 override_dh_auto_configure:
+	@ver_file=$$(cat $(VERSION_FILE)); \
+	ver_changelog=$$(dpkg-parsechangelog -SVersion | sed 's/-[^-]*$$//'); \
+	if [ "$$ver_file" != "$$ver_changelog" ]; then \
+		echo "版本不一致：$(VERSION_FILE)=$$ver_file，debian/changelog=$$ver_changelog" >&2; \
+		exit 1; \
+	fi
 	dh_auto_configure -- \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
@@ -20,18 +24,23 @@ override_dh_auto_configure:
 override_dh_auto_test:
 	@echo "no test target, skipped"
 
-# package.sh 生成 linuxdeployqt 的输出到 PACKET_DIR，
-# 这里把它拷进 debian/tmp，再交给 dh_install 按 .install 文件布局。
+# 组装完整可运行目录（主程序 + Qt 库 + 字体），不产出 AppImage / 7z
 override_dh_auto_install:
 	debian/package.sh
-	install -d debian/tmp$(INSTALL_ROOT)
-	cp -a $(PACKET_DIR)/. debian/tmp$(INSTALL_ROOT)/
-	dh_install
+
+# 直接按 deb 布局落盘，省掉 debian/tmp 的二次拷贝
+override_dh_install:
+	install -d debian/$(BINARY_PKG)/opt
+	cp -a $(PACKET_DIR) debian/$(BINARY_PKG)/opt/$(APP_NAME)
+	install -Dm644 packaging/ubuntu/usr/share/applications/$(APP_NAME).desktop \
+		debian/$(BINARY_PKG)/usr/share/applications/$(APP_NAME).desktop
+	install -Dm644 src/resource/icon/app.png \
+		debian/$(BINARY_PKG)/usr/share/icons/hicolor/1024x1024/apps/qt-app.png
 
 # linuxdeployqt 输出的可执行文件经过 patchelf 修改，
-# strip 可能破坏其 rpath 或 interpreter，因此跳过。
-# 如果确认不会出问题，可以删掉此 override 让 dh_strip 正常工作，
-# 以获得更小的二进制体积。
+# strip 可能破坏其 rpath 或 interpreter，因此跳过；dwz 同理。
 override_dh_strip:
 	@echo "Skipping dh_strip: binary pre-processed by linuxdeployqt"
-	
+
+override_dh_dwz:
+	@echo "Skipping dh_dwz"

@@ -1,0 +1,11 @@
+#pragma once
+
+#include <QtCore/qglobal.h>
+
+#if defined(CRASHPADCLIENT_LIBRARY)
+#define CRASHPADCLIENT_EXPORT Q_DECL_EXPORT
+#elif defined(CRASHPADCLIENT_STATIC_LIBRARY)
+#define CRASHPADCLIENT_EXPORT
+#else
+#define CRASHPADCLIENT_EXPORT Q_DECL_IMPORT
+#endif

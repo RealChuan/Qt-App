@@ -1,5 +1,5 @@
-qt-app (0.2.1-1) UNRELEASED; urgency=medium
+qt-app (0.2.1-1) unstable; urgency=medium
 
-  * Initial release. (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release.
 
- -- RealChuan <sun1070753498@163.com>  Mon, 22 Sep 2026 11:29:36 +0800
+ -- RealChuan <sun1070753498@163.com>  Tue, 20 Oct 2026 10:00:00 +0800

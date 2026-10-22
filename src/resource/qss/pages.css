@@ -1,0 +1,263 @@
+/******************************************************************************
+*   pages.css —— 页面与对话框：卡片、设置项、插件列表、命令面板、消息框
+*
+*   base.css 负责“控件长什么样”，这里只负责“页面怎么排版”。
+*****************************************************************************/
+
+/******************************************************************************
+*   通用卡片
+*****************************************************************************/
+
+#Card {
+    background: @@surface@@;
+    border: 1px solid @@border@@;
+    border-radius: 12px;
+}
+
+#CardTitle {
+    color: @@text@@;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#CardHint {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+#FieldLabel {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+/* 空状态 / 占位文案 */
+#Placeholder {
+    color: @@textSubtle@@;
+    font-size: 14px;
+}
+
+/* 卡片内部的分隔线 */
+#Divider {
+    background: @@border@@;
+    border: none;
+    min-height: 1px;
+    max-height: 1px;
+}
+
+#ErrorLabel {
+    color: @@danger@@;
+}
+
+/******************************************************************************
+*   英雄区（Hello、番茄钟共用的居中大数字）
+*****************************************************************************/
+
+#HeroNumber {
+    color: @@text@@;
+    font-size: 46px;
+    font-weight: 600;
+}
+
+#HeroTitle {
+    color: @@text@@;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+#HeroHint {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+#HeroMeta {
+    color: @@textSubtle@@;
+    font-size: 13px;
+}
+
+/******************************************************************************
+*   关于页
+*****************************************************************************/
+
+#AboutName {
+    color: @@text@@;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+#AboutVersion {
+    color: @@textSubtle@@;
+    font-size: 13px;
+}
+
+#AboutInfo {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+#AboutCopyright {
+    color: @@textSubtle@@;
+    font-size: 13px;
+}
+
+/******************************************************************************
+*   插件页
+*****************************************************************************/
+
+#FilterEdit {
+    min-height: 30px;
+    max-height: 30px;
+}
+
+/* 列表放进卡片里，边框由卡片负责 */
+#PluginTree {
+    background: transparent;
+    border: none;
+}
+
+/* 多列视图：选中态是连续的一整条，不加圆角（见 base.css 的说明） */
+#PluginTree::item {
+    min-height: 30px;
+    padding-left: 4px;
+}
+
+#DetailsTitle {
+    color: @@text@@;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#DetailsLabel {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+#DetailsValue {
+    color: @@text@@;
+    font-size: 13px;
+}
+
+#DetailsSectionTitle {
+    color: @@textSubtle@@;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/******************************************************************************
+*   命令面板
+*****************************************************************************/
+
+#CommandPalette {
+    background: transparent;
+}
+
+#PaletteCard {
+    background: @@surface@@;
+    border: 1px solid @@borderStrong@@;
+    border-radius: 14px;
+}
+
+#PaletteSearch {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    min-height: 44px;
+    padding: 0 6px;
+    font-size: 15px;
+}
+
+#PaletteSearch:focus {
+    border: none;
+}
+
+#PaletteSeparator {
+    background: @@border@@;
+    border: none;
+    min-height: 1px;
+    max-height: 1px;
+}
+
+#PaletteList {
+    background: transparent;
+    border: none;
+}
+
+#PaletteList::item {
+    min-height: 32px;
+    border-radius: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#PaletteHint {
+    color: @@textSubtle@@;
+    font-size: 12px;
+    padding: 8px 12px;
+}
+
+/******************************************************************************
+*   消息框
+*****************************************************************************/
+
+#MessageLabel {
+    color: @@text@@;
+    font-size: 14px;
+}
+
+#MessageIcon {
+    background: transparent;
+    border: none;
+}
+
+/******************************************************************************
+*   崩溃提示（启动期）
+*****************************************************************************/
+
+#CrashTitle {
+    color: @@text@@;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+#CrashMeta {
+    color: @@textMuted@@;
+    font-size: 12px;
+}
+
+#CrashBody {
+    color: @@textMuted@@;
+    font-size: 13px;
+}
+
+#CrashPath {
+    color: @@textSubtle@@;
+    font-size: 12px;
+}
+
+/******************************************************************************
+*   取色器浮窗
+*****************************************************************************/
+
+#ColorPickerWindow {
+    background: @@surface@@;
+    border: 1px solid @@borderStrong@@;
+    border-radius: 10px;
+}
+
+#ColorPickerValue {
+    color: @@text@@;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#ColorPickerHint {
+    color: @@textSubtle@@;
+    font-size: 12px;
+}
+
+/******************************************************************************
+*   番茄钟
+*****************************************************************************/
+
+#PomodoroMinutes {
+    min-width: 92px;
+}

@@ -10,11 +10,12 @@ namespace AsyncLog {
 class ConsoleSink::ConsoleSinkPrivate
 {
 public:
-    ConsoleSinkPrivate(ConsoleSink *q,
-                       std::size_t truncate,
-                       std::FILE *outStream,
-                       std::FILE *errStream)
-        : q_ptr(q), truncateBytes(truncate), out(outStream), err(errStream)
+    ConsoleSinkPrivate(
+        ConsoleSink *q, std::size_t truncate, std::FILE *outStream, std::FILE *errStream)
+        : q_ptr(q)
+        , truncateBytes(truncate)
+        , out(outStream)
+        , err(errStream)
     {}
 
     ConsoleSink *q_ptr;

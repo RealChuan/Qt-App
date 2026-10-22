@@ -1,9 +1,23 @@
 #include "mainwidget.hpp"
-#include "pushbutton.hpp"
+
+#include "buttoniconstatemanager.hpp"
 
 #include <utils/utils.hpp>
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QCoreApplication>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QMouseEvent>
+#include <QPushButton>
+#include <QSizeGrip>
+#include <QToolButton>
+
+#ifdef Q_OS_MACOS
+#include <QMenu>
+#include <QMenuBar>
+#include <QWidgetAction>
+#endif
 
 namespace Widgets {
 
@@ -13,174 +27,159 @@ class MainWidget::MainWidgetPrivate
 public:
     explicit MainWidgetPrivate(MainWidget *q)
         : q_ptr(q)
+        , titleButton(new QPushButton(qApp->windowIcon(), qAppName(), q))
+        , centralContainer(new QWidget(q))
+        , titleWidget(new QWidget(q))
+        , titleBarContainer(new QWidget(q))
+        , sizeGrip(new QSizeGrip(q))
     {
-        titleButton = new QPushButton(qApp->windowIcon(), qAppName(), q_ptr);
+        titleButton->setObjectName(QStringLiteral("AppButton"));
+        titleButton->setCursor(Qt::PointingHandCursor);
+        titleButton->setFlat(true);
 
-        centralWidget = new QWidget(q_ptr);
-        centralWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-        centralWidget->setObjectName("CentralWidget");
-        titleBar = new QWidget(q_ptr);
-        sizeGrip = new QSizeGrip(q_ptr);
+        centralContainer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        centralContainer->setObjectName("CentralWidget");
 
-        initTitleButton();
-        creatTitleWidget();
+        initTitleButtons();
+        buildTitleWidget();
+        setupUi();
     }
 
-    void setupUI()
+    // 标题栏以外的内容区，setCentralWidget() 往这里的布局里换控件。
+    void setupUi()
     {
-        auto *widget = new QWidget(q_ptr);
-        Utils::addGraphicsDropShadowEffect(widget, shadowPadding);
+        centralLayout = new QHBoxLayout(centralContainer);
+        centralLayout->setContentsMargins({});
+        centralLayout->setSpacing(0);
 
-        auto *layout = new QGridLayout(widget);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(0);
-        layout->addWidget(titleWidget, 0, 0);
-        layout->addWidget(centralWidget, 1, 0);
-        layout->addWidget(sizeGrip, 1, 0, Qt::AlignRight | Qt::AlignBottom);
+        auto *frame = new QWidget(q_ptr);
+        Utils::addGraphicsDropShadowEffect(frame, shadowPadding);
 
-        this->layout = new QHBoxLayout(q_ptr);
-        this->layout->setSpacing(0);
-        this->layout->setContentsMargins(shadowPadding, shadowPadding, shadowPadding, shadowPadding);
-        this->layout->addWidget(widget);
+        auto *grid = new QGridLayout(frame);
+        grid->setContentsMargins(0, 0, 0, 0);
+        grid->setSpacing(0);
+        grid->addWidget(titleWidget, 0, 0);
+        grid->addWidget(centralContainer, 1, 0);
+        grid->addWidget(sizeGrip, 1, 0, Qt::AlignRight | Qt::AlignBottom);
+
+        outerLayout = new QHBoxLayout(q_ptr);
+        outerLayout->setSpacing(0);
+        outerLayout->setContentsMargins(shadowPadding, shadowPadding, shadowPadding, shadowPadding);
+        outerLayout->addWidget(frame);
     }
 
-    MainWidget *q_ptr;
+    MainWidget *q_ptr = nullptr;
 
-    QPushButton *titleButton;
-    PushButton *minButton;
-    PushButton *maxButton;
-    PushButton *restoreButton;
-    PushButton *closeButton;
-    QWidget *titleWidget;
-    QWidget *centralWidget;
-    QWidget *titleBar;
-    QHBoxLayout *layout;
-    QSizeGrip *sizeGrip;
+    QPushButton *titleButton = nullptr;
+    QToolButton *minButton = nullptr;
+    QToolButton *maxButton = nullptr;
+    QToolButton *restoreButton = nullptr;
+    QToolButton *closeButton = nullptr;
+    QWidget *titleWidget = nullptr;
+    QWidget *centralContainer = nullptr;
+    QWidget *titleBarContainer = nullptr;
+    QHBoxLayout *centralLayout = nullptr;
+    QHBoxLayout *titleBarLayout = nullptr;
+    QHBoxLayout *outerLayout = nullptr;
+    QSizeGrip *sizeGrip = nullptr;
 
     int shadowPadding = 10;
+    bool maxRestoreVisible = true;
 
-    //记录鼠标位置
-    QPoint lastPoint;
+    // 拖动时鼠标相对窗口左上角的偏移；未按下左键时为空。
+    QPoint dragOffset;
 
 private:
-    void creatTitleWidget()
+    void buildTitleWidget()
     {
-        titleWidget = new QWidget(q_ptr);
         titleWidget->setObjectName("TitleWidget");
         auto *layout = new QHBoxLayout(titleWidget);
-        layout->setContentsMargins(6, 6, 6, 6);
-        layout->setSpacing(10);
+        layout->setContentsMargins(12, 6, 10, 6);
+        layout->setSpacing(8);
         layout->addWidget(titleButton);
         layout->addStretch();
-        layout->addWidget(titleBar);
+        layout->addWidget(titleBarContainer);
         layout->addWidget(minButton);
         layout->addWidget(maxButton);
         layout->addWidget(restoreButton);
         layout->addWidget(closeButton);
     }
 
-    void initTitleButton()
+    void initTitleButtons()
     {
-        minButton = createPushButton({":/icon/icon/mactitle/titlebutton-minimize.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-alt@2.png"},
-                                     {":/icon/icon/mactitle/titlebutton-minimize-hover.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-hover@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-hover-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-hover-alt@2.png"},
-                                     {":/icon/icon/mactitle/titlebutton-minimize-active.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-active@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-active-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-minimize-active-alt@2.png"},
-                                     q_ptr);
-
-        maxButton = createPushButton({":/icon/icon/mactitle/titlebutton-maximize.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize@2.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-alt@2.png"},
-                                     {":/icon/icon/mactitle/titlebutton-maximize-hover.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-hover@2.png",
-                                      /*":/icon/icon/mactitle/titlebutton-maximize-hover-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-hover-alt@2.png"*/},
-                                     {":/icon/icon/mactitle/titlebutton-maximize-active.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-active@2.png",
-                                      /*":/icon/icon/mactitle/titlebutton-maximize-active-alt.png",
-                                      ":/icon/icon/mactitle/titlebutton-maximize-active-alt@2.png"*/},
-                                     q_ptr);
-        restoreButton = createPushButton({":/icon/icon/mactitle/titlebutton-restore.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore@2.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-alt.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-alt@2.png"},
-                                         {":/icon/icon/mactitle/titlebutton-restore-hover.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-hover@2.png",
-                                          /*":/icon/icon/mactitle/titlebutton-restore-hover-alt.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-hover-alt@2.png"*/},
-                                         {":/icon/icon/mactitle/titlebutton-restore-active.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-active@2.png",
-                                          /*":/icon/icon/mactitle/titlebutton-restore-active-alt.png",
-                                          ":/icon/icon/mactitle/titlebutton-restore-active-alt@2.png"*/},
-                                         q_ptr);
-        closeButton = createPushButton({":/icon/icon/mactitle/titlebutton-close.png",
-                                        ":/icon/icon/mactitle/titlebutton-close@2.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-alt.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-alt@2.png"},
-                                       {":/icon/icon/mactitle/titlebutton-close-hover.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-hover@2.png",
-                                        /*":/icon/icon/mactitle/titlebutton-close-hover-alt.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-hover-alt@2.png"*/},
-                                       {":/icon/icon/mactitle/titlebutton-close-active.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-active@2.png",
-                                        /*":/icon/icon/mactitle/titlebutton-close-active-alt.png",
-                                        ":/icon/icon/mactitle/titlebutton-close-active-alt@2.png"*/},
-                                       q_ptr);
-
+        constexpr auto kWindowButton = "WindowButton";
         const QSize size{18, 18};
-        titleButton->setIconSize(size);
-        minButton->setFixedSize(size);
-        maxButton->setFixedSize(size);
-        restoreButton->setFixedSize(size);
-        closeButton->setFixedSize(size);
 
-        const auto *const objectName("TitleButton");
-        titleButton->setObjectName(objectName);
-        minButton->setObjectName(objectName);
-        maxButton->setObjectName(objectName);
-        restoreButton->setObjectName(objectName);
-        closeButton->setObjectName(objectName);
+        // 统一前缀
+        const QString basePath = QStringLiteral(":/icon/icon/mactitle/titlebutton-");
+
+        // 后缀表：普通态总是 4 个（含 alt）；hover / pressed 分「带 alt」与「不带 alt」两种
+        const QStringList kNormalSuffix{".png", "@2.png", "-alt.png", "-alt@2.png"};
+        const QStringList kHoverSuffix{"-hover.png", "-hover@2.png"};
+        const QStringList
+            kHoverSuffixAlt{"-hover.png", "-hover@2.png", "-hover-alt.png", "-hover-alt@2.png"};
+        const QStringList kPressedSuffix{"-active.png", "-active@2.png"};
+        const QStringList kPressedSuffixAlt{
+            "-active.png", "-active@2.png", "-active-alt.png", "-active-alt@2.png"};
+
+        auto buildPaths = [&](const QString &name, const QStringList &suffixes) {
+            QStringList paths;
+            paths.reserve(suffixes.size());
+            for (const QString &suffix : suffixes)
+                paths.append(basePath + name + suffix);
+            return paths;
+        };
+
+        // 通用工厂：new QToolButton + 公共属性 + 状态管理器一次完成
+        auto createTitleButton = [&](const QString &name,
+                                     const QStringList &hoverSuffixes,
+                                     const QStringList &pressedSuffixes) {
+            auto *button = new QToolButton(q_ptr);
+            button->setObjectName(kWindowButton);
+            button->setFixedSize(size);
+            button->setIconSize(size);
+            button->setFocusPolicy(Qt::NoFocus);
+
+            // manager 以 button 为 QObject parent，随 button 生命周期自动释放
+            auto *manager = new ButtonIconStateManager(button);
+            manager->setNormalIcon(buildPaths(name, kNormalSuffix));
+            manager->setHoverIcon(buildPaths(name, hoverSuffixes));
+            manager->setPressedIcon(buildPaths(name, pressedSuffixes));
+
+            return button;
+        };
+
+        minButton
+            = createTitleButton(QStringLiteral("minimize"), kHoverSuffixAlt, kPressedSuffixAlt);
+        maxButton = createTitleButton(QStringLiteral("maximize"), kHoverSuffix, kPressedSuffix);
+        restoreButton = createTitleButton(QStringLiteral("restore"), kHoverSuffix, kPressedSuffix);
+        closeButton = createTitleButton(QStringLiteral("close"), kHoverSuffix, kPressedSuffix);
+
+        // titleButton 是独立的菜单按钮，只共用 iconSize
+        titleButton->setIconSize(size);
     }
 };
 
 MainWidget::MainWidget(QWidget *parent)
-    : QWidget{parent}
-    , d_ptr(new MainWidgetPrivate(this))
+    : QWidget(parent)
+    , d_ptr(std::make_unique<MainWidgetPrivate>(this))
 {
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint
-                   | Qt::MSWindowsFixedSizeDialogHint);
+    setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    d_ptr->setupUI();
-    buildConnnect();
+
+    retranslateUi();
+    setupConnections();
+    updateMaxRestoreButtons();
+
     resize(1000, 618);
-    setTr();
-    QMetaObject::invokeMethod(this, &MainWidget::onShowNormal, Qt::QueuedConnection);
 }
 
 MainWidget::~MainWidget() = default;
 
 void MainWidget::setRestoreMaxButtonVisible(bool visible)
 {
-    if (!visible) {
-        d_ptr->maxButton->setVisible(visible);
-        d_ptr->restoreButton->setVisible(visible);
-        return;
-    }
-    if (isMaximized()) {
-        d_ptr->restoreButton->setVisible(true);
-        d_ptr->maxButton->setVisible(false);
-    } else {
-        d_ptr->restoreButton->setVisible(false);
-        d_ptr->maxButton->setVisible(true);
-    }
+    d_ptr->maxRestoreVisible = visible;
+    updateMaxRestoreButtons();
 }
 
 void MainWidget::setMinButtonVisible(bool visible)
@@ -190,23 +189,39 @@ void MainWidget::setMinButtonVisible(bool visible)
 
 void MainWidget::setCentralWidget(QWidget *centralWidget)
 {
-    auto *layout = new QHBoxLayout(d_ptr->centralWidget);
-    layout->setContentsMargins({});
-    layout->setSpacing(0);
-    layout->addWidget(centralWidget);
+    if (!centralWidget)
+        return;
+
+    // 换内容时把上一个摘出布局并隐藏：直接删会让调用方手里的指针悬空。
+    if (auto *item = d_ptr->centralLayout->takeAt(0)) {
+        if (QWidget *previous = item->widget())
+            previous->hide();
+        delete item;
+    }
+    d_ptr->centralLayout->addWidget(centralWidget);
 }
 
 void MainWidget::setTitleBar(QWidget *titleBar)
 {
-    auto *layout = new QHBoxLayout(d_ptr->titleBar);
-    layout->setContentsMargins({});
-    layout->setSpacing(0);
-    layout->addWidget(titleBar);
+    if (!titleBar)
+        return;
+
+    if (!d_ptr->titleBarLayout) {
+        d_ptr->titleBarLayout = new QHBoxLayout(d_ptr->titleBarContainer);
+        d_ptr->titleBarLayout->setContentsMargins({});
+        d_ptr->titleBarLayout->setSpacing(0);
+    } else if (auto *item = d_ptr->titleBarLayout->takeAt(0)) {
+        if (QWidget *previous = item->widget())
+            previous->hide();
+        delete item;
+    }
+
+    d_ptr->titleBarLayout->addWidget(titleBar);
 }
 
-auto MainWidget::shadowPadding() -> int
+auto MainWidget::shadowPadding() const -> int
 {
-    return d_ptr->layout->contentsMargins().left();
+    return d_ptr->shadowPadding;
 }
 
 void MainWidget::setSizeGripVisible(bool visible)
@@ -214,46 +229,50 @@ void MainWidget::setSizeGripVisible(bool visible)
     d_ptr->sizeGrip->setVisible(visible);
 }
 
+auto MainWidget::isInTitleBar(const QPoint &pos) const -> bool
+{
+    // 用 mapTo 而不是手工加阴影边距：布局调整后仍然正确。
+    const QRect rect(d_ptr->titleWidget->mapTo(this, QPoint(0, 0)), d_ptr->titleWidget->size());
+    return rect.contains(pos);
+}
+
+void MainWidget::updateMaxRestoreButtons()
+{
+    const bool maximized = isMaximized() || isFullScreen();
+    d_ptr->maxButton->setVisible(d_ptr->maxRestoreVisible && !maximized);
+    d_ptr->restoreButton->setVisible(d_ptr->maxRestoreVisible && maximized);
+}
+
 void MainWidget::onShowMaximized()
 {
-    d_ptr->layout->setContentsMargins({});
+    d_ptr->outerLayout->setContentsMargins({});
     showMaximized();
-    d_ptr->maxButton->hide();
-    d_ptr->restoreButton->show();
+    updateMaxRestoreButtons();
 }
 
 void MainWidget::onShowNormal()
 {
-    d_ptr->layout->setContentsMargins(d_ptr->shadowPadding,
-                                      d_ptr->shadowPadding,
-                                      d_ptr->shadowPadding,
-                                      d_ptr->shadowPadding);
+    const int padding = d_ptr->shadowPadding;
+    d_ptr->outerLayout->setContentsMargins(padding, padding, padding, padding);
     showNormal();
-    if (d_ptr->maxButton->isVisible() || d_ptr->restoreButton->isVisible()) {
-        d_ptr->maxButton->show();
-        d_ptr->restoreButton->hide();
-    }
+    updateMaxRestoreButtons();
 }
 
 void MainWidget::mousePressEvent(QMouseEvent *event)
 {
-    const auto margins(d_ptr->layout->contentsMargins());
-    auto rect(d_ptr->titleWidget->rect());
-    rect = QRect(rect.x() + margins.left(), rect.y() + margins.top(), rect.width(), rect.height());
-    if (rect.contains(event->pos())) {
-        d_ptr->lastPoint = event->globalPosition().toPoint() - pos();
-    }
+    if (event->button() == Qt::LeftButton && isInTitleBar(event->position().toPoint()))
+        d_ptr->dragOffset = event->globalPosition().toPoint() - pos();
 
     QWidget::mousePressEvent(event);
 }
 
 void MainWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    if (isMaximized() || isFullScreen()) {
-    } else if (!d_ptr->lastPoint.isNull()) {
+    if ((event->buttons() & Qt::LeftButton) && !isMaximized() && !isFullScreen()
+        && !d_ptr->dragOffset.isNull()) {
         // ubuntu24.04 not working
         // 在main函数开始设置qputenv("QT_QPA_PLATFORM", "xcb");可以解决
-        move(event->globalPosition().toPoint() - d_ptr->lastPoint);
+        move(event->globalPosition().toPoint() - d_ptr->dragOffset);
     }
 
     QWidget::mouseMoveEvent(event);
@@ -261,18 +280,18 @@ void MainWidget::mouseMoveEvent(QMouseEvent *event)
 
 void MainWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    d_ptr->lastPoint = QPoint();
+    d_ptr->dragOffset = QPoint();
 
     QWidget::mouseReleaseEvent(event);
 }
 
 void MainWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if (!d_ptr->titleWidget->rect().contains(event->pos())) {
-    } else if (d_ptr->maxButton->isVisible()) {
-        d_ptr->maxButton->click();
-    } else if (d_ptr->restoreButton->isVisible()) {
-        d_ptr->restoreButton->click();
+    if (isInTitleBar(event->position().toPoint())) {
+        if (d_ptr->maxButton->isVisible())
+            d_ptr->maxButton->click();
+        else if (d_ptr->restoreButton->isVisible())
+            d_ptr->restoreButton->click();
     }
 
     QWidget::mouseDoubleClickEvent(event);
@@ -281,25 +300,23 @@ void MainWidget::mouseDoubleClickEvent(QMouseEvent *event)
 void MainWidget::changeEvent(QEvent *event)
 {
     QWidget::changeEvent(event);
-    switch (event->type()) {
-    case QEvent::LanguageChange: setTr(); break;
-    default: break;
-    }
+    if (event->type() == QEvent::LanguageChange)
+        retranslateUi();
 }
 
-void MainWidget::buildConnnect()
+void MainWidget::setupConnections()
 {
     connect(d_ptr->minButton, &QToolButton::clicked, this, &MainWidget::showMinimized);
     connect(d_ptr->maxButton, &QToolButton::clicked, this, &MainWidget::onShowMaximized);
     connect(d_ptr->restoreButton, &QToolButton::clicked, this, &MainWidget::onShowNormal);
-    connect(d_ptr->closeButton, &QToolButton::clicked, this, &MainWidget::aboutToclose);
-    connect(this, &MainWidget::aboutToclose, this, &MainWidget::close, Qt::QueuedConnection);
+    connect(d_ptr->closeButton, &QToolButton::clicked, this, &MainWidget::aboutToClose);
+    connect(this, &MainWidget::aboutToClose, this, &MainWidget::close, Qt::QueuedConnection);
     connect(this, &MainWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setText);
     connect(this, &MainWidget::windowTitleChanged, d_ptr->titleButton, &QPushButton::setToolTip);
     connect(this, &MainWidget::windowIconChanged, d_ptr->titleButton, &QPushButton::setIcon);
 }
 
-void MainWidget::setTr()
+void MainWidget::retranslateUi()
 {
     d_ptr->minButton->setToolTip(tr("Minimize"));
     d_ptr->maxButton->setToolTip(tr("Maximize"));

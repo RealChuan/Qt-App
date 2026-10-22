@@ -2,7 +2,7 @@
 set -e
 
 APP_NAME="Qt-App"
-DESK="/usr/share/applications/${APP_NAME}.desktop""
+DESK="/usr/share/applications/${APP_NAME}.desktop"
 
 # 遍历真实用户家目录，删除用户级文件。
 # dpkg 以 root 执行，~ 和 ${HOME} 都指向 /root，不能直接用。
@@ -11,30 +11,22 @@ remove_user_files() {
     [ -d "$home" ] || return 0
 
     # 用户级 desktop 快捷方式（若用户手动复制过）
-    rm -f "$home/.local/share/applications/${APP_NAME}.desktop""
+    rm -f "$home/.local/share/applications/${APP_NAME}.desktop"
 
-    # 用户配置
+    # 用户数据：与程序内 configPath()/logPath()/cachePath() 的落点一一对应
+    #   配置           ~/.config/Youth/<app>
+    #   状态（日志/崩溃）~/.local/state/Youth/<app>
+    #   缓存           ~/.cache/Youth/<app>
     rm -rf "$home/.config/Youth/${APP_NAME}"
-    rm -rf "$home/.config/Youth/CrashReport"
+    rm -rf "$home/.local/state/Youth/${APP_NAME}"
+    rm -rf "$home/.cache/Youth/${APP_NAME}"
 
     return 0
 }
 
 case "$1" in
-    remove)
-        # 卸载：删系统文件，保留用户配置。
-        rm -f "${DESK}"
-
-        if command -v update-mime-database >/dev/null 2>&1; then
-            update-mime-database /usr/share/mime || true
-        fi
-        if command -v update-desktop-database >/dev/null 2>&1; then
-            update-desktop-database -q /usr/share/applications || true
-        fi
-        ;;
-
-    purge)
-        # 彻底清除：系统文件 + 用户文件。
+    remove | purge)
+        # 默认清除系统文件与用户配置，与 Windows / macOS 的卸载行为保持一致。
         rm -f "${DESK}"
 
         for home in /home/* /root; do
