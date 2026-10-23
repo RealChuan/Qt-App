@@ -81,10 +81,10 @@ defineReplace(detect_architecture) {
 isEmpty(TARGET_ARCH) {
     TARGET_ARCH = $$detect_architecture()
 } else {
-    QT_APP_TARGET_ARCH_NORMALIZED = $$normalize_arch_name($$TARGET_ARCH)
-    !isEmpty(QT_APP_TARGET_ARCH_NORMALIZED): TARGET_ARCH = $$QT_APP_TARGET_ARCH_NORMALIZED
+    TARGET_ARCH_NORMALIZED = $$normalize_arch_name($$TARGET_ARCH)
+    !isEmpty(TARGET_ARCH_NORMALIZED): TARGET_ARCH = $$TARGET_ARCH_NORMALIZED
 }
 
 isEmpty(ARCH_DIR): ARCH_DIR = $$arch_dir_name($$TARGET_ARCH)
 
-!isEmpty(QT_APP_VERBOSE): message("Target architecture: $$TARGET_ARCH (dir: $$ARCH_DIR)")
+!isEmpty(VERBOSE): message("Target architecture: $$TARGET_ARCH (dir: $$ARCH_DIR)")

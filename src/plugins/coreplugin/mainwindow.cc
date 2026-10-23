@@ -39,7 +39,12 @@ constexpr auto kPageIdProperty = "pageId";
 constexpr auto kPageOrderProperty = "pageOrder";
 constexpr auto kCommandShortcut = "Ctrl+K";
 constexpr auto kMaskObjectName = "BlockMask";
-constexpr auto kMaskStyle = "background: rgba(0, 0, 0, 128);";
+auto maskStyleSheet() -> const QString &
+{
+    static const QString style = QStringLiteral("#%1 { background: rgba(0, 0, 0, 128); }")
+                                     .arg(QLatin1String(kMaskObjectName));
+    return style;
+}
 constexpr int kWindowWidth = 1060;
 constexpr int kWindowHeight = 680;
 constexpr int kSectionCount = 3;
@@ -136,8 +141,8 @@ public:
     QLabel *status = nullptr;
     QTimer *statusTimer = nullptr;
     QPushButton *commandButton = nullptr;
-    QToolButton *themeButton = nullptr;
-    QToolButton *languageButton = nullptr;
+    QAction *themeAction = nullptr;
+    QAction *languageAction = nullptr;
     QPointer<CommandPalette> palette;
     QSystemTrayIcon *tray = nullptr;
     QMenu *trayMenu = nullptr;
@@ -199,28 +204,13 @@ void MainWindow::MainWindowPrivate::buildChrome()
     footer->setObjectName("SidebarFooter");
     sidebarLayout->addWidget(footer);
 
-    // 标题栏右侧放两个高频开关：主题与语言。真正的设置项在“外观”页里，
+    // 两个高频开关：主题与语言。真正的设置项在“外观”页里，
     // 这里只是让最常用的两个动作不必先进设置页。
-    auto *titleActions = new QWidget(q_ptr);
-    auto *titleActionsLayout = new QHBoxLayout(titleActions);
-    titleActionsLayout->setContentsMargins(0, 0, 8, 0);
-    titleActionsLayout->setSpacing(4);
-
-    themeButton = new QToolButton(titleActions);
-    themeButton->setObjectName("TitleBarButton");
-    themeButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    themeButton->setCursor(Qt::PointingHandCursor);
-    themeButton->setFocusPolicy(Qt::NoFocus);
-
-    languageButton = new QToolButton(titleActions);
-    languageButton->setObjectName("TitleBarButton");
-    languageButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    languageButton->setCursor(Qt::PointingHandCursor);
-    languageButton->setFocusPolicy(Qt::NoFocus);
-
-    titleActionsLayout->addWidget(themeButton);
-    titleActionsLayout->addWidget(languageButton);
-    q_ptr->setTitleBar(titleActions);
+    // 交给 addChromeAction()：Windows/Ubuntu 渲染成标题栏按钮，macOS 进系统菜单。
+    themeAction = new QAction(q_ptr);
+    languageAction = new QAction(q_ptr);
+    q_ptr->addChromeAction(themeAction);
+    q_ptr->addChromeAction(languageAction);
 
     status = new QLabel(q_ptr);
     status->setObjectName("StatusLabel");
@@ -270,7 +260,7 @@ void MainWindow::MainWindowPrivate::buildOverlay()
 {
     maskWidget = new QWidget(q_ptr);
     maskWidget->setObjectName(kMaskObjectName);
-    maskWidget->setStyleSheet(QLatin1String(kMaskStyle));
+    maskWidget->setStyleSheet(maskStyleSheet());
     maskWidget->hide();
 
     blurEffect = new QGraphicsBlurEffect(q_ptr);
@@ -390,7 +380,7 @@ void MainWindow::MainWindowPrivate::addPage(Shell::IPage *page)
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : Widgets::MainWidget(parent)
+    : Widgets::AppWindow(parent)
     , d_ptr(std::make_unique<MainWindowPrivate>(this))
 {
     d_ptr->buildChrome();
@@ -416,12 +406,12 @@ void MainWindow::retranslateUi()
     d_ptr->footer->setText(
         QStringLiteral("%1 %2").arg(QLatin1String(Utils::appName), QLatin1String(Utils::version)));
 
-    updateThemeButton();
-    d_ptr->languageButton->setText(
+    updateThemeAction();
+    d_ptr->languageAction->setText(
         Utils::languageManager()->currentLanguage() == Utils::LanguageManager::Chinese
             ? QStringLiteral("zh-CN")
             : QStringLiteral("EN"));
-    d_ptr->languageButton->setToolTip(tr("Switch language"));
+    d_ptr->languageAction->setToolTip(tr("Switch language"));
 
     d_ptr->retranslatePages();
 
@@ -432,26 +422,26 @@ void MainWindow::retranslateUi()
     }
 }
 
-void MainWindow::updateThemeButton()
+void MainWindow::updateThemeAction()
 {
     using Utils::ThemeMode;
 
     const ThemeMode mode = Utils::theme()->mode();
     switch (mode) {
     case ThemeMode::Light:
-        d_ptr->themeButton->setText(tr("Light"));
+        d_ptr->themeAction->setText(tr("Light"));
         break;
     case ThemeMode::Dark:
-        d_ptr->themeButton->setText(tr("Dark"));
+        d_ptr->themeAction->setText(tr("Dark"));
         break;
     case ThemeMode::System:
-        d_ptr->themeButton->setText(tr("Auto"));
+        d_ptr->themeAction->setText(tr("Auto"));
         break;
     }
-    d_ptr->themeButton->setToolTip(tr("Color scheme, click to switch"));
+    d_ptr->themeAction->setToolTip(tr("Color scheme, click to switch"));
 }
 
-void MainWindow::onThemeButtonClicked()
+void MainWindow::onThemeActionTriggered()
 {
     using Utils::ThemeMode;
 
@@ -474,10 +464,10 @@ void MainWindow::onThemeButtonClicked()
 void MainWindow::onThemeApplied(bool dark)
 {
     Q_UNUSED(dark)
-    updateThemeButton();
+    updateThemeAction();
 }
 
-void MainWindow::onLanguageButtonClicked()
+void MainWindow::onLanguageActionTriggered()
 {
     const auto current = Utils::languageManager()->currentLanguage();
     Utils::languageManager()->loadLanguage(
@@ -490,8 +480,8 @@ void MainWindow::setupConnections()
     connect(d_ptr->commandButton, &QPushButton::clicked, this, &MainWindow::openCommandPalette);
     connect(d_ptr->group, &QButtonGroup::idClicked, this, &MainWindow::onSidebarButtonClicked);
     connect(d_ptr->statusTimer, &QTimer::timeout, d_ptr->status, &QLabel::hide);
-    connect(d_ptr->themeButton, &QToolButton::clicked, this, &MainWindow::onThemeButtonClicked);
-    connect(d_ptr->languageButton, &QToolButton::clicked, this, &MainWindow::onLanguageButtonClicked);
+    connect(d_ptr->themeAction, &QAction::triggered, this, &MainWindow::onThemeActionTriggered);
+    connect(d_ptr->languageAction, &QAction::triggered, this, &MainWindow::onLanguageActionTriggered);
     connect(Utils::theme(), &Utils::Theme::themeApplied, this, &MainWindow::onThemeApplied);
 
     if (d_ptr->tray) {
@@ -614,12 +604,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
             break;
         }
     }
-    return Widgets::MainWidget::eventFilter(watched, event);
+    return Widgets::AppWindow::eventFilter(watched, event);
 }
 
 void MainWindow::changeEvent(QEvent *event)
 {
-    Widgets::MainWidget::changeEvent(event);
+    Widgets::AppWindow::changeEvent(event);
     if (event->type() == QEvent::LanguageChange)
         retranslateUi();
 }
@@ -631,7 +621,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         d_ptr->quitting = true;
         Utils::quitApplication();
     }
-    Widgets::MainWidget::closeEvent(event);
+    Widgets::AppWindow::closeEvent(event);
 }
 
 } // namespace Core

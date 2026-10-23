@@ -8,17 +8,17 @@
 # =============================================================================
 
 CONFIG(debug, debug|release) {
-    QT_APP_BUILD_TYPE_DIR = debug
+    BUILD_TYPE_DIR = debug
 } else {
-    QT_APP_BUILD_TYPE_DIR = release
+    BUILD_TYPE_DIR = release
 }
 
-QT_APP_OUTPUT_ROOT = $$PWD/../binaries/qmake/$$ARCH_DIR
+OUTPUT_ROOT = $$PWD/../binaries/qmake/$$ARCH_DIR
 
-RUNTIME_OUTPUT_DIRECTORY = $$QT_APP_OUTPUT_ROOT/bin/$$QT_APP_BUILD_TYPE_DIR
-LIBRARY_OUTPUT_DIRECTORY = $$QT_APP_OUTPUT_ROOT/lib/$$QT_APP_BUILD_TYPE_DIR
+RUNTIME_OUTPUT_DIRECTORY = $$OUTPUT_ROOT/bin/$$BUILD_TYPE_DIR
+LIBRARY_OUTPUT_DIRECTORY = $$OUTPUT_ROOT/lib/$$BUILD_TYPE_DIR
 
-!isEmpty(QT_APP_VERBOSE): message("RUNTIME_OUTPUT_DIRECTORY: $$RUNTIME_OUTPUT_DIRECTORY")
+!isEmpty(VERBOSE): message("RUNTIME_OUTPUT_DIRECTORY: $$RUNTIME_OUTPUT_DIRECTORY")
 
 INCLUDEPATH += $$PWD/../src
 DEPENDPATH  += $$PWD/../src

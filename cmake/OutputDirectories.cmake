@@ -47,8 +47,9 @@ if(CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_OUTPUT_ROOT}/lib")
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_OUTPUT_ROOT}/bin")
 
-  # 插件等子目录按配置追加 /<CONFIG>（由 _set_target_output_dir 负责拼接）
+  # 插件等子目录按配置追加 /<CONFIG>（由 set_target_output_dir 负责拼接）
   set(PROJECT_RUNTIME_BASE "${PROJECT_OUTPUT_ROOT}/bin")
+  set(PROJECT_CONFIG_DIR "")
 else()
   # 单配置生成器（Makefile, Ninja）
   if(CMAKE_BUILD_TYPE STREQUAL "None" OR NOT CMAKE_BUILD_TYPE)
@@ -56,6 +57,8 @@ else()
   else()
     string(TOLOWER "${CMAKE_BUILD_TYPE}" _output_suffix)
   endif()
+
+  set(PROJECT_CONFIG_DIR "${_output_suffix}")
 
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
       "${PROJECT_OUTPUT_ROOT}/lib/${_output_suffix}")
@@ -75,3 +78,26 @@ message(
   STATUS
     "Output: ${PROJECT_OUTPUT_ROOT}/{bin,lib}/ (ARCH_DIR=${ARCH_DIR}, TARGET_ARCH=${TARGET_ARCH})"
 )
+
+# cmake-format: off
+# 覆盖单个目标的运行时/库输出目录
+#   - 多配置生成器下 RUNTIME_OUTPUT_DIRECTORY_<CONFIG> 在建目标时就已由全局值
+#     初始化，只改不带后缀的属性不生效，必须逐个配置覆盖
+#   - 这里显式拼接 /<CONFIG>，不用 $<CONFIG>：保证各配置目录与可执行文件
+#     所在目录大小写一致（VS 生成器的 Debug 目录大小写与配置名并不一致）
+# cmake-format: on
+function(set_target_output_dir target_name output_base)
+  set_target_properties(
+    ${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${output_base}"
+                              LIBRARY_OUTPUT_DIRECTORY "${output_base}")
+
+  if(CMAKE_CONFIGURATION_TYPES)
+    foreach(_cfg IN LISTS CMAKE_CONFIGURATION_TYPES)
+      string(TOUPPER "${_cfg}" _CFG)
+      set_target_properties(
+        ${target_name}
+        PROPERTIES "RUNTIME_OUTPUT_DIRECTORY_${_CFG}" "${output_base}/${_cfg}"
+                   "LIBRARY_OUTPUT_DIRECTORY_${_CFG}" "${output_base}/${_cfg}")
+    endforeach()
+  endif()
+endfunction()

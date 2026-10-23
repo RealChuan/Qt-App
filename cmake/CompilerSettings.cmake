@@ -3,7 +3,7 @@
 #
 # * C++23 标准与编译器版本门槛
 # * 跨平台编译选项
-# * 可选：ccache/sccache、unity build、PCH、Release 调试信息
+# * 可选：ccache/sccache、unity build、Release 调试信息
 # =============================================================================
 
 set(CMAKE_CXX_STANDARD 23)
@@ -53,14 +53,14 @@ endif()
 # -----------------------------------------------------------------------------
 # 编译器启动器：ccache / sccache（命中缓存时省掉整次编译） 必须在任何 add_library/add_executable 之前设置。
 # -----------------------------------------------------------------------------
-if(QT_APP_USE_CCACHE AND NOT CMAKE_CXX_COMPILER_LAUNCHER)
+if(USE_CCACHE AND NOT CMAKE_CXX_COMPILER_LAUNCHER)
   # Windows 上 sccache 对 cl.exe 支持更完整，优先探测
-  find_program(QT_APP_COMPILER_LAUNCHER NAMES sccache ccache)
-  if(QT_APP_COMPILER_LAUNCHER)
+  find_program(COMPILER_LAUNCHER NAMES sccache ccache)
+  if(COMPILER_LAUNCHER)
     set(CMAKE_CXX_COMPILER_LAUNCHER
-        "${QT_APP_COMPILER_LAUNCHER}"
+        "${COMPILER_LAUNCHER}"
         CACHE STRING "Compiler launcher (ccache/sccache)")
-    message(STATUS "Compiler launcher: ${QT_APP_COMPILER_LAUNCHER}")
+    message(STATUS "Compiler launcher: ${COMPILER_LAUNCHER}")
   endif()
 endif()
 
@@ -68,7 +68,7 @@ endif()
 # unity build：把多个 .cpp 合成一个翻译单元，显著减少重复的预处理与模板实例化
 #   注意：与 SKIP_AUTOMOC 的源文件混用时可能影响 moc 归属，故默认关闭。
 # cmake-format: on
-if(QT_APP_UNITY_BUILD)
+if(USE_UNITY_BUILD)
   set(CMAKE_UNITY_BUILD ON)
   set(CMAKE_UNITY_BUILD_BATCH_SIZE 16)
   message(STATUS "Unity build: ON (batch size ${CMAKE_UNITY_BUILD_BATCH_SIZE})")
@@ -107,9 +107,9 @@ endif()
 
 # cmake-format: off
 # Release 携带调试信息（与 qmake/CompilerSettings.pri 行为保持一致）
-#   排查线上崩溃栈时需要它；不需要时 -DQT_APP_RELEASE_WITH_DEBUGINFO=OFF
+#   排查线上崩溃栈时需要它；不需要时 -DRELEASE_WITH_DEBUGINFO=OFF
 # cmake-format: on
-if(QT_APP_RELEASE_WITH_DEBUGINFO)
+if(RELEASE_WITH_DEBUGINFO)
   if(MSVC)
     add_compile_options($<$<CONFIG:Release>:/Zi>)
     add_link_options($<$<CONFIG:Release>:/DEBUG>)
@@ -117,21 +117,3 @@ if(QT_APP_RELEASE_WITH_DEBUGINFO)
     add_compile_options($<$<CONFIG:Release>:-g>)
   endif()
 endif()
-
-# -----------------------------------------------------------------------------
-# 可选预编译头：与 qmake 侧共用 src/precompiled.h
-# -----------------------------------------------------------------------------
-set(QT_APP_PCH_HEADER
-    "${PROJECT_SOURCE_DIR}/src/precompiled.h"
-    CACHE FILEPATH "预编译头文件路径")
-
-function(apply_pch target_name)
-  if(NOT QT_APP_PCH)
-    return()
-  endif()
-  if(NOT EXISTS "${QT_APP_PCH_HEADER}")
-    message(WARNING "QT_APP_PCH 已开启，但预编译头不存在: ${QT_APP_PCH_HEADER}")
-    return()
-  endif()
-  target_precompile_headers(${target_name} PRIVATE "${QT_APP_PCH_HEADER}")
-endfunction()

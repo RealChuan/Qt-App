@@ -17,12 +17,12 @@ public:
 };
 
 Dialog::Dialog(QWidget *parent)
-    : MainWidget(parent)
+    : AppWindow(parent)
     , d_ptr(std::make_unique<DialogPrivate>())
 {
     setMinButtonVisible(false);
     setRestoreMaxButtonVisible(false);
-    setSizeGripVisible(false);
+    setResizable(false);
     setupConnections();
     resize(600, 370);
 }

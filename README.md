@@ -114,7 +114,7 @@ QTest + CTest，默认不构建；产物在 `binaries/cmake/<arch>/tests/<config
 .\scripts\windows\dev.ps1 -Action test
 ```
 
-其他平台：configure 时加 `-DQT_APP_BUILD_TESTS=ON`，再 `ctest --test-dir build --output-on-failure`。测试目录结构见 [tests/](tests)。
+其他平台：configure 时加 `-DBUILD_TESTS=ON`，再 `ctest --test-dir build --output-on-failure`。测试目录结构见 [tests/](tests)。
 
 ### qmake（备用链，只做编译验证）
 
@@ -127,15 +127,14 @@ qmake ../. && make -j
 
 ### 常用 CMake 选项
 
-| 选项                                  | 默认         | 说明                                    |
-| ------------------------------------- | ------------ | --------------------------------------- |
-| `-DQT_ROOT=<dir>`                     | 平台默认路径 | Qt 前缀                                 |
-| `-DVCPKG_TARGET_TRIPLET=<t>`          | 按平台       | 与 qmake 侧保持一致                     |
-| `-DUSE_VCPKG=OFF`                     | `ON`         | 关闭后需自行提供 `crashpad` 的 CMake 包 |
-| `-DQT_APP_UNITY_BUILD=ON`             | `OFF`        | unity/jumbo 构建                        |
-| `-DQT_APP_PCH=ON`                     | `OFF`        | 预编译 Qt 头文件                        |
-| `-DQT_APP_RELEASE_WITH_DEBUGINFO=OFF` | `ON`         | Release 是否带调试信息                  |
-| `-DQT_APP_BUILD_TESTS=ON`             | `OFF`        | 构建 QTest 单元测试（不安装、不打包）   |
+| 选项                           | 默认         | 说明                                    |
+| ------------------------------ | ------------ | --------------------------------------- |
+| `-DQT_ROOT=<dir>`              | 平台默认路径 | Qt 前缀                                 |
+| `-DVCPKG_TARGET_TRIPLET=<t>`   | 按平台       | 与 qmake 侧保持一致                     |
+| `-DUSE_VCPKG=OFF`              | `ON`         | 关闭后需自行提供 `crashpad` 的 CMake 包 |
+| `-DUSE_UNITY_BUILD=ON`         | `OFF`        | unity/jumbo 构建                        |
+| `-DRELEASE_WITH_DEBUGINFO=OFF` | `ON`         | Release 是否带调试信息                  |
+| `-DBUILD_TESTS=ON`             | `OFF`        | 构建 QTest 单元测试（不安装、不打包）   |
 
 ## 打包与发布
 

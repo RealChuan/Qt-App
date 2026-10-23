@@ -1,7 +1,7 @@
 name: Unit Tests
 
 # 只跑测试：不 install、不打包，与 cmake.yml 的三平台打包链完全解耦。
-# 测试本身是 opt-in 的（QT_APP_BUILD_TESTS 默认 OFF），所以这里显式打开。
+# 测试本身是 opt-in 的（BUILD_TESTS 默认 OFF），所以这里显式打开。
 on:
   push:
     paths-ignore:
@@ -72,7 +72,7 @@ jobs:
 
           cmake -S . -B $env:BUILD_DIR -G $env:CMAKE_GENERATOR `
             "-DCMAKE_BUILD_TYPE=$env:BUILD_TYPE" `
-            -DQT_APP_BUILD_TESTS=ON `
+            -DBUILD_TESTS=ON `
             -DQT_ROOT="$env:QT_ROOT_X64"
           if ($LASTEXITCODE) { throw "cmake configure failed" }
 
@@ -87,6 +87,6 @@ jobs:
         run: |
           cmake -S . -B "$BUILD_DIR" -G "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
-            -DQT_APP_BUILD_TESTS=ON
+            -DBUILD_TESTS=ON
           cmake --build "$BUILD_DIR"
           ctest --test-dir "$BUILD_DIR" --output-on-failure

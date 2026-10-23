@@ -39,8 +39,6 @@ target_link_libraries(
           Qt::Widgets
           crashpad::crashpad)
 
-apply_pch(${PROJECT_NAME})
-
 qt_finalize_executable(${PROJECT_NAME})
 
 # 用 $<TARGET_FILE_DIR> 而不是手工拼路径：单/多配置、.app bundle 都自动正确

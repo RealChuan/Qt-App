@@ -4,7 +4,7 @@
 # 统一负责三件事，避免每个子目录各写一份（两套构建系统由此保持同构）：
 #   1. 平台决定库类型：Windows 动态库 / 其他平台静态库
 #   2. 导出宏：<TARGET>_LIBRARY（动态）或 <TARGET>_STATIC_LIBRARY（静态）
-#   3. 版本属性、PCH、安装规则
+#   3. 版本属性、安装规则
 #
 # Windows 下 DLL 由 CMAKE_RUNTIME_OUTPUT_DIRECTORY 直接落到 bin/<config>/，
 # 导入库落到 lib/<config>/，不需要 POST_BUILD 复制。
@@ -36,29 +36,6 @@ function(_set_library_export_macro target_name base shared)
 endfunction()
 
 # cmake-format: off
-# 覆盖目标的运行时/库输出目录
-#   - 多配置生成器下 RUNTIME_OUTPUT_DIRECTORY_<CONFIG> 在建目标时就已由全局值
-#     初始化，只改不带后缀的属性不生效，必须逐个配置覆盖
-#   - 这里显式拼接 /<CONFIG>，不用 $<CONFIG>：保证各配置目录与可执行文件
-#     所在目录大小写一致（VS 生成器的 Debug 目录大小写与配置名并不一致）
-# cmake-format: on
-function(_set_target_output_dir target_name output_base)
-  set_target_properties(
-    ${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${output_base}"
-                              LIBRARY_OUTPUT_DIRECTORY "${output_base}")
-
-  if(CMAKE_CONFIGURATION_TYPES)
-    foreach(_cfg IN LISTS CMAKE_CONFIGURATION_TYPES)
-      string(TOUPPER "${_cfg}" _CFG)
-      set_target_properties(
-        ${target_name}
-        PROPERTIES "RUNTIME_OUTPUT_DIRECTORY_${_CFG}" "${output_base}/${_cfg}"
-                   "LIBRARY_OUTPUT_DIRECTORY_${_CFG}" "${output_base}/${_cfg}")
-    endforeach()
-  endif()
-endfunction()
-
-# cmake-format: off
 # 创建平台自适应库（Windows 动态库，其他平台静态库）
 #   用法：add_platform_library(<name> [EXPORT_MACRO <base>] <sources>...)
 # cmake-format: on
@@ -84,7 +61,6 @@ function(add_platform_library target_name)
   endif()
 
   set_target_version(${target_name})
-  apply_pch(${target_name})
 endfunction()
 
 # -----------------------------------------------------------------------------
@@ -103,7 +79,6 @@ function(add_shared_library target_name)
   _set_library_export_macro(${target_name} "${_macro_base}" TRUE)
 
   set_target_version(${target_name})
-  apply_pch(${target_name})
 
   install(
     TARGETS ${target_name}
@@ -199,10 +174,8 @@ function(add_app_plugin target_name)
     endif()
   endif()
 
-  apply_pch(${target_name})
-
   # 直接输出到插件目录，省掉每次构建的 POST_BUILD 复制
-  _set_target_output_dir(${target_name} "${_plugin_dest_dir}")
+  set_target_output_dir(${target_name} "${_plugin_dest_dir}")
 
   install(
     TARGETS ${target_name}

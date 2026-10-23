@@ -1,7 +1,5 @@
 #pragma once
 
-#include "utils_global.hpp"
-
 #include <chrono>
 #include <cstddef>
 #include <memory>
@@ -56,9 +54,7 @@ struct LogRecord
 //   2. 等待超时进入降级期：WARNING 及以上无条件收下（错误级绝不丢），
 //      DEBUG/INFO 丢弃并计数，生产者不再阻塞
 //   3. 后端恢复后通过 takeDropped() 取走计数并补报
-// 导出：否则 Windows 下 DLL 外的单元测试链接不到这些符号（头文件是公开的，
-// 但实际只有 utils 内部与测试在用）。
-class UTILS_EXPORT LogBuffer
+class LogBuffer
 {
 public:
     explicit LogBuffer(

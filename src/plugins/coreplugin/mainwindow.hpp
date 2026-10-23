@@ -2,7 +2,7 @@
 
 #include <shell/host.hpp>
 #include <shell/page.hpp>
-#include <widgets/mainwidget.hpp>
+#include <widgets/appwindow.hpp>
 
 #include <QSystemTrayIcon>
 
@@ -17,7 +17,7 @@ class CommandPalette;
 
 // 外壳主窗口：负责侧边栏导航、页面堆栈、命令面板与托盘。
 // 页面来自 Shell::Registry，本类不直接认识任何具体插件。
-class MainWindow final : public Widgets::MainWidget, public Shell::Host
+class MainWindow final : public Widgets::AppWindow, public Shell::Host
 {
     Q_OBJECT
 
@@ -40,8 +40,8 @@ private slots:
     void onSidebarButtonClicked(int index);
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
     void onPagesChanged();
-    void onThemeButtonClicked();
-    void onLanguageButtonClicked();
+    void onThemeActionTriggered();
+    void onLanguageActionTriggered();
     void onThemeApplied(bool dark);
 
 protected:
@@ -51,7 +51,7 @@ protected:
 
 private:
     void retranslateUi();
-    void updateThemeButton();
+    void updateThemeAction();
     void setupConnections();
 
     class MainWindowPrivate;

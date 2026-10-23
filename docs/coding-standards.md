@@ -61,8 +61,6 @@ connect(d_ptr->statusTimer, &QTimer::timeout, d_ptr->status, &QLabel::hide);
 
 ## 7. 单元测试
 
-- 测试放顶层 `tests/`，不进 `src/`；目标统一 `tst_` 前缀（「目标名 = 目录名」的唯一例外）。
-- 只走 CMake：`-DQT_APP_BUILD_TESTS=ON`（默认 OFF），本机 `dev.ps1 -Action test`；
-  第 6 条的 `.pro` 同步对测试不适用。
-- 产物落 `binaries/cmake/<arch>/tests/<config>/`，禁止落 `bin/`、禁止 `install()`：
-  debian 链按 `bin/*/` 整目录取包，其余链按 `cmake --install` 取包。
+- 放顶层 `tests/`，目标 `tst_` 前缀（「目标名 = 目录名」的唯一例外）；只走 CMake（`-DBUILD_TESTS=ON`，默认 OFF），不写 `.pro`。
+- 产物落 `binaries/cmake/<arch>/tests/<config>/`，禁止落 `bin/`、禁止 `install()`（debian 链按 `bin/*/` 取包）。
+- 机制分两层：`cmake/UnitTests.cmake`（纯 C++）+ `cmake/QtUnitTests.cmake`（Qt 入口）；接线用 `add_app_test()`，新目录一行即可。

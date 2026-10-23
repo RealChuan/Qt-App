@@ -100,7 +100,7 @@ if ($Action -eq 'configure') {
 if ($Action -eq 'test') {
   # Unit tests are opt-in: re-run configure in the same build directory with the
   # switch on, then build everything the test targets link against.
-  Invoke-Configure -ExtraArgs @('-DQT_APP_BUILD_TESTS=ON')
+  Invoke-Configure -ExtraArgs @('-DBUILD_TESTS=ON')
   Invoke-Build
 
   $ctest = Join-Path (Split-Path $CMake) 'ctest.exe'

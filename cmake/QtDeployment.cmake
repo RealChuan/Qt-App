@@ -98,20 +98,21 @@ function(deploy_qt_application TARGET)
     endif()
 
     # 缓存里如果是旧的静态目录（没有 bin/），丢弃重探
-    if(QT_APP_OPENSSL_ROOT AND NOT EXISTS "${QT_APP_OPENSSL_ROOT}/bin")
+    if(WINDEPLOYQT_OPENSSL_ROOT AND NOT EXISTS "${WINDEPLOYQT_OPENSSL_ROOT}/bin")
       message(
         STATUS
-          "windeployqt: 忽略没有 DLL 的 QT_APP_OPENSSL_ROOT=${QT_APP_OPENSSL_ROOT}")
-      unset(QT_APP_OPENSSL_ROOT CACHE)
+          "windeployqt: 忽略没有 DLL 的 WINDEPLOYQT_OPENSSL_ROOT=${WINDEPLOYQT_OPENSSL_ROOT}"
+      )
+      unset(WINDEPLOYQT_OPENSSL_ROOT CACHE)
     endif()
 
-    if(NOT QT_APP_OPENSSL_ROOT)
+    if(NOT WINDEPLOYQT_OPENSSL_ROOT)
       # manifest 模式装到 <build>/vcpkg_installed/<triplet>， 经典模式装到
       # <vcpkg>/installed/<triplet>，两种都尝试一次。
       foreach(_candidate "${VCPKG_INSTALLED_DIR}/${_openssl_triplet}"
                          "${VCPKG_DEFAULT_ROOT}/installed/${_openssl_triplet}")
         if(EXISTS "${_candidate}/bin")
-          set(QT_APP_OPENSSL_ROOT
+          set(WINDEPLOYQT_OPENSSL_ROOT
               "${_candidate}"
               CACHE PATH "windeployqt --openssl-root")
           break()
@@ -119,9 +120,10 @@ function(deploy_qt_application TARGET)
       endforeach()
     endif()
 
-    if(QT_APP_OPENSSL_ROOT)
-      message(STATUS "windeployqt: --openssl-root ${QT_APP_OPENSSL_ROOT}")
-      list(APPEND _deploy_tool_options --openssl-root "${QT_APP_OPENSSL_ROOT}")
+    if(WINDEPLOYQT_OPENSSL_ROOT)
+      message(STATUS "windeployqt: --openssl-root ${WINDEPLOYQT_OPENSSL_ROOT}")
+      list(APPEND _deploy_tool_options --openssl-root
+           "${WINDEPLOYQT_OPENSSL_ROOT}")
     else()
       message(
         WARNING

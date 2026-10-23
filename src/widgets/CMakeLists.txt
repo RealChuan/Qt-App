@@ -1,6 +1,6 @@
 set(PROJECT_SOURCES
-    mainwidget.cc
-    mainwidget.hpp
+    appwindow.cc
+    appwindow.hpp
     dialog.cc
     dialog.hpp
     messagebox.cc

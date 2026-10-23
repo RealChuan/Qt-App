@@ -22,8 +22,8 @@ runs:
   using: "composite"
 
   steps:
-    - name: Install Custom VCPKG
-      uses: RealChuan/install-vcpkg@main
+    - name: Setup vcpkg
+      uses: RealChuan/setup-vcpkg@main
 
     - name: Delete vcpkg.json
       shell: bash

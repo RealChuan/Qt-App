@@ -46,18 +46,18 @@ endif()
 #   WARN    = 6.12.0：告警上限对齐实际构建版本，6.12 新弃用的 API 也能提前发现
 #   编码格式为 0xMMNNPP（QT_VERSION_CHECK）
 # -----------------------------------------------------------------------------
-set(QT_APP_DEPRECATED_DISABLE_UP_TO
+set(QT_DEPRECATED_DISABLE_UP_TO
     "0x060500"
     CACHE STRING "禁用此版本之前废弃的 Qt API（默认 6.5.0）")
-set(QT_APP_DEPRECATED_WARN_UP_TO
+set(QT_DEPRECATED_WARN_UP_TO
     "0x060C00"
     CACHE STRING "对此版本之前废弃的 Qt API 给出告警（默认 6.12.0）")
 
 add_compile_definitions(
-  QT_DISABLE_DEPRECATED_UP_TO=${QT_APP_DEPRECATED_DISABLE_UP_TO}
-  QT_WARN_DEPRECATED_UP_TO=${QT_APP_DEPRECATED_WARN_UP_TO})
+  QT_DISABLE_DEPRECATED_UP_TO=${QT_DEPRECATED_DISABLE_UP_TO}
+  QT_WARN_DEPRECATED_UP_TO=${QT_DEPRECATED_WARN_UP_TO})
 
 message(
   STATUS
-    "Qt deprecated policy: disable_up_to=${QT_APP_DEPRECATED_DISABLE_UP_TO}, warn_up_to=${QT_APP_DEPRECATED_WARN_UP_TO}"
+    "Qt deprecated policy: disable_up_to=${QT_DEPRECATED_DISABLE_UP_TO}, warn_up_to=${QT_DEPRECATED_WARN_UP_TO}"
 )

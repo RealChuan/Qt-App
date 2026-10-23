@@ -53,7 +53,7 @@ jobs:
 
       - uses: ./.github/actions/install-dependencies
 
-      - uses: RealChuan/install-jom@main
+      - uses: RealChuan/setup-jom@main
 
       - name: Create build directory
         shell: bash

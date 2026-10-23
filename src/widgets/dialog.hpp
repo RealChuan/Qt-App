@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mainwidget.hpp"
+#include "appwindow.hpp"
 
 #include <QDialog>
 
@@ -9,9 +9,9 @@
 namespace Widgets {
 
 #ifndef Q_OS_MACOS
-// 模态对话框：在 MainWidget 外壳上把最大化/还原/尺寸手柄关掉，
+// 模态对话框：在 AppWindow 外壳上把最大化/还原/尺寸手柄关掉，
 // exec() 用局部事件循环实现（非 macOS 侧没有 QDialog）。
-class WIDGETS_EXPORT Dialog : public MainWidget
+class WIDGETS_EXPORT Dialog : public AppWindow
 {
     Q_OBJECT
 public:

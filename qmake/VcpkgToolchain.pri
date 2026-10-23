@@ -22,7 +22,7 @@ unix:!macx {
 
 !exists($$vcpkg_path): warning("vcpkg: 未找到 $$vcpkg_path")
 
-!isEmpty(QT_APP_VERBOSE): message("Using vcpkg path: $$vcpkg_path")
+!isEmpty(VERBOSE): message("Using vcpkg path: $$vcpkg_path")
 
 # 设置调试后缀和库路径
 CONFIG(debug, debug|release) {

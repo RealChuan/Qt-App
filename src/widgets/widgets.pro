@@ -9,8 +9,8 @@ LIBS += \
     -l$$replaceLibName(utils)
 
 HEADERS += \
+    appwindow.hpp \
     dialog.hpp \
-    mainwidget.hpp \
     messagebox.hpp \
     buttoniconstatemanager.hpp \
     treemodel.hpp \
@@ -18,8 +18,8 @@ HEADERS += \
     widgets_global.hpp 
 
 SOURCES += \
+    appwindow.cc \
     dialog.cc \
-    mainwidget.cc \
     messagebox.cc \
     buttoniconstatemanager.cc \
     treemodel.cc \

@@ -60,7 +60,7 @@ defineReplace(add_platform_library) {
     }
 
     RET = $$replaceLibName($$LIBRARY_NAME)
-    !isEmpty(QT_APP_VERBOSE): message("Platform library: $$RET")
+    !isEmpty(VERBOSE): message("Platform library: $$RET")
     return($$RET)
 }
 
@@ -93,7 +93,7 @@ defineReplace(add_app_plugin) {
     }
 
     RET = $$replaceLibName($$LIBRARY_NAME)
-    !isEmpty(QT_APP_VERBOSE): message("App plugin: $$RET")
+    !isEmpty(VERBOSE): message("App plugin: $$RET")
     return($$RET)
 }
 
@@ -118,6 +118,6 @@ defineReplace(add_shared_library) {
     }
 
     RET = $$replaceLibName($$LIBRARY_NAME)
-    !isEmpty(QT_APP_VERBOSE): message("Shared library: $$RET")
+    !isEmpty(VERBOSE): message("Shared library: $$RET")
     return($$RET)
 }

@@ -11,11 +11,10 @@ cmake_minimum_required(VERSION 3.25.1)
 
 # ---- 构建选项 ---------------------------------------------------------------
 option(USE_VCPKG "Use vcpkg for dependency management" ON)
-option(QT_APP_USE_CCACHE "探测到 ccache/sccache 时用作编译器启动器" ON)
-option(QT_APP_UNITY_BUILD "使用 unity(jumbo) 构建以减少重复解析" OFF)
-option(QT_APP_PCH "预编译 Qt 头文件（src/precompiled.hpp）" OFF)
-option(QT_APP_RELEASE_WITH_DEBUGINFO "Release 也生成调试信息（与 qmake 侧一致）" ON)
-option(QT_APP_BUILD_TESTS "构建 QTest 单元测试（不安装、不打包）" OFF)
+option(USE_CCACHE "探测到 ccache/sccache 时用作编译器启动器" ON)
+option(USE_UNITY_BUILD "使用 unity(jumbo) 构建以减少重复解析" OFF)
+option(RELEASE_WITH_DEBUGINFO "Release 也生成调试信息（与 qmake 侧一致）" ON)
+option(BUILD_TESTS "构建 QTest 单元测试（不安装、不打包）" OFF)
 option(PROJECT_DEBUG_INFO "打印详细的 CMake 配置信息" OFF)
 
 # ---- 版本号唯一来源：packaging/version.txt ----------------------------------
@@ -48,19 +47,21 @@ if(EXISTS "${APP_VCPKG_MANIFEST}")
 endif()
 
 # ---- C++ 侧版本号一致性 ------------------------------------------------------
-# appinfo.hpp 是 C++ 侧唯一的版本来源，而打包脚本 / CI / vcpkg 读的是 version.txt。
-# C++ 读不了 version.txt，所以在这里强校验：两边漂移时配置期就失败，
-# 不会出现"安装包是 0.2.2、关于页还写着 0.2.1"。
+# appinfo.hpp 是 C++ 侧唯一的版本来源，而打包脚本 / CI / vcpkg 读的是 version.txt。 C++ 读不了
+# version.txt，所以在这里强校验：两边漂移时配置期就失败， 不会出现"安装包是 0.2.2、关于页还写着 0.2.1"。
 #
-# 注意：file(READ) 只在 configure 期生效，必须把该头文件登记为 configure 依赖，
-# 否则改完头文件不会重新配置，校验形同虚设。
+# 注意：file(READ) 只在 configure 期生效，必须把该头文件登记为 configure 依赖， 否则改完头文件不会重新配置，校验形同虚设。
 set_property(
-  DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-                           "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/appinfo.hpp")
+  DIRECTORY
+  APPEND
+  PROPERTY CMAKE_CONFIGURE_DEPENDS
+           "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/appinfo.hpp")
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/appinfo.hpp" APP_INFO_HEADER)
 if(NOT APP_INFO_HEADER MATCHES "version = \"${APP_VERSION}\"")
   message(
-    FATAL_ERROR "src/utils/appinfo.hpp 的 version 与 packaging/version.txt (${APP_VERSION}) 不一致")
+    FATAL_ERROR
+      "src/utils/appinfo.hpp 的 version 与 packaging/version.txt (${APP_VERSION}) 不一致"
+  )
 endif()
 
 # ---- 必须在 project() 之前 ------------------------------------------------
@@ -85,7 +86,7 @@ include(cmake/PlatformLibraries.cmake)
 include(cmake/InstallCrashpad.cmake)
 
 find_package(Qt6 6.7 REQUIRED COMPONENTS Core Widgets Network Concurrent
-                                        LinguistTools)
+                                         LinguistTools)
 
 qt_standard_project_setup(I18N_SOURCE_LANGUAGE en I18N_TRANSLATED_LANGUAGES
                           zh_CN)
@@ -102,9 +103,10 @@ deploy_qt_application(${PROJECT_NAME})
 # ---- 单元测试 ---------------------------------------------------------------
 # 默认关闭：三条打包链（windows / macos / ubuntu / debian）共用同一份 configure，
 # 打开会额外编译一批不参与发布的测试目标。产物见 tests/CMakeLists.txt。
-if(QT_APP_BUILD_TESTS)
+if(BUILD_TESTS)
   find_package(Qt6 REQUIRED COMPONENTS Test)
   enable_testing()
+  include(cmake/QtUnitTests.cmake)
   add_subdirectory(tests)
 endif()
 

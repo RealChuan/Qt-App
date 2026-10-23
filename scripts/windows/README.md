@@ -44,6 +44,6 @@ Get-ChildItem . -Recurse -Filter *.ps1 | ForEach-Object {
 ## 其它说明
 
 - `configure` / `build` / `test` 都会进 DevShell；`run` 只把 `QtDir\bin` 加进 `PATH` 后启动 exe。
-- `test` 会在同一个构建目录里补一次 `-DQT_APP_BUILD_TESTS=ON`，所以跑完再 `build` 不会回到「不含测试」的状态；不需要测试时删掉 `build\` 重新 `configure`。
+- `test` 会在同一个构建目录里补一次 `-DBUILD_TESTS=ON`，所以跑完再 `build` 不会回到「不含测试」的状态；不需要测试时删掉 `build\` 重新 `configure`。
 - 改动 `CMakeLists.txt` 后直接 `build` 也会触发 CMake 自动重新配置。
 - 打包流程见 `packaging/windows/package.ps1`（同样遵守上述 ASCII 约定）。

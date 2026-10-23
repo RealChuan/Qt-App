@@ -5,8 +5,8 @@ PROJECT_NAME = Qt-App
 #   允许命令行覆盖：qmake VERSION=1.2.3
 # -----------------------------------------------------------------------------
 isEmpty(VERSION) {
-    QT_APP_VERSION_LINES = $$cat($$PWD/../packaging/version.txt, lines)
-    VERSION = $$first(QT_APP_VERSION_LINES)
+    VERSION_LINES = $$cat($$PWD/../packaging/version.txt, lines)
+    VERSION = $$first(VERSION_LINES)
     isEmpty(VERSION): error("无法从 packaging/version.txt 读取版本号")
     # Windows 资源文件需要 4 段版本号
     VERSION = $${VERSION}.0
