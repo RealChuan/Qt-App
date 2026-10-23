@@ -25,6 +25,7 @@ protected:
 
 private:
     void retranslateUi();
+    void setupConnections();
     void onPollTimeout();
 
     class ColorPickerWidgetPrivate;

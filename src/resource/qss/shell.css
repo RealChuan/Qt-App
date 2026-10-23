@@ -6,13 +6,22 @@
 *   窗口
 *****************************************************************************/
 
+/* 43 + 1px 边框 = 总高 44：QSS 的 height 只算内容区，总高取 45 时，
+   1.5 倍缩放下标题栏下沿落在半个物理像素上，透明窗口会漏出一条缝。 */
 #TitleWidget {
     background: @@surface@@;
     border-bottom: 1px solid @@border@@;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    min-height: 44px;
-    max-height: 44px;
+    min-height: 43px;
+    max-height: 43px;
+}
+
+/* 兜底底色：子控件边界落在半像素上时，那半行是深一点的线而不是透明的洞。
+   圆角必须与子控件一致，否则会多出角。 */
+#Frame {
+    background: @@window@@;
+    border-radius: 10px;
 }
 
 #CentralWidget {

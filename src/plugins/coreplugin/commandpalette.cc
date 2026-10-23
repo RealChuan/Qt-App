@@ -7,7 +7,6 @@
 #include <QAbstractItemView>
 #include <QEvent>
 #include <QFrame>
-#include <QGraphicsDropShadowEffect>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -127,11 +126,9 @@ CommandPalette::CommandPalette(QWidget *parent)
     cardLayout->addWidget(d_ptr->list, 1);
     cardLayout->addWidget(d_ptr->hint);
 
-    auto *shadow = new QGraphicsDropShadowEffect(card);
-    shadow->setBlurRadius(30);
-    shadow->setOffset(0, 8);
-    shadow->setColor(QColor(0, 0, 0, 90));
-    card->setGraphicsEffect(shadow);
+    // 比窗口阴影更重、更下坠：命令面板是压在内容上的一块浮层。
+    Utils::addDropShadow(
+        card, {.margin = kOuterMargin, .offset = {0, 8}, .color = QColor(0, 0, 0, 90)});
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(kOuterMargin, kOuterMargin, kOuterMargin, kOuterMargin);

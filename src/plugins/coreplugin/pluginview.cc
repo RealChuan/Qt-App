@@ -27,6 +27,15 @@ constexpr int kSortRole = Qt::UserRole + 1;
 // 过滤用的角色：除显示名外还能按 Id、分类搜索。
 constexpr int kFilterRole = Qt::UserRole + 2;
 
+// 默认列宽。名称列是树列，还要扣掉两级缩进和错误图标，所以给得比文本宽；
+// 其余四列按表头文字量，窄了表头自己就被省略了。
+// 五列合计超过插件页默认的列表宽度，横向滚动条是预期行为——总比把名称挤成一条缝好。
+constexpr int kNameColumnWidth = 220;
+constexpr int kLoadColumnWidth = 56;
+constexpr int kVersionColumnWidth = 76;
+constexpr int kStateColumnWidth = 92;
+constexpr int kLoadTimeColumnWidth = 112;
+
 auto errorIcon() -> QIcon
 {
     return QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
@@ -328,10 +337,18 @@ void PluginView::PluginViewPrivate::setupUi()
     view->setSortingEnabled(true);
     view->sortByColumn(NameColumn, Qt::AscendingOrder);
 
+    // 全部 Interactive：Stretch / ResizeToContents 都不接受鼠标拖拽，列宽只能由
+    // 代码定死，用户碰到截断时没有任何办法。放不下就交给横向滚动条；
+    // 末列用 stretchLastSection 吃掉多余空间，右侧不会留一条空白。
     QHeaderView *header = view->header();
-    header->setSectionResizeMode(NameColumn, QHeaderView::Stretch);
-    for (int column : {LoadColumn, VersionColumn, StateColumn, LoadTimeColumn})
-        header->setSectionResizeMode(column, QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(QHeaderView::Interactive);
+    header->setStretchLastSection(true);
+
+    view->setColumnWidth(NameColumn, kNameColumnWidth);
+    view->setColumnWidth(LoadColumn, kLoadColumnWidth);
+    view->setColumnWidth(VersionColumn, kVersionColumnWidth);
+    view->setColumnWidth(StateColumn, kStateColumnWidth);
+    view->setColumnWidth(LoadTimeColumn, kLoadTimeColumnWidth);
 
     auto *layout = new QVBoxLayout(q_ptr);
     layout->setContentsMargins({});

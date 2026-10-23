@@ -15,12 +15,6 @@
 
 namespace Utils {
 
-#ifdef Q_QDOC
-template<typename T = void>
-class Result
-{};
-#endif
-
 // C++23 std::expected：成功值类型 T，错误类型固定为可展示给用户的 QString。
 // 没有具体成功值时用 Result<>（即 expected<void, QString>），配 Utils::ResultOk 返回。
 template<typename T = void>

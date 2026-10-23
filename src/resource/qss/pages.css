@@ -237,7 +237,13 @@
 *   取色器浮窗
 *****************************************************************************/
 
+/* 半透明顶层窗口自己画不了背景（WA_TranslucentBackground 带 WA_NoSystemBackground），
+   底色和描边只能落在子卡片上，与命令面板同理。 */
 #ColorPickerWindow {
+    background: transparent;
+}
+
+#ColorPickerCard {
     background: @@surface@@;
     border: 1px solid @@borderStrong@@;
     border-radius: 10px;

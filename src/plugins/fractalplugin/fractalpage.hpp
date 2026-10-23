@@ -19,7 +19,8 @@ struct RenderJob
     int width = 0;
     int height = 0;
     // 高分屏按物理像素算，画面上屏后才是 1:1，不会糊成一片。
-    int pixelRatio = 1;
+    // 取真实 DPR 而不是取整：150% 屏 round 成 2 会白算 78% 的像素。
+    qreal pixelRatio = 1.0;
     double centerX = 0.0;
     double centerY = 0.0;
     double scale = 3.0;

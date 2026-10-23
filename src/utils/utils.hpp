@@ -5,6 +5,7 @@
 #include "result.hpp"
 
 #include <QByteArrayView>
+#include <QColor>
 #include <QJsonObject>
 #include <QString>
 #include <QStringView>
@@ -13,6 +14,7 @@
 class QWidget;
 class QAction;
 class QMenu;
+class QGraphicsDropShadowEffect;
 
 namespace Utils {
 
@@ -25,7 +27,19 @@ struct UTILS_EXPORT DirectoryStats
 [[nodiscard]] UTILS_EXPORT auto calculateDirectoryStats(const QString &path) -> DirectoryStats;
 
 UTILS_EXPORT void restoreAndActivate(QWidget *window);
-UTILS_EXPORT void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius = 10);
+
+// 阴影样式。margin 是调用方在控件四周预留的空白，模糊半径按它的 2 倍取，
+// 阴影才不会越出预留范围被父控件裁掉；另外两项只在换风格时覆盖。
+struct DropShadow
+{
+    int margin = 10;
+    QPoint offset{0, 2};
+    QColor color{0, 0, 0, 70};
+};
+
+// 返回创建的 effect：个别调用方要在运行期改它（比如最大化时关掉）。
+UTILS_EXPORT auto addDropShadow(QWidget *widget, const DropShadow &style = {})
+    -> QGraphicsDropShadowEffect *;
 
 // 对话框默认父窗口：由 core 插件在启动时注入。
 [[nodiscard]] UTILS_EXPORT auto dialogParent() -> QWidget *;
@@ -43,8 +57,6 @@ UTILS_EXPORT void reboot();
 [[nodiscard]] UTILS_EXPORT auto removeDirectory(const QString &path) -> bool;
 [[nodiscard]] UTILS_EXPORT auto removeFile(const QString &path) -> bool;
 [[nodiscard]] UTILS_EXPORT auto formatBytes(qint64 bytes, int precision = 2) -> QString;
-[[nodiscard]] UTILS_EXPORT auto jsonFromFile(const QString &filePath) -> Result<QJsonObject>;
-[[nodiscard]] UTILS_EXPORT auto jsonFromBytes(const QByteArray &bytes) -> Result<QJsonObject>;
 UTILS_EXPORT void setMacComboBoxStyle(QWidget *parent);
 [[nodiscard]] UTILS_EXPORT auto getPidFromProcessName(QStringView processName) -> qint64;
 [[nodiscard]] UTILS_EXPORT auto killProcess(qint64 pid) -> bool;

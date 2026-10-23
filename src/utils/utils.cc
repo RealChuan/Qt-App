@@ -106,14 +106,16 @@ void restoreAndActivate(QWidget *window)
     window->activateWindow();
 }
 
-void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
+auto addDropShadow(QWidget *widget, const DropShadow &style) -> QGraphicsDropShadowEffect *
 {
     // 用半透明黑而不是纯灰：深色主题下灰边会亮得像一圈描边。
     auto *effect = new QGraphicsDropShadowEffect(widget);
-    effect->setOffset(0, 2);
-    effect->setColor(QColor(0, 0, 0, 70));
-    effect->setBlurRadius(blurRadius * 2);
+    effect->setOffset(style.offset);
+    effect->setColor(style.color);
+    // Qt 的阴影大约向外扩 blurRadius / 2，取边距的 2 倍正好铺满预留的那圈空白。
+    effect->setBlurRadius(style.margin * 2.0);
     widget->setGraphicsEffect(effect);
+    return effect;
 }
 
 auto systemInfo() -> QString
@@ -190,26 +192,6 @@ auto formatBytes(qint64 bytes, int precision) -> QString
     }
 
     return u"%1 %2"_s.arg(QString::number(size, 'f', precision), QLatin1StringView(units[index]));
-}
-
-auto jsonFromFile(const QString &filePath) -> Result<QJsonObject>
-{
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly))
-        return ResultError(Tr::tr("Cannot open the file: %1").arg(filePath));
-    return jsonFromBytes(file.readAll());
-}
-
-auto jsonFromBytes(const QByteArray &bytes) -> Result<QJsonObject>
-{
-    QJsonParseError parseError;
-    const QJsonDocument document = QJsonDocument::fromJson(bytes, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
-        return ResultError(
-            Tr::tr("%1\nOffset: %2")
-                .arg(parseError.errorString(), QString::number(parseError.offset)));
-    }
-    return document.object();
 }
 
 auto getPidFromProcessName(QStringView processName) -> qint64

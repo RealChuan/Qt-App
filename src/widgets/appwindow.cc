@@ -89,13 +89,15 @@ public:
         // 阴影必须挂在"内容整体"这一层：QGraphicsDropShadowEffect 按控件的 alpha
         // 轮廓做模糊，标题栏和内容区的圆角才会跟着一起圆，自己画矩形渐变带做不到。
         frame = new QWidget(q_ptr);
-        Utils::addGraphicsDropShadowEffect(frame, kShadowPadding);
+        // #Frame 的兜底底色在 shell.css：半像素行不至于透出窗口后面的桌面。
+        frame->setObjectName("Frame");
+        Utils::addDropShadow(frame, {.margin = kShadowPadding});
 
-        auto *grid = new QGridLayout(frame);
-        grid->setContentsMargins(0, 0, 0, 0);
-        grid->setSpacing(0);
-        grid->addWidget(titleWidget, 0, 0);
-        grid->addWidget(centralContainer, 1, 0);
+        auto *frameLayout = new QVBoxLayout(frame);
+        frameLayout->setContentsMargins({});
+        frameLayout->setSpacing(0);
+        frameLayout->addWidget(titleWidget);
+        frameLayout->addWidget(centralContainer);
 
         outerLayout = new QHBoxLayout(q_ptr);
         outerLayout->setSpacing(0);
@@ -118,7 +120,7 @@ public:
         outerLayout->setContentsMargins(value, value, value, value);
 
         if (visible)
-            Utils::addGraphicsDropShadowEffect(frame, kShadowPadding);
+            Utils::addDropShadow(frame, {.margin = kShadowPadding});
         else
             frame->setGraphicsEffect(nullptr);
 
