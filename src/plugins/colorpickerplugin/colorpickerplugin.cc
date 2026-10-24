@@ -5,6 +5,7 @@
 
 #include <shell/functioncommand.hpp>
 #include <shell/registry.hpp>
+#include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
 
 namespace ColorPicker {

@@ -10,7 +10,7 @@
 #include <functional>
 #include <memory>
 
-namespace Utils {
+namespace Widgets {
 
 class TreeModel;
 
@@ -91,4 +91,4 @@ private:
     std::unique_ptr<TreeModelPrivate> d_ptr;
 };
 
-} // namespace Utils
+} // namespace Widgets

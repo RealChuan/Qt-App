@@ -2,7 +2,7 @@
 
 #include "buttoniconstatemanager.hpp"
 
-#include <utils/utils.hpp>
+#include <utils/uihelpers.hpp>
 
 #include <QAction>
 #include <QApplication>
@@ -362,7 +362,7 @@ private:
         const QSize size{18, 18};
 
         // 统一前缀
-        const QString basePath = QStringLiteral(":/icon/icon/mactitle/titlebutton-");
+        const QString basePath = QStringLiteral(":/titlebar/titlebutton-");
 
         // 后缀表：普通态总是 4 个（含 alt）；hover / pressed 分「带 alt」与「不带 alt」两种
         const QStringList kNormalSuffix{".png", "@2.png", "-alt.png", "-alt@2.png"};

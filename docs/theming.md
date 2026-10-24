@@ -18,7 +18,7 @@ Qt 的 QSS 一旦写了 `color` / `background`，就会覆盖 `QPalette`。而�
 | `src/resource/qss/pages.css`                  | 页面与对话框：卡片、插件页、命令面板、消息框 |
 | `src/resource/qss/light.theme` / `dark.theme` | 令牌取值：颜色 + 图标路径                    |
 
-`resource.qrc` 里挂在 `/qss/qss/` 下，所以代码里的路径是 `:/qss/qss/base.css`。
+`resource.qrc` 里挂在 `/qss/` 下，所以代码里的路径是 `:/qss/base.css`。
 
 ## 应用流程
 
@@ -45,7 +45,7 @@ surface=#FFFFFF
 text=#171A1F
 
 [icons]
-checkChecked=url(":/common/icon/common/checkbox-checked-selectionmode@2.png")
+checkChecked=url(":/controls/checkbox-checked-selectionmode@2.png")
 ```
 
 ```css

@@ -1,6 +1,7 @@
 #include "colorpickerwidget.hpp"
 
 #include <shell/host.hpp>
+#include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
 
 #include <QApplication>

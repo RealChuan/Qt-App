@@ -4,6 +4,7 @@
 #include "qtsingleapplication.hpp"
 #include "qtlocalpeer.hpp"
 
+#include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
 
 #include <QDir>

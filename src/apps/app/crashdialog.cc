@@ -45,7 +45,7 @@ void CrashDialog::CrashDialogPrivate::setupUi(CrashDialog *q)
 {
     iconLabel = new QLabel;
     iconLabel->setFixedSize(44, 44);
-    iconLabel->setPixmap(QIcon(":/icon/icon/crash.png").pixmap(44, 44));
+    iconLabel->setPixmap(QIcon(":/icon/crash.png").pixmap(44, 44));
 
     titleLabel = new QLabel;
     titleLabel->setObjectName("CrashTitle");

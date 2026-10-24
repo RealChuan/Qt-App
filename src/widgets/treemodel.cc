@@ -4,7 +4,7 @@
 
 #include <utility>
 
-namespace Utils {
+namespace Widgets {
 
 class TreeModel::TreeModelPrivate
 {
@@ -311,4 +311,4 @@ auto TreeModel::headerData(int section, Qt::Orientation orientation, int role) c
     return {};
 }
 
-} // namespace Utils
+} // namespace Widgets

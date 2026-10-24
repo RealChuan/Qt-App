@@ -7,6 +7,8 @@ set(PROJECT_SOURCES
     messagebox.hpp
     buttoniconstatemanager.cc
     buttoniconstatemanager.hpp
+    roundedrowtreeview.cc
+    roundedrowtreeview.hpp
     treemodel.cc
     treemodel.hpp
     waitwidget.cc

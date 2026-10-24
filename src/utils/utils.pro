@@ -27,6 +27,7 @@ SOURCES += \
     settings.cc \
     singletonmanager.cc \
     theme.cc \
+    uihelpers.cc \
     utils.cc \
     widgetmanager.cc
 
@@ -47,6 +48,7 @@ HEADERS += \
     singleton.hpp \
     singletonmanager.hpp \
     theme.hpp \
+    uihelpers.hpp \
     utils_global.hpp \
     utils.hpp \
     utilstr.hpp \

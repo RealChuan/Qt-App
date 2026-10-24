@@ -27,6 +27,8 @@ set(PROJECT_SOURCES
     singletonmanager.hpp
     theme.cc
     theme.hpp
+    uihelpers.cc
+    uihelpers.hpp
     utils.cc
     utils.hpp
     utils_global.hpp

@@ -1,6 +1,6 @@
 #include "dialog.hpp"
 
-#include <utils/utils.hpp>
+#include <utils/uihelpers.hpp>
 
 #include <QEventLoop>
 #include <QHBoxLayout>
@@ -83,7 +83,7 @@ void Dialog::onMoveParentCenter()
             = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), owner->geometry());
         move(target.topLeft());
     } else {
-        Utils::windowCenter(this);
+        Utils::centerOnScreen(this);
     }
 }
 

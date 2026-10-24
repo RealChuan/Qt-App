@@ -120,6 +120,13 @@
     padding-left: 4px;
 }
 
+/* 选中行只换底色，文字保持正文色。整行转成强调蓝会让表格看起来像一串链接，
+   版本号、状态这些中性内容也会被染蓝，读起来比选中本身更抢眼。 */
+#PluginTree::item:selected {
+    background: @@accentSoft@@;
+    color: @@text@@;
+}
+
 #DetailsTitle {
     color: @@text@@;
     font-size: 16px;

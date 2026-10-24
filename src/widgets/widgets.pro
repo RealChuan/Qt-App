@@ -13,6 +13,7 @@ HEADERS += \
     dialog.hpp \
     messagebox.hpp \
     buttoniconstatemanager.hpp \
+    roundedrowtreeview.hpp \
     treemodel.hpp \
     waitwidget.hpp \
     widgets_global.hpp 
@@ -22,5 +23,6 @@ SOURCES += \
     dialog.cc \
     messagebox.cc \
     buttoniconstatemanager.cc \
+    roundedrowtreeview.cc \
     treemodel.cc \
     waitwidget.cc

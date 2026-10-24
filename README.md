@@ -1,6 +1,6 @@
 # Qt-App
 
-[English](README.en.md)　英文版由 [readme.yml](.github/workflows/readme.yml) 自动翻译，请只修改本文件。
+[English](README.en.md)　英文版由 [readme.yml](.github/workflows/readme.yml) 自动翻译。
 
 > 图片素材来自互联网，仅用于学习演示；商用请自行确认素材授权。代码遵循 [GPL-3.0](LICENSE)。
 
@@ -24,7 +24,7 @@
 | [src/shell/](src/shell)                     | 外壳扩展点：[page.hpp](src/shell/page.hpp)、[command.hpp](src/shell/command.hpp)、[host.hpp](src/shell/host.hpp)、[registry.hpp](src/shell/registry.hpp)                                                                                 |
 | [src/plugins/](src/plugins)                 | 内置插件，[helloplugin](src/plugins/helloplugin) 是最小模板                                                                                                                                                                              |
 | [src/apps/app/](src/apps/app/main.cc)       | `main()`：单实例、日志、主题、Crashpad 初始化、崩溃提示、插件加载                                                                                                                                                                        |
-| [src/utils/](src/utils)                     | 主题、设置、异步日志、`FilePath`、`Result` 等基础设施                                                                                                                                                                                    |
+| [src/utils/](src/utils)                     | 主题、设置、异步日志、`FilePath`、`Result` 等基础设施；要碰控件的辅助函数在 [uihelpers.hpp](src/utils/uihelpers.hpp)                                                                                                                     |
 | [src/widgets/](src/widgets)                 | 通用控件与对话框                                                                                                                                                                                                                         |
 | [src/resource/](src/resource)               | qrc、[QSS 与主题令牌](src/resource/qss)、图标                                                                                                                                                                                            |
 | [src/crashpadclient/](src/crashpadclient)   | Crashpad 客户端封装                                                                                                                                                                                                                      |
@@ -52,7 +52,7 @@ plugins/<模块名>.dll|so|dylib
 | --------------- | ---------------------------------------------------------- | -------------------------------------------------- |
 | `IPlugin`       | [iplugin.hpp](src/extensionsystem/iplugin.hpp)             | 插件入口，`IID` 固定为 `Youth.Qt.plugin`           |
 | `PluginContext` | [plugincontext.hpp](src/extensionsystem/plugincontext.hpp) | `initialize()` 里拿 `settings()`、`resourcePath()` |
-| `IPage`         | [page.hpp](src/shell/page.hpp)                             | 侧边栏页面（Workspace / Settings / Help）          |
+| `IPage`         | [page.hpp](src/shell/page.hpp)                             | 侧边栏页面（Pages / Games / Settings / Help）      |
 | `ICommand`      | [command.hpp](src/shell/command.hpp)                       | 命令面板（`Ctrl+K`）中的动作                       |
 | `Host`          | [host.hpp](src/shell/host.hpp)                             | 主窗口、切页、状态栏提示、重启                     |
 | 服务对象池      | [pluginmanager.hpp](src/extensionsystem/pluginmanager.hpp) | `addObject()` / `object<T>()`，插件间按接口取服务  |
@@ -68,6 +68,8 @@ plugins/<模块名>.dll|so|dylib
 | [pomodoroplugin](src/plugins/pomodoroplugin)       | 服务消费者：可选依赖缺失时降级为状态栏提示                  |
 | [fractalplugin](src/plugins/fractalplugin)         | 后台计算 + 取消                                             |
 | [colorpickerplugin](src/plugins/colorpickerplugin) | 独立工具窗 + 屏幕取色                                       |
+| [snakeplugin](src/plugins/snakeplugin)             | 小游戏：固定步进循环、键盘焦点、最高分存档                  |
+| [tetrisplugin](src/plugins/tetrisplugin)           | 小游戏：60 Hz 帧循环、SRS 踢墙、DAS/ARR 连发                |
 
 ### 新增一个插件
 

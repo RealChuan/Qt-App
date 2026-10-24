@@ -9,8 +9,9 @@ class QWidget;
 
 namespace Shell {
 
-// 侧边栏的三个分组。同一个插件可以往多个分组里放页面。
-enum class PageArea { Workspace, Settings, Help };
+// 侧边栏的四个分组。同一个插件可以往多个分组里放页面。
+// Games 排在 Pages 之后、Settings 之前：游戏是"能玩的东西"，不是工作区里的工具页。
+enum class PageArea { Workspace, Games, Settings, Help };
 
 // 同组内的排序权重：小的在前。档位之间留 100 的间隔，插件插队时不必改动别人。
 namespace PageOrder {

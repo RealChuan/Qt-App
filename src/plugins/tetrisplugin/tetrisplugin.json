@@ -1,0 +1,17 @@
+{
+  "Id": "tetrisplugin",
+  "DisplayName": "Tetris",
+  "Name": "TetrisPlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Games",
+  "Description": "Full-feel Tetris: SRS wall kicks, 7-bag, lock delay, hold, ghost and DAS/ARR.",
+  "LongDescription": "A 10x20 well with the pieces players expect: SRS rotation tables for JLSTZ and I, a 7-bag randomizer, 500 ms lock delay with move resets, hold-once-per-piece, a ghost piece and a three-deep next queue. The model is a plain class with no QObject and is covered by tests; the page runs a 16 ms frame loop and owns the DAS/ARR repeat, because Qt's key auto-repeat is both slower and less controllable than a hand-rolled one. Leaving the page does not pause, so pausing first is the way out.",
+  "Url": "",
+  "DocumentationUrl": ""
+}

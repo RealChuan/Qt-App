@@ -3,6 +3,7 @@
 #include <extensionsystem/pluginmanager.hpp>
 #include <extensionsystem/pluginspec.hpp>
 #include <utils/algorithm.hpp>
+#include <widgets/roundedrowtreeview.hpp>
 #include <widgets/treemodel.hpp>
 
 #include <QApplication>
@@ -13,7 +14,8 @@
 #include <QMap>
 #include <QSortFilterProxyModel>
 #include <QStyle>
-#include <QTreeView>
+#include <QStyleOptionViewItem>
+#include <QStyledItemDelegate>
 #include <QVBoxLayout>
 
 namespace Core {
@@ -45,7 +47,7 @@ auto errorIcon() -> QIcon
 
 using ExtensionSystem::PluginSpec;
 
-class PluginItem final : public Utils::TreeItem
+class PluginItem final : public Widgets::TreeItem
 {
 public:
     explicit PluginItem(PluginSpec *spec)
@@ -117,7 +119,7 @@ public:
         m_spec->setEnabledBySettings(enabled);
         updateColumn(LoadColumn);
         // 子项变化后组的三态勾选要跟着刷新。
-        if (Utils::TreeItem *group = parent())
+        if (Widgets::TreeItem *group = parent())
             group->updateColumn(LoadColumn);
         return true;
     }
@@ -136,7 +138,7 @@ private:
     PluginSpec *m_spec = nullptr;
 };
 
-class CollectionItem final : public Utils::TreeItem
+class CollectionItem final : public Widgets::TreeItem
 {
 public:
     CollectionItem(const QString &title, const QList<PluginSpec *> &plugins)
@@ -232,7 +234,7 @@ private:
     QString m_sortKey;
 };
 
-class PluginModel final : public Utils::TreeModel
+class PluginModel final : public Widgets::TreeModel
 {
 public:
     explicit PluginModel(QObject *parent = nullptr)
@@ -269,7 +271,7 @@ public:
 
     [[nodiscard]] auto itemForSpec(PluginSpec *spec) const -> PluginItem *
     {
-        Utils::TreeItem *found = rootItem()->findAnyChild([spec](Utils::TreeItem *item) {
+        Widgets::TreeItem *found = rootItem()->findAnyChild([spec](Widgets::TreeItem *item) {
             const auto *pluginItem = dynamic_cast<const PluginItem *>(item);
             return pluginItem && pluginItem->spec() == spec;
         });
@@ -291,6 +293,23 @@ private:
     }
 };
 
+// 必需插件的 Load 列不可勾选，但 Qt 不会因此把勾选框画成禁用态：
+// “能不能勾”没有对应的 QSS 伪状态，只能由委托把 State_Enabled 关掉，
+// 灰化后的图标仍然来自 base.css 的 ::indicator:checked:disabled。
+class PluginItemDelegate final : public QStyledItemDelegate
+{
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+
+protected:
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override
+    {
+        QStyledItemDelegate::initStyleOption(option, index);
+        if (index.column() == LoadColumn && !(index.flags() & Qt::ItemIsUserCheckable))
+            option->state &= ~QStyle::State_Enabled;
+    }
+};
+
 class PluginView::PluginViewPrivate
 {
 public:
@@ -304,12 +323,13 @@ public:
     void selectPlugin(PluginSpec *spec);
 
     PluginView *q_ptr = nullptr;
-    QTreeView *view = nullptr;
+    Widgets::RoundedRowTreeView *view = nullptr;
     PluginModel *model = nullptr;
     QSortFilterProxyModel *proxy = nullptr;
     QString requiredGroupTitle;
     QString otherGroupTitle;
     bool changePending = false;
+    bool initialScrollDone = false;
 };
 
 void PluginView::PluginViewPrivate::setupUi()
@@ -325,8 +345,9 @@ void PluginView::PluginViewPrivate::setupUi()
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxy->setRecursiveFilteringEnabled(true);
 
-    view = new QTreeView(q_ptr);
+    view = new Widgets::RoundedRowTreeView(q_ptr);
     view->setObjectName("PluginTree");
+    view->setItemDelegate(new PluginItemDelegate(view));
     view->setModel(proxy);
     view->setAlternatingRowColors(false);
     view->setUniformRowHeights(true);
@@ -368,7 +389,7 @@ void PluginView::PluginViewPrivate::rebuild(const QString &requiredTitle, const 
     }
 
     // 首次打开时选中第一个插件，右侧详情不至于空白。
-    Utils::TreeItem *firstGroup = model->rootItem()->childAt(0);
+    Widgets::TreeItem *firstGroup = model->rootItem()->childAt(0);
     const auto *firstItem = firstGroup ? dynamic_cast<PluginItem *>(firstGroup->childAt(0))
                                        : nullptr;
     if (firstItem)
@@ -466,6 +487,19 @@ void PluginView::notifyPluginsChanged()
 {
     d_ptr->changePending = false;
     emit pluginsChanged();
+}
+
+void PluginView::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+
+    // 构造期视图还没有尺寸，selectPlugin() 里的 scrollTo() 会按 0 高度计算，
+    // 等页面真正显示时滚动条已经停在下半截。首次显示时布局已完成，回顶一次；
+    // 之后再切回本页就不干预了，保留用户自己的滚动位置。
+    if (!d_ptr->initialScrollDone) {
+        d_ptr->initialScrollDone = true;
+        d_ptr->view->scrollToTop();
+    }
 }
 
 void PluginView::changeEvent(QEvent *event)

@@ -26,7 +26,7 @@ enum class ThemeMode { System = 0, Light = 1, Dark = 2 };
 struct ThemeConfig
 {
     // 令牌文件与样式表所在目录，必须以 '/' 结尾。
-    QString directory = QStringLiteral(":/qss/qss/");
+    QString directory = QStringLiteral(":/qss/");
     // 依次拼接，越靠后的规则优先级越高。
     QStringList styleSheets{
         QStringLiteral("base.css"), QStringLiteral("shell.css"), QStringLiteral("pages.css")};

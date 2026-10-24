@@ -2,6 +2,7 @@
 
 #include <shell/command.hpp>
 #include <shell/registry.hpp>
+#include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
 
 #include <QAbstractItemView>

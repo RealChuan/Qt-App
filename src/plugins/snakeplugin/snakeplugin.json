@@ -1,0 +1,17 @@
+{
+  "Id": "snakeplugin",
+  "DisplayName": "Snake",
+  "Name": "SnakePlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Games",
+  "Description": "A complete little game: fixed-step loop, keyboard focus, and a best score kept in plugin settings.",
+  "LongDescription": "A playable round of snake on a 28x20 board. The rules live in a plain class with no QObject, the board only paints and collects keys, and the page owns the timer. Leaving the page does not pause the round: the snake keeps its heading and runs into the wall, so pausing first is the way out. The best score is written to the plugin's own settings file exactly once per record.",
+  "Url": "",
+  "DocumentationUrl": ""
+}

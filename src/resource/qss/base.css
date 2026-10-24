@@ -425,6 +425,20 @@ QAbstractItemView::indicator:indeterminate {
     border-image: @@checkPartial@@ 0 0 0 0 stretch stretch;
 }
 
+/* 不可勾选的格子（必需插件的 Load 列）：Qt 只有在 item 状态为 disabled
+   时才会走这条规则，所以视觉上要和普通勾选框分开——灰勾表示“已勾上但改不了”。 */
+QAbstractItemView::indicator:unchecked:disabled {
+    border-image: @@checkDisabled@@ 0 0 0 0 stretch stretch;
+}
+
+QAbstractItemView::indicator:checked:disabled {
+    border-image: @@checkCheckedDisabled@@ 0 0 0 0 stretch stretch;
+}
+
+QAbstractItemView::indicator:indeterminate:disabled {
+    border-image: @@checkPartialDisabled@@ 0 0 0 0 stretch stretch;
+}
+
 /* 树的缩进区也要跟着选中行上色，否则选中条会从第一个单元格才开始，
    左侧留一截空白，看起来像两条。 */
 QTreeView::branch {
@@ -602,12 +616,12 @@ QMenu::indicator {
 
 QMenu::indicator:non-exclusive:unchecked,
 QMenu::indicator:exclusive:unchecked {
-    image: url(":/common/icon/common/checkbox-unchecked@2.png");
+    image: url(":/controls/checkbox-unchecked@2.png");
 }
 
 QMenu::indicator:non-exclusive:checked,
 QMenu::indicator:exclusive:checked {
-    image: url(":/common/icon/common/checkbox-checked-selectionmode@2.png");
+    image: url(":/controls/checkbox-checked-selectionmode@2.png");
 }
 
 QMenuBar {
@@ -807,11 +821,12 @@ QDockWidget::title {
 *   QToolTip
 *****************************************************************************/
 
+/* 提示框是原生顶层窗口：圆角处会露出窗口矩形的底色，浅色下右下角会出现
+   一个三角缺口，所以只描边、不做圆角；悬浮感交给系统给的四周阴影。 */
 QToolTip {
     color: @@tooltipText@@;
     background: @@tooltipBg@@;
-    border: 1px solid @@tooltipBg@@;
-    border-radius: 6px;
+    border: 1px solid @@tooltipBorder@@;
     padding: 5px 8px;
 }
 

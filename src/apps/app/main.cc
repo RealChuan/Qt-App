@@ -13,12 +13,14 @@
 #include <utils/settings.hpp>
 #include <utils/singletonmanager.hpp>
 #include <utils/theme.hpp>
+#include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
 #include <widgets/waitwidget.hpp>
 
 #include <QCryptographicHash>
 #include <QMessageBox>
 #include <QNetworkProxyFactory>
+#include <QProcess>
 #include <QRunnable>
 #include <QStyle>
 #include <QThreadPool>
@@ -118,7 +120,7 @@ void setupApplication()
     qApp->setDesktopFileName(Utils::appName);
     qApp->setOrganizationDomain(Utils::organizationDomain);
     qApp->setOrganizationName(Utils::organizationName);
-    qApp->setWindowIcon(QIcon(":/icon/icon/app.png"));
+    qApp->setWindowIcon(QIcon(":/icon/app.png"));
 }
 
 class Restarter
@@ -174,7 +176,7 @@ auto main(int argc, char *argv[]) -> int
 #else
     qputenv("QSG_RHI_BACKEND", "opengl");
 #endif
-    Utils::setupHighDpi();
+    Utils::setupHighDpiRounding();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     SharedTools::QtSingleApplication app(Utils::appName, argc, argv);
     if (app.isRunning()) {
@@ -215,7 +217,7 @@ auto main(int argc, char *argv[]) -> int
 
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
-    Utils::setPixmapCacheLimit();
+    Utils::scalePixmapCacheForDpr();
     Utils::loadFonts((Utils::appInfo().resources / "fonts").toUserOutput());
     // 样式表按当前深浅色方案生成；系统切换时 Theme 会自己重新应用。
     Utils::theme()->apply();

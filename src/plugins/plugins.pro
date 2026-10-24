@@ -8,4 +8,6 @@ SUBDIRS += \
     danmakuplugin \
     pomodoroplugin \
     fractalplugin \
-    colorpickerplugin
+    colorpickerplugin \
+    snakeplugin \
+    tetrisplugin

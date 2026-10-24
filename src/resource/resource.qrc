@@ -1,205 +1,207 @@
 <RCC>
     <qresource prefix="/icon">
-        <file>icon/mactitle/titlebutton-close.png</file>
-        <file>icon/mactitle/titlebutton-close@2.png</file>
-        <file>icon/mactitle/titlebutton-close-active.png</file>
-        <file>icon/mactitle/titlebutton-close-active@2.png</file>
-        <file>icon/mactitle/titlebutton-close-active-alt.png</file>
-        <file>icon/mactitle/titlebutton-close-active-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-close-alt.png</file>
-        <file>icon/mactitle/titlebutton-close-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop@2.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop-alt.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop-hover.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-close-backdrop-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-close-hover.png</file>
-        <file>icon/mactitle/titlebutton-close-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-close-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-close-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize.png</file>
-        <file>icon/mactitle/titlebutton-maximize@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-active.png</file>
-        <file>icon/mactitle/titlebutton-maximize-active@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-active-alt.png</file>
-        <file>icon/mactitle/titlebutton-maximize-active-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-alt.png</file>
-        <file>icon/mactitle/titlebutton-maximize-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop-alt.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop-hover.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-maximize-backdrop-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-hover.png</file>
-        <file>icon/mactitle/titlebutton-maximize-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-maximize-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-maximize-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize.png</file>
-        <file>icon/mactitle/titlebutton-minimize@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-active.png</file>
-        <file>icon/mactitle/titlebutton-minimize-active@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-active-alt.png</file>
-        <file>icon/mactitle/titlebutton-minimize-active-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-alt.png</file>
-        <file>icon/mactitle/titlebutton-minimize-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop-alt.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop-hover.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-minimize-backdrop-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-hover.png</file>
-        <file>icon/mactitle/titlebutton-minimize-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-minimize-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-minimize-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-restore.png</file>
-        <file>icon/mactitle/titlebutton-restore@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-active.png</file>
-        <file>icon/mactitle/titlebutton-restore-active@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-active-alt.png</file>
-        <file>icon/mactitle/titlebutton-restore-active-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-alt.png</file>
-        <file>icon/mactitle/titlebutton-restore-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop-alt.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop-hover.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-restore-backdrop-hover-alt@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-hover.png</file>
-        <file>icon/mactitle/titlebutton-restore-hover@2.png</file>
-        <file>icon/mactitle/titlebutton-restore-hover-alt.png</file>
-        <file>icon/mactitle/titlebutton-restore-hover-alt@2.png</file>
-        <file>icon/app.png</file>
-        <file>icon/crash.png</file>
+        <file alias="app.png">icon/app.png</file>
+        <file alias="crash.png">icon/crash.png</file>
+    </qresource>
+    <qresource prefix="/controls">
+        <file alias="checkbox-checked.png">icon/controls/checkbox-checked.png</file>
+        <file alias="checkbox-checked@2.png">icon/controls/checkbox-checked@2.png</file>
+        <file alias="checkbox-checked-dark.png">icon/controls/checkbox-checked-dark.png</file>
+        <file alias="checkbox-checked-dark@2.png">icon/controls/checkbox-checked-dark@2.png</file>
+        <file alias="checkbox-checked-insensitive.png">icon/controls/checkbox-checked-insensitive.png</file>
+        <file alias="checkbox-checked-insensitive@2.png">icon/controls/checkbox-checked-insensitive@2.png</file>
+        <file alias="checkbox-checked-insensitive-dark.png">icon/controls/checkbox-checked-insensitive-dark.png</file>
+        <file alias="checkbox-checked-insensitive-dark@2.png">icon/controls/checkbox-checked-insensitive-dark@2.png</file>
+        <file alias="checkbox-checked-insensitive-selected.png">icon/controls/checkbox-checked-insensitive-selected.png</file>
+        <file alias="checkbox-checked-insensitive-selected@2.png">icon/controls/checkbox-checked-insensitive-selected@2.png</file>
+        <file alias="checkbox-checked-selected.png">icon/controls/checkbox-checked-selected.png</file>
+        <file alias="checkbox-checked-selected@2.png">icon/controls/checkbox-checked-selected@2.png</file>
+        <file alias="checkbox-checked-selectionmode.png">icon/controls/checkbox-checked-selectionmode.png</file>
+        <file alias="checkbox-checked-selectionmode@2.png">icon/controls/checkbox-checked-selectionmode@2.png</file>
+        <file alias="checkbox-checked-selectionmode-dark.png">icon/controls/checkbox-checked-selectionmode-dark.png</file>
+        <file alias="checkbox-checked-selectionmode-dark@2.png">icon/controls/checkbox-checked-selectionmode-dark@2.png</file>
+        <file alias="checkbox-mixed.png">icon/controls/checkbox-mixed.png</file>
+        <file alias="checkbox-mixed@2.png">icon/controls/checkbox-mixed@2.png</file>
+        <file alias="checkbox-mixed-dark.png">icon/controls/checkbox-mixed-dark.png</file>
+        <file alias="checkbox-mixed-dark@2.png">icon/controls/checkbox-mixed-dark@2.png</file>
+        <file alias="checkbox-mixed-insensitive.png">icon/controls/checkbox-mixed-insensitive.png</file>
+        <file alias="checkbox-mixed-insensitive@2.png">icon/controls/checkbox-mixed-insensitive@2.png</file>
+        <file alias="checkbox-mixed-insensitive-dark.png">icon/controls/checkbox-mixed-insensitive-dark.png</file>
+        <file alias="checkbox-mixed-insensitive-dark@2.png">icon/controls/checkbox-mixed-insensitive-dark@2.png</file>
+        <file alias="checkbox-mixed-insensitive-selected.png">icon/controls/checkbox-mixed-insensitive-selected.png</file>
+        <file alias="checkbox-mixed-insensitive-selected@2.png">icon/controls/checkbox-mixed-insensitive-selected@2.png</file>
+        <file alias="checkbox-mixed-selected.png">icon/controls/checkbox-mixed-selected.png</file>
+        <file alias="checkbox-mixed-selected@2.png">icon/controls/checkbox-mixed-selected@2.png</file>
+        <file alias="checkbox-selectionmode.png">icon/controls/checkbox-selectionmode.png</file>
+        <file alias="checkbox-selectionmode@2.png">icon/controls/checkbox-selectionmode@2.png</file>
+        <file alias="checkbox-selectionmode-dark.png">icon/controls/checkbox-selectionmode-dark.png</file>
+        <file alias="checkbox-selectionmode-dark@2.png">icon/controls/checkbox-selectionmode-dark@2.png</file>
+        <file alias="checkbox-unchecked.png">icon/controls/checkbox-unchecked.png</file>
+        <file alias="checkbox-unchecked@2.png">icon/controls/checkbox-unchecked@2.png</file>
+        <file alias="checkbox-unchecked-dark.png">icon/controls/checkbox-unchecked-dark.png</file>
+        <file alias="checkbox-unchecked-dark@2.png">icon/controls/checkbox-unchecked-dark@2.png</file>
+        <file alias="checkbox-unchecked-insensitive.png">icon/controls/checkbox-unchecked-insensitive.png</file>
+        <file alias="checkbox-unchecked-insensitive@2.png">icon/controls/checkbox-unchecked-insensitive@2.png</file>
+        <file alias="checkbox-unchecked-insensitive-dark.png">icon/controls/checkbox-unchecked-insensitive-dark.png</file>
+        <file alias="checkbox-unchecked-insensitive-dark@2.png">icon/controls/checkbox-unchecked-insensitive-dark@2.png</file>
+        <file alias="checkbox-unchecked-insensitive-selected.png">icon/controls/checkbox-unchecked-insensitive-selected.png</file>
+        <file alias="checkbox-unchecked-insensitive-selected@2.png">icon/controls/checkbox-unchecked-insensitive-selected@2.png</file>
+        <file alias="checkbox-unchecked-selected.png">icon/controls/checkbox-unchecked-selected.png</file>
+        <file alias="checkbox-unchecked-selected@2.png">icon/controls/checkbox-unchecked-selected@2.png</file>
+        <file alias="combobox-arrow.png">icon/controls/combobox-arrow.png</file>
+        <file alias="combobox-arrow@2.png">icon/controls/combobox-arrow@2.png</file>
+        <file alias="radio-checked.png">icon/controls/radio-checked.png</file>
+        <file alias="radio-checked@2.png">icon/controls/radio-checked@2.png</file>
+        <file alias="radio-checked-dark.png">icon/controls/radio-checked-dark.png</file>
+        <file alias="radio-checked-dark@2.png">icon/controls/radio-checked-dark@2.png</file>
+        <file alias="radio-checked-insensitive.png">icon/controls/radio-checked-insensitive.png</file>
+        <file alias="radio-checked-insensitive@2.png">icon/controls/radio-checked-insensitive@2.png</file>
+        <file alias="radio-checked-insensitive-dark.png">icon/controls/radio-checked-insensitive-dark.png</file>
+        <file alias="radio-checked-insensitive-dark@2.png">icon/controls/radio-checked-insensitive-dark@2.png</file>
+        <file alias="radio-checked-insensitive-selected.png">icon/controls/radio-checked-insensitive-selected.png</file>
+        <file alias="radio-checked-insensitive-selected@2.png">icon/controls/radio-checked-insensitive-selected@2.png</file>
+        <file alias="radio-checked-selected.png">icon/controls/radio-checked-selected.png</file>
+        <file alias="radio-checked-selected@2.png">icon/controls/radio-checked-selected@2.png</file>
+        <file alias="radio-mixed.png">icon/controls/radio-mixed.png</file>
+        <file alias="radio-mixed@2.png">icon/controls/radio-mixed@2.png</file>
+        <file alias="radio-mixed-dark.png">icon/controls/radio-mixed-dark.png</file>
+        <file alias="radio-mixed-dark@2.png">icon/controls/radio-mixed-dark@2.png</file>
+        <file alias="radio-mixed-insensitive.png">icon/controls/radio-mixed-insensitive.png</file>
+        <file alias="radio-mixed-insensitive@2.png">icon/controls/radio-mixed-insensitive@2.png</file>
+        <file alias="radio-mixed-insensitive-dark.png">icon/controls/radio-mixed-insensitive-dark.png</file>
+        <file alias="radio-mixed-insensitive-dark@2.png">icon/controls/radio-mixed-insensitive-dark@2.png</file>
+        <file alias="radio-mixed-insensitive-selected.png">icon/controls/radio-mixed-insensitive-selected.png</file>
+        <file alias="radio-mixed-insensitive-selected@2.png">icon/controls/radio-mixed-insensitive-selected@2.png</file>
+        <file alias="radio-mixed-selected.png">icon/controls/radio-mixed-selected.png</file>
+        <file alias="radio-mixed-selected@2.png">icon/controls/radio-mixed-selected@2.png</file>
+        <file alias="radio-unchecked.png">icon/controls/radio-unchecked.png</file>
+        <file alias="radio-unchecked@2.png">icon/controls/radio-unchecked@2.png</file>
+        <file alias="radio-unchecked-dark.png">icon/controls/radio-unchecked-dark.png</file>
+        <file alias="radio-unchecked-dark@2.png">icon/controls/radio-unchecked-dark@2.png</file>
+        <file alias="radio-unchecked-insensitive.png">icon/controls/radio-unchecked-insensitive.png</file>
+        <file alias="radio-unchecked-insensitive@2.png">icon/controls/radio-unchecked-insensitive@2.png</file>
+        <file alias="radio-unchecked-insensitive-dark.png">icon/controls/radio-unchecked-insensitive-dark.png</file>
+        <file alias="radio-unchecked-insensitive-dark@2.png">icon/controls/radio-unchecked-insensitive-dark@2.png</file>
+        <file alias="radio-unchecked-insensitive-selected.png">icon/controls/radio-unchecked-insensitive-selected.png</file>
+        <file alias="radio-unchecked-insensitive-selected@2.png">icon/controls/radio-unchecked-insensitive-selected@2.png</file>
+        <file alias="radio-unchecked-selected.png">icon/controls/radio-unchecked-selected.png</file>
+        <file alias="radio-unchecked-selected@2.png">icon/controls/radio-unchecked-selected@2.png</file>
+        <file alias="setting.png">icon/controls/setting.png</file>
+        <file alias="setting@2.png">icon/controls/setting@2.png</file>
+        <file alias="setting-dark.png">icon/controls/setting-dark.png</file>
+        <file alias="setting-dark@2.png">icon/controls/setting-dark@2.png</file>
+        <file alias="setting-icon.png">icon/controls/setting-icon.png</file>
+        <file alias="setting-icon@2.png">icon/controls/setting-icon@2.png</file>
+        <file alias="setting-icon-dark.png">icon/controls/setting-icon-dark.png</file>
+        <file alias="setting-icon-dark@2.png">icon/controls/setting-icon-dark@2.png</file>
+        <file alias="arrow-down.png">icon/controls/arrow-down.png</file>
+        <file alias="arrow-down-insens.png">icon/controls/arrow-down-insens.png</file>
+        <file alias="arrow-down-prelight.png">icon/controls/arrow-down-prelight.png</file>
+        <file alias="arrow-down-small.png">icon/controls/arrow-down-small.png</file>
+        <file alias="arrow-down-small-insens.png">icon/controls/arrow-down-small-insens.png</file>
+        <file alias="arrow-down-small-prelight.png">icon/controls/arrow-down-small-prelight.png</file>
+        <file alias="arrow-left.png">icon/controls/arrow-left.png</file>
+        <file alias="arrow-left-insens.png">icon/controls/arrow-left-insens.png</file>
+        <file alias="arrow-left-prelight.png">icon/controls/arrow-left-prelight.png</file>
+        <file alias="arrow-right.png">icon/controls/arrow-right.png</file>
+        <file alias="arrow-right-insens.png">icon/controls/arrow-right-insens.png</file>
+        <file alias="arrow-right-prelight.png">icon/controls/arrow-right-prelight.png</file>
+        <file alias="arrow-up.png">icon/controls/arrow-up.png</file>
+        <file alias="arrow-up-insens.png">icon/controls/arrow-up-insens.png</file>
+        <file alias="arrow-up-prelight.png">icon/controls/arrow-up-prelight.png</file>
+        <file alias="arrow-up-small.png">icon/controls/arrow-up-small.png</file>
+        <file alias="arrow-up-small-insens.png">icon/controls/arrow-up-small-insens.png</file>
+        <file alias="arrow-up-small-prelight.png">icon/controls/arrow-up-small-prelight.png</file>
+        <file alias="minus.png">icon/controls/minus.png</file>
+        <file alias="plus.png">icon/controls/plus.png</file>
+    </qresource>
+    <qresource prefix="/titlebar">
+        <file alias="titlebutton-close.png">icon/mactitlebar/titlebutton-close.png</file>
+        <file alias="titlebutton-close@2.png">icon/mactitlebar/titlebutton-close@2.png</file>
+        <file alias="titlebutton-close-active.png">icon/mactitlebar/titlebutton-close-active.png</file>
+        <file alias="titlebutton-close-active@2.png">icon/mactitlebar/titlebutton-close-active@2.png</file>
+        <file alias="titlebutton-close-active-alt.png">icon/mactitlebar/titlebutton-close-active-alt.png</file>
+        <file alias="titlebutton-close-active-alt@2.png">icon/mactitlebar/titlebutton-close-active-alt@2.png</file>
+        <file alias="titlebutton-close-alt.png">icon/mactitlebar/titlebutton-close-alt.png</file>
+        <file alias="titlebutton-close-alt@2.png">icon/mactitlebar/titlebutton-close-alt@2.png</file>
+        <file alias="titlebutton-close-backdrop.png">icon/mactitlebar/titlebutton-close-backdrop.png</file>
+        <file alias="titlebutton-close-backdrop@2.png">icon/mactitlebar/titlebutton-close-backdrop@2.png</file>
+        <file alias="titlebutton-close-backdrop-alt.png">icon/mactitlebar/titlebutton-close-backdrop-alt.png</file>
+        <file alias="titlebutton-close-backdrop-alt@2.png">icon/mactitlebar/titlebutton-close-backdrop-alt@2.png</file>
+        <file alias="titlebutton-close-backdrop-hover.png">icon/mactitlebar/titlebutton-close-backdrop-hover.png</file>
+        <file alias="titlebutton-close-backdrop-hover@2.png">icon/mactitlebar/titlebutton-close-backdrop-hover@2.png</file>
+        <file alias="titlebutton-close-backdrop-hover-alt.png">icon/mactitlebar/titlebutton-close-backdrop-hover-alt.png</file>
+        <file alias="titlebutton-close-backdrop-hover-alt@2.png">icon/mactitlebar/titlebutton-close-backdrop-hover-alt@2.png</file>
+        <file alias="titlebutton-close-hover.png">icon/mactitlebar/titlebutton-close-hover.png</file>
+        <file alias="titlebutton-close-hover@2.png">icon/mactitlebar/titlebutton-close-hover@2.png</file>
+        <file alias="titlebutton-close-hover-alt.png">icon/mactitlebar/titlebutton-close-hover-alt.png</file>
+        <file alias="titlebutton-close-hover-alt@2.png">icon/mactitlebar/titlebutton-close-hover-alt@2.png</file>
+        <file alias="titlebutton-maximize.png">icon/mactitlebar/titlebutton-maximize.png</file>
+        <file alias="titlebutton-maximize@2.png">icon/mactitlebar/titlebutton-maximize@2.png</file>
+        <file alias="titlebutton-maximize-active.png">icon/mactitlebar/titlebutton-maximize-active.png</file>
+        <file alias="titlebutton-maximize-active@2.png">icon/mactitlebar/titlebutton-maximize-active@2.png</file>
+        <file alias="titlebutton-maximize-active-alt.png">icon/mactitlebar/titlebutton-maximize-active-alt.png</file>
+        <file alias="titlebutton-maximize-active-alt@2.png">icon/mactitlebar/titlebutton-maximize-active-alt@2.png</file>
+        <file alias="titlebutton-maximize-alt.png">icon/mactitlebar/titlebutton-maximize-alt.png</file>
+        <file alias="titlebutton-maximize-alt@2.png">icon/mactitlebar/titlebutton-maximize-alt@2.png</file>
+        <file alias="titlebutton-maximize-backdrop.png">icon/mactitlebar/titlebutton-maximize-backdrop.png</file>
+        <file alias="titlebutton-maximize-backdrop@2.png">icon/mactitlebar/titlebutton-maximize-backdrop@2.png</file>
+        <file alias="titlebutton-maximize-backdrop-alt.png">icon/mactitlebar/titlebutton-maximize-backdrop-alt.png</file>
+        <file alias="titlebutton-maximize-backdrop-alt@2.png">icon/mactitlebar/titlebutton-maximize-backdrop-alt@2.png</file>
+        <file alias="titlebutton-maximize-backdrop-hover.png">icon/mactitlebar/titlebutton-maximize-backdrop-hover.png</file>
+        <file alias="titlebutton-maximize-backdrop-hover@2.png">icon/mactitlebar/titlebutton-maximize-backdrop-hover@2.png</file>
+        <file alias="titlebutton-maximize-backdrop-hover-alt.png">icon/mactitlebar/titlebutton-maximize-backdrop-hover-alt.png</file>
+        <file alias="titlebutton-maximize-backdrop-hover-alt@2.png">icon/mactitlebar/titlebutton-maximize-backdrop-hover-alt@2.png</file>
+        <file alias="titlebutton-maximize-hover.png">icon/mactitlebar/titlebutton-maximize-hover.png</file>
+        <file alias="titlebutton-maximize-hover@2.png">icon/mactitlebar/titlebutton-maximize-hover@2.png</file>
+        <file alias="titlebutton-maximize-hover-alt.png">icon/mactitlebar/titlebutton-maximize-hover-alt.png</file>
+        <file alias="titlebutton-maximize-hover-alt@2.png">icon/mactitlebar/titlebutton-maximize-hover-alt@2.png</file>
+        <file alias="titlebutton-minimize.png">icon/mactitlebar/titlebutton-minimize.png</file>
+        <file alias="titlebutton-minimize@2.png">icon/mactitlebar/titlebutton-minimize@2.png</file>
+        <file alias="titlebutton-minimize-active.png">icon/mactitlebar/titlebutton-minimize-active.png</file>
+        <file alias="titlebutton-minimize-active@2.png">icon/mactitlebar/titlebutton-minimize-active@2.png</file>
+        <file alias="titlebutton-minimize-active-alt.png">icon/mactitlebar/titlebutton-minimize-active-alt.png</file>
+        <file alias="titlebutton-minimize-active-alt@2.png">icon/mactitlebar/titlebutton-minimize-active-alt@2.png</file>
+        <file alias="titlebutton-minimize-alt.png">icon/mactitlebar/titlebutton-minimize-alt.png</file>
+        <file alias="titlebutton-minimize-alt@2.png">icon/mactitlebar/titlebutton-minimize-alt@2.png</file>
+        <file alias="titlebutton-minimize-backdrop.png">icon/mactitlebar/titlebutton-minimize-backdrop.png</file>
+        <file alias="titlebutton-minimize-backdrop@2.png">icon/mactitlebar/titlebutton-minimize-backdrop@2.png</file>
+        <file alias="titlebutton-minimize-backdrop-alt.png">icon/mactitlebar/titlebutton-minimize-backdrop-alt.png</file>
+        <file alias="titlebutton-minimize-backdrop-alt@2.png">icon/mactitlebar/titlebutton-minimize-backdrop-alt@2.png</file>
+        <file alias="titlebutton-minimize-backdrop-hover.png">icon/mactitlebar/titlebutton-minimize-backdrop-hover.png</file>
+        <file alias="titlebutton-minimize-backdrop-hover@2.png">icon/mactitlebar/titlebutton-minimize-backdrop-hover@2.png</file>
+        <file alias="titlebutton-minimize-backdrop-hover-alt.png">icon/mactitlebar/titlebutton-minimize-backdrop-hover-alt.png</file>
+        <file alias="titlebutton-minimize-backdrop-hover-alt@2.png">icon/mactitlebar/titlebutton-minimize-backdrop-hover-alt@2.png</file>
+        <file alias="titlebutton-minimize-hover.png">icon/mactitlebar/titlebutton-minimize-hover.png</file>
+        <file alias="titlebutton-minimize-hover@2.png">icon/mactitlebar/titlebutton-minimize-hover@2.png</file>
+        <file alias="titlebutton-minimize-hover-alt.png">icon/mactitlebar/titlebutton-minimize-hover-alt.png</file>
+        <file alias="titlebutton-minimize-hover-alt@2.png">icon/mactitlebar/titlebutton-minimize-hover-alt@2.png</file>
+        <file alias="titlebutton-restore.png">icon/mactitlebar/titlebutton-restore.png</file>
+        <file alias="titlebutton-restore@2.png">icon/mactitlebar/titlebutton-restore@2.png</file>
+        <file alias="titlebutton-restore-active.png">icon/mactitlebar/titlebutton-restore-active.png</file>
+        <file alias="titlebutton-restore-active@2.png">icon/mactitlebar/titlebutton-restore-active@2.png</file>
+        <file alias="titlebutton-restore-active-alt.png">icon/mactitlebar/titlebutton-restore-active-alt.png</file>
+        <file alias="titlebutton-restore-active-alt@2.png">icon/mactitlebar/titlebutton-restore-active-alt@2.png</file>
+        <file alias="titlebutton-restore-alt.png">icon/mactitlebar/titlebutton-restore-alt.png</file>
+        <file alias="titlebutton-restore-alt@2.png">icon/mactitlebar/titlebutton-restore-alt@2.png</file>
+        <file alias="titlebutton-restore-backdrop.png">icon/mactitlebar/titlebutton-restore-backdrop.png</file>
+        <file alias="titlebutton-restore-backdrop@2.png">icon/mactitlebar/titlebutton-restore-backdrop@2.png</file>
+        <file alias="titlebutton-restore-backdrop-alt.png">icon/mactitlebar/titlebutton-restore-backdrop-alt.png</file>
+        <file alias="titlebutton-restore-backdrop-alt@2.png">icon/mactitlebar/titlebutton-restore-backdrop-alt@2.png</file>
+        <file alias="titlebutton-restore-backdrop-hover.png">icon/mactitlebar/titlebutton-restore-backdrop-hover.png</file>
+        <file alias="titlebutton-restore-backdrop-hover@2.png">icon/mactitlebar/titlebutton-restore-backdrop-hover@2.png</file>
+        <file alias="titlebutton-restore-backdrop-hover-alt.png">icon/mactitlebar/titlebutton-restore-backdrop-hover-alt.png</file>
+        <file alias="titlebutton-restore-backdrop-hover-alt@2.png">icon/mactitlebar/titlebutton-restore-backdrop-hover-alt@2.png</file>
+        <file alias="titlebutton-restore-hover.png">icon/mactitlebar/titlebutton-restore-hover.png</file>
+        <file alias="titlebutton-restore-hover@2.png">icon/mactitlebar/titlebutton-restore-hover@2.png</file>
+        <file alias="titlebutton-restore-hover-alt.png">icon/mactitlebar/titlebutton-restore-hover-alt.png</file>
+        <file alias="titlebutton-restore-hover-alt@2.png">icon/mactitlebar/titlebutton-restore-hover-alt@2.png</file>
     </qresource>
     <qresource prefix="/qss">
-        <file>qss/base.css</file>
-        <file>qss/shell.css</file>
-        <file>qss/pages.css</file>
-        <file>qss/light.theme</file>
-        <file>qss/dark.theme</file>
-    </qresource>
-    <qresource prefix="/common">
-        <file>icon/common/checkbox-checked.png</file>
-        <file>icon/common/checkbox-checked@2.png</file>
-        <file>icon/common/checkbox-checked-dark.png</file>
-        <file>icon/common/checkbox-checked-dark@2.png</file>
-        <file>icon/common/checkbox-checked-insensitive.png</file>
-        <file>icon/common/checkbox-checked-insensitive@2.png</file>
-        <file>icon/common/checkbox-checked-insensitive-dark.png</file>
-        <file>icon/common/checkbox-checked-insensitive-dark@2.png</file>
-        <file>icon/common/checkbox-checked-insensitive-selected.png</file>
-        <file>icon/common/checkbox-checked-insensitive-selected@2.png</file>
-        <file>icon/common/checkbox-checked-selected.png</file>
-        <file>icon/common/checkbox-checked-selected@2.png</file>
-        <file>icon/common/checkbox-checked-selectionmode.png</file>
-        <file>icon/common/checkbox-checked-selectionmode@2.png</file>
-        <file>icon/common/checkbox-checked-selectionmode-dark.png</file>
-        <file>icon/common/checkbox-checked-selectionmode-dark@2.png</file>
-        <file>icon/common/checkbox-mixed.png</file>
-        <file>icon/common/checkbox-mixed@2.png</file>
-        <file>icon/common/checkbox-mixed-dark.png</file>
-        <file>icon/common/checkbox-mixed-dark@2.png</file>
-        <file>icon/common/checkbox-mixed-insensitive.png</file>
-        <file>icon/common/checkbox-mixed-insensitive@2.png</file>
-        <file>icon/common/checkbox-mixed-insensitive-dark.png</file>
-        <file>icon/common/checkbox-mixed-insensitive-dark@2.png</file>
-        <file>icon/common/checkbox-mixed-insensitive-selected.png</file>
-        <file>icon/common/checkbox-mixed-insensitive-selected@2.png</file>
-        <file>icon/common/checkbox-mixed-selected.png</file>
-        <file>icon/common/checkbox-mixed-selected@2.png</file>
-        <file>icon/common/checkbox-selectionmode.png</file>
-        <file>icon/common/checkbox-selectionmode@2.png</file>
-        <file>icon/common/checkbox-selectionmode-dark.png</file>
-        <file>icon/common/checkbox-selectionmode-dark@2.png</file>
-        <file>icon/common/checkbox-unchecked.png</file>
-        <file>icon/common/checkbox-unchecked@2.png</file>
-        <file>icon/common/checkbox-unchecked-dark.png</file>
-        <file>icon/common/checkbox-unchecked-dark@2.png</file>
-        <file>icon/common/checkbox-unchecked-insensitive.png</file>
-        <file>icon/common/checkbox-unchecked-insensitive@2.png</file>
-        <file>icon/common/checkbox-unchecked-insensitive-dark.png</file>
-        <file>icon/common/checkbox-unchecked-insensitive-dark@2.png</file>
-        <file>icon/common/checkbox-unchecked-insensitive-selected.png</file>
-        <file>icon/common/checkbox-unchecked-insensitive-selected@2.png</file>
-        <file>icon/common/checkbox-unchecked-selected.png</file>
-        <file>icon/common/checkbox-unchecked-selected@2.png</file>
-        <file>icon/common/combobox-arrow.png</file>
-        <file>icon/common/combobox-arrow@2.png</file>
-        <file>icon/common/radio-checked.png</file>
-        <file>icon/common/radio-checked@2.png</file>
-        <file>icon/common/radio-checked-dark.png</file>
-        <file>icon/common/radio-checked-dark@2.png</file>
-        <file>icon/common/radio-checked-insensitive.png</file>
-        <file>icon/common/radio-checked-insensitive@2.png</file>
-        <file>icon/common/radio-checked-insensitive-dark.png</file>
-        <file>icon/common/radio-checked-insensitive-dark@2.png</file>
-        <file>icon/common/radio-checked-insensitive-selected.png</file>
-        <file>icon/common/radio-checked-insensitive-selected@2.png</file>
-        <file>icon/common/radio-checked-selected.png</file>
-        <file>icon/common/radio-checked-selected@2.png</file>
-        <file>icon/common/radio-mixed.png</file>
-        <file>icon/common/radio-mixed@2.png</file>
-        <file>icon/common/radio-mixed-dark.png</file>
-        <file>icon/common/radio-mixed-dark@2.png</file>
-        <file>icon/common/radio-mixed-insensitive.png</file>
-        <file>icon/common/radio-mixed-insensitive@2.png</file>
-        <file>icon/common/radio-mixed-insensitive-dark.png</file>
-        <file>icon/common/radio-mixed-insensitive-dark@2.png</file>
-        <file>icon/common/radio-mixed-insensitive-selected.png</file>
-        <file>icon/common/radio-mixed-insensitive-selected@2.png</file>
-        <file>icon/common/radio-mixed-selected.png</file>
-        <file>icon/common/radio-mixed-selected@2.png</file>
-        <file>icon/common/radio-unchecked.png</file>
-        <file>icon/common/radio-unchecked@2.png</file>
-        <file>icon/common/radio-unchecked-dark.png</file>
-        <file>icon/common/radio-unchecked-dark@2.png</file>
-        <file>icon/common/radio-unchecked-insensitive.png</file>
-        <file>icon/common/radio-unchecked-insensitive@2.png</file>
-        <file>icon/common/radio-unchecked-insensitive-dark.png</file>
-        <file>icon/common/radio-unchecked-insensitive-dark@2.png</file>
-        <file>icon/common/radio-unchecked-insensitive-selected.png</file>
-        <file>icon/common/radio-unchecked-insensitive-selected@2.png</file>
-        <file>icon/common/radio-unchecked-selected.png</file>
-        <file>icon/common/radio-unchecked-selected@2.png</file>
-        <file>icon/common/setting.png</file>
-        <file>icon/common/setting@2.png</file>
-        <file>icon/common/setting-dark.png</file>
-        <file>icon/common/setting-dark@2.png</file>
-        <file>icon/common/setting-icon.png</file>
-        <file>icon/common/setting-icon@2.png</file>
-        <file>icon/common/setting-icon-dark.png</file>
-        <file>icon/common/setting-icon-dark@2.png</file>
-        <file>icon/common/arrow-down.png</file>
-        <file>icon/common/arrow-down-insens.png</file>
-        <file>icon/common/arrow-down-prelight.png</file>
-        <file>icon/common/arrow-down-small.png</file>
-        <file>icon/common/arrow-down-small-insens.png</file>
-        <file>icon/common/arrow-down-small-prelight.png</file>
-        <file>icon/common/arrow-left.png</file>
-        <file>icon/common/arrow-left-insens.png</file>
-        <file>icon/common/arrow-left-prelight.png</file>
-        <file>icon/common/arrow-right.png</file>
-        <file>icon/common/arrow-right-insens.png</file>
-        <file>icon/common/arrow-right-prelight.png</file>
-        <file>icon/common/arrow-up.png</file>
-        <file>icon/common/arrow-up-insens.png</file>
-        <file>icon/common/arrow-up-prelight.png</file>
-        <file>icon/common/arrow-up-small.png</file>
-        <file>icon/common/arrow-up-small-insens.png</file>
-        <file>icon/common/arrow-up-small-prelight.png</file>
-        <file>icon/common/minus.png</file>
-        <file>icon/common/plus.png</file>
+        <file alias="base.css">qss/base.css</file>
+        <file alias="shell.css">qss/shell.css</file>
+        <file alias="pages.css">qss/pages.css</file>
+        <file alias="light.theme">qss/light.theme</file>
+        <file alias="dark.theme">qss/dark.theme</file>
     </qresource>
 </RCC>

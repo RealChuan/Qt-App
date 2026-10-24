@@ -1,19 +1,15 @@
 #include "utils.hpp"
 
-#include "hostosinfo.hpp"
-#include "utilstr.hpp"
-
-#include <QtWidgets>
-
-// clang-format off
-#ifdef Q_OS_WIN
-#include <windows.h>
-#include <tlhelp32.h>
-#endif
-// clang-format on
+#include <QApplication>
+#include <QCryptographicHash>
+#include <QDir>
+#include <QElapsedTimer>
+#include <QProcess>
+#include <QRandomGenerator>
+#include <QSysInfo>
+#include <QThread>
 
 #include <array>
-#include <memory>
 #include <ranges>
 #include <vector>
 
@@ -22,54 +18,6 @@ using namespace Qt::StringLiterals;
 namespace Utils {
 
 namespace {
-
-// Windows 句柄用 RAII 管住，避免每个提前返回分支都要手写 CloseHandle。
-#ifdef Q_OS_WIN
-using UniqueHandle = std::unique_ptr<void, decltype(&::CloseHandle)>;
-
-auto makeHandle(HANDLE handle) -> UniqueHandle
-{
-    return UniqueHandle(handle, &::CloseHandle);
-}
-#endif
-
-} // namespace
-
-void loadFonts(const QString &fontPath)
-{
-    const QDir dir(fontPath);
-    if (!dir.exists())
-        return;
-
-    const QFileInfoList fonts = dir.entryInfoList({u"*.ttf"_s}, QDir::Files);
-    for (const QFileInfo &info : fonts) {
-        const int fontId = QFontDatabase::addApplicationFont(info.absoluteFilePath());
-        if (fontId == -1) {
-            qWarning().noquote() << u"Loading Fonts file: %1 Failed."_s.arg(info.fileName());
-            continue;
-        }
-        qInfo().noquote() << u"Loading Fonts file: %1."_s.arg(info.fileName())
-                          << QFontDatabase::applicationFontFamilies(fontId);
-    }
-}
-
-void windowCenter(QWidget *child, QWidget *parent)
-{
-    const QRect target
-        = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, child->size(), parent->rect());
-    child->move(target.topLeft());
-}
-
-void windowCenter(QWidget *window)
-{
-    const QScreen *screen = window->screen() ? window->screen() : QGuiApplication::primaryScreen();
-    if (!screen)
-        return;
-
-    const QRect target = QStyle::alignedRect(
-        Qt::LeftToRight, Qt::AlignCenter, window->size(), screen->availableGeometry());
-    window->move(target.topLeft());
-}
 
 auto compilerString() -> QString
 {
@@ -84,39 +32,7 @@ auto compilerString() -> QString
 #endif
 }
 
-static QWidget *(*s_dialogParentGetter)() = nullptr;
-
-void setDialogParentGetter(QWidget *(*getter)())
-{
-    s_dialogParentGetter = getter;
-}
-
-auto dialogParent() -> QWidget *
-{
-    return s_dialogParentGetter ? s_dialogParentGetter() : nullptr;
-}
-
-void restoreAndActivate(QWidget *window)
-{
-    if (window->isMinimized())
-        window->setWindowState(window->windowState() & ~Qt::WindowMinimized);
-
-    window->show();
-    window->raise();
-    window->activateWindow();
-}
-
-auto addDropShadow(QWidget *widget, const DropShadow &style) -> QGraphicsDropShadowEffect *
-{
-    // 用半透明黑而不是纯灰：深色主题下灰边会亮得像一圈描边。
-    auto *effect = new QGraphicsDropShadowEffect(widget);
-    effect->setOffset(style.offset);
-    effect->setColor(style.color);
-    // Qt 的阴影大约向外扩 blurRadius / 2，取边距的 2 倍正好铺满预留的那圈空白。
-    effect->setBlurRadius(style.margin * 2.0);
-    widget->setGraphicsEffect(effect);
-    return effect;
-}
+} // namespace
 
 auto systemInfo() -> QString
 {
@@ -133,14 +49,6 @@ auto systemInfo() -> QString
     return lines.join(u"\n"_s);
 }
 
-void setupHighDpi()
-{
-#ifdef Q_OS_WIN
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-#endif
-}
-
 void reboot()
 {
     QProcess::startDetached(
@@ -148,34 +56,9 @@ void reboot()
     QApplication::exit();
 }
 
-auto createDirectoryRecursively(const QString &path) -> bool
+void quitApplication()
 {
-    return QDir().mkpath(path);
-}
-
-auto removeDirectory(const QString &path) -> bool
-{
-    // QDir("") 指向工作目录，永远不要删它。
-    if (path.isEmpty())
-        return false;
-
-    QDir dir(path);
-    if (!dir.exists()) {
-        qWarning().noquote() << Tr::tr("Directory does not exist: %1").arg(path);
-        return false;
-    }
-    return dir.removeRecursively();
-}
-
-auto removeFile(const QString &path) -> bool
-{
-    if (path.isEmpty())
-        return false;
-    if (!QFile::exists(path)) {
-        qWarning().noquote() << Tr::tr("File does not exist: %1").arg(path);
-        return false;
-    }
-    return QFile::remove(path);
+    QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
 auto formatBytes(qint64 bytes, int precision) -> QString
@@ -192,95 +75,6 @@ auto formatBytes(qint64 bytes, int precision) -> QString
     }
 
     return u"%1 %2"_s.arg(QString::number(size, 'f', precision), QLatin1StringView(units[index]));
-}
-
-auto getPidFromProcessName(QStringView processName) -> qint64
-{
-#if defined(Q_OS_WIN)
-    const UniqueHandle snapshot = makeHandle(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
-    if (!snapshot || snapshot.get() == INVALID_HANDLE_VALUE)
-        return -1;
-
-    PROCESSENTRY32 entry{};
-    entry.dwSize = sizeof(PROCESSENTRY32);
-    if (!Process32First(snapshot.get(), &entry))
-        return -1;
-
-    do {
-        if (QString::fromWCharArray(entry.szExeFile) == processName)
-            return entry.th32ProcessID;
-    } while (Process32Next(snapshot.get(), &entry));
-    return -1;
-#else
-    QProcess process;
-    process.start(u"ps"_s, {u"-A"_s});
-    if (!process.waitForFinished())
-        return -1;
-
-    const QString output = QString::fromLocal8Bit(process.readAllStandardOutput());
-    const QRegularExpression pattern(
-        u"\\s%1$"_s.arg(QRegularExpression::escape(processName.toString())));
-    const QStringList lines = output.split(u'\n');
-    for (const QString &line : lines) {
-        if (!pattern.match(line).hasMatch())
-            continue;
-        const QStringList parts = line.split(u' ', Qt::SkipEmptyParts);
-        if (!parts.isEmpty())
-            return parts.constFirst().toLongLong();
-    }
-    return -1;
-#endif
-}
-
-auto killProcess(qint64 pid) -> bool
-{
-    qWarning().noquote() << "kill process:" << pid;
-#if defined(Q_OS_WIN)
-    const UniqueHandle process = makeHandle(OpenProcess(PROCESS_TERMINATE, FALSE, DWORD(pid)));
-    if (!process)
-        return false;
-    return TerminateProcess(process.get(), 0) != 0;
-#else
-    return QProcess::execute(u"kill"_s, {QString::number(pid)}) == 0;
-#endif
-}
-
-void setMacComboBoxStyle(QWidget *parent)
-{
-#ifdef Q_OS_MACOS
-    const auto comboBoxes = parent->findChildren<QComboBox *>();
-    for (QComboBox *comboBox : comboBoxes)
-        comboBox->setStyle(QStyleFactory::create(u"Fusion"_s));
-#else
-    Q_UNUSED(parent)
-#endif
-}
-
-void quitApplication()
-{
-    QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
-}
-
-auto calculateDirectoryStats(const QString &path) -> DirectoryStats
-{
-    DirectoryStats stats;
-    if (path.isEmpty() || !QDir(path).exists())
-        return stats;
-
-    QDirIterator
-        it(path,
-           QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot,
-           QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        const QFileInfo info(it.next());
-        if (info.isDir()) {
-            ++stats.folders;
-        } else {
-            ++stats.files;
-            stats.size += info.size();
-        }
-    }
-    return stats;
 }
 
 namespace {
@@ -327,14 +121,6 @@ auto hashBench(int iterations, int durationMs, int dataSize, QCryptographicHash:
     for (int i = 0; i < iterations; ++i)
         best = (std::ranges::max) (best, hashBenchOnce(durationMs, algorithm, data));
     return best;
-}
-
-void setPixmapCacheLimit()
-{
-    const int originalLimit = QPixmapCache::cacheLimit();
-    const qreal dpr = qApp->devicePixelRatio();
-    const qreal multiplier = std::clamp(dpr * dpr, 1.0, 4.0);
-    QPixmapCache::setCacheLimit(qRound(originalLimit * multiplier));
 }
 
 } // namespace Utils

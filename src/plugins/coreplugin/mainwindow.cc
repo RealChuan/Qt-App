@@ -6,6 +6,7 @@
 #include <utils/appinfo.hpp>
 #include <utils/singletonmanager.hpp>
 #include <utils/theme.hpp>
+#include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
 
 #include <QAction>
@@ -47,17 +48,19 @@ auto maskStyleSheet() -> const QString &
 }
 constexpr int kWindowWidth = 1060;
 constexpr int kWindowHeight = 680;
-constexpr int kSectionCount = 3;
+constexpr int kSectionCount = 4;
 
 auto sectionIndex(Shell::PageArea area) -> int
 {
     switch (area) {
     case Shell::PageArea::Workspace:
         return 0;
-    case Shell::PageArea::Settings:
+    case Shell::PageArea::Games:
         return 1;
-    case Shell::PageArea::Help:
+    case Shell::PageArea::Settings:
         return 2;
+    case Shell::PageArea::Help:
+        return 3;
     }
     return 0;
 }
@@ -236,7 +239,7 @@ void MainWindow::MainWindowPrivate::buildChrome()
     q_ptr->setCentralWidget(central);
     q_ptr->setMinimumSize(kWindowWidth, kWindowHeight);
     q_ptr->resize(kWindowWidth, kWindowHeight);
-    Utils::windowCenter(q_ptr);
+    Utils::centerOnScreen(q_ptr);
 }
 
 void MainWindow::MainWindowPrivate::buildTray()
@@ -401,8 +404,9 @@ void MainWindow::retranslateUi()
 {
     d_ptr->commandHint->setText(tr("Search commands"));
     d_ptr->sections[0].label->setText(tr("Pages"));
-    d_ptr->sections[1].label->setText(tr("Settings"));
-    d_ptr->sections[2].label->setText(tr("Help"));
+    d_ptr->sections[1].label->setText(tr("Games"));
+    d_ptr->sections[2].label->setText(tr("Settings"));
+    d_ptr->sections[3].label->setText(tr("Help"));
     d_ptr->footer->setText(
         QStringLiteral("%1 %2").arg(QLatin1String(Utils::appName), QLatin1String(Utils::version)));
 

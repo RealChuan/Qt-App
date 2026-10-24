@@ -1,6 +1,6 @@
 #include "waitwidget.hpp"
 
-#include <utils/utils.hpp>
+#include <utils/uihelpers.hpp>
 
 #include <QHBoxLayout>
 #include <QProgressBar>
@@ -51,7 +51,7 @@ WaitWidget::WaitWidget()
     d_ptr->timer->start(kTickMs);
 
     resize(600, kBarHeight);
-    Utils::windowCenter(this);
+    Utils::centerOnScreen(this);
 }
 
 WaitWidget::~WaitWidget() = default;
