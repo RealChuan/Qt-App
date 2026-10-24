@@ -21,8 +21,9 @@ constexpr int kBorderWidth = 1;
 constexpr qreal kBoardRadius = 10.0;
 constexpr qreal kBlockInset = 1.0;
 constexpr qreal kBlockRadiusRatio = 0.18;
-constexpr qreal kGhostAlpha = 0.45;
-constexpr qreal kFlashAlpha = 0.70;
+// QColor::setAlphaF 是 float 接口，透明度常量直接用 float。
+constexpr float kGhostAlpha = 0.45F;
+constexpr float kFlashAlpha = 0.70F;
 // 开局提示是"该按键了"的号召，比正文大一档，颜色也用正文色而不是占位色。
 constexpr int kIdlePixelSize = 20;
 
@@ -165,7 +166,8 @@ void TetrisBoard::paintEvent(QPaintEvent *)
         const QVector<int> rows = d_ptr->game->clearingRows();
         if (!rows.isEmpty()) {
             QColor flash = palette.color(QPalette::Window);
-            flash.setAlphaF(kFlashAlpha * (1.0 - d_ptr->game->clearingProgress()));
+            flash.setAlphaF(
+                kFlashAlpha * (1.0F - static_cast<float>(d_ptr->game->clearingProgress())));
             painter.setPen(Qt::NoPen);
             painter.setBrush(flash);
             for (const int row : rows) {

@@ -408,7 +408,8 @@ void MainWindow::retranslateUi()
     d_ptr->sections[2].label->setText(tr("Settings"));
     d_ptr->sections[3].label->setText(tr("Help"));
     d_ptr->footer->setText(
-        QStringLiteral("%1 %2").arg(QLatin1String(Utils::appName), QLatin1String(Utils::version)));
+        QStringLiteral("%1 %2")
+            .arg(QLatin1String(Utils::AppInfo::appName), QLatin1String(Utils::AppInfo::version)));
 
     updateThemeAction();
     d_ptr->languageAction->setText(
@@ -420,7 +421,7 @@ void MainWindow::retranslateUi()
     d_ptr->retranslatePages();
 
     if (d_ptr->tray) {
-        d_ptr->tray->setToolTip(Utils::appName);
+        d_ptr->tray->setToolTip(Utils::AppInfo::appName);
         if (d_ptr->quitAction)
             d_ptr->quitAction->setText(tr("Quit"));
     }

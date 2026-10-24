@@ -344,7 +344,7 @@ auto PluginManager::loadPlugins() -> Utils::Result<>
         spec->setState(PluginSpec::State::Loaded);
 
         QSettings *settings = PluginManagerPrivate::pluginSettingsFor(spec);
-        const PluginContext context(spec, settings, Utils::appInfo().resources);
+        const PluginContext context(spec, settings, Utils::AppInfo::resources());
         const auto result = plugin->initialize(context);
         if (!result) {
             spec->setError(result.error());

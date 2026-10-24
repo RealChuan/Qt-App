@@ -57,8 +57,8 @@ public:
     explicit AppWindowPrivate(AppWindow *q)
         : q_ptr(q)
         , titleButton(new QPushButton(qApp->windowIcon(), qAppName(), q))
-        , centralContainer(new QWidget(q))
         , titleWidget(new QWidget(q))
+        , centralContainer(new QWidget(q))
         , titleBarContainer(new QWidget(q))
     {
         titleButton->setObjectName(QStringLiteral("AppButton"));

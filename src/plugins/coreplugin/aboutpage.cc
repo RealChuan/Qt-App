@@ -19,11 +19,11 @@ AboutPage::AboutPage(QWidget *parent)
     icon->setPixmap(qApp->windowIcon().pixmap(QSize(72, 72)));
     icon->setAlignment(Qt::AlignCenter);
 
-    auto *name = new QLabel(QLatin1String(Utils::appName), this);
+    auto *name = new QLabel(QLatin1String(Utils::AppInfo::appName), this);
     name->setObjectName("AboutName");
     name->setAlignment(Qt::AlignCenter);
 
-    auto *version = new QLabel(tr("Version %1").arg(QLatin1String(Utils::version)), this);
+    auto *version = new QLabel(tr("Version %1").arg(QLatin1String(Utils::AppInfo::version)), this);
     version->setObjectName("AboutVersion");
     version->setAlignment(Qt::AlignCenter);
 
@@ -33,7 +33,7 @@ AboutPage::AboutPage(QWidget *parent)
     info->setWordWrap(true);
     info->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
-    auto *copyright = new QLabel(QLatin1String(Utils::copyright), this);
+    auto *copyright = new QLabel(QLatin1String(Utils::AppInfo::copyright), this);
     copyright->setObjectName("AboutCopyright");
     copyright->setAlignment(Qt::AlignCenter);
     copyright->setWordWrap(true);

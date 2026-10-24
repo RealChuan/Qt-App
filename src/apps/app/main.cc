@@ -55,7 +55,7 @@ QtMsgType parseLevel(const QString &name, QtMsgType fallback)
 void startLogger()
 {
     AsyncLog::Config config;
-    config.logPath = Utils::logPath();
+    config.logPath = Utils::AppInfo::logPath().path();
     config.file = !config.logPath.isEmpty();
 
 #ifdef QT_DEBUG
@@ -105,7 +105,7 @@ static inline QString msgCoreLoadFailure(const QString &why)
 static void displayError(const QString &t)
 {
     if (Utils::HostOsInfo::isWindowsHost() && qApp) {
-        QMessageBox::critical(nullptr, QLatin1String(Utils::appName), t);
+        QMessageBox::critical(nullptr, QLatin1String(Utils::AppInfo::appName), t);
     } else {
         qCritical("%s", qPrintable(t));
     }
@@ -114,12 +114,12 @@ static void displayError(const QString &t)
 // 把编译期身份写进 QCoreApplication（设置目录、窗口标题、收件箱都依赖它）。
 void setupApplication()
 {
-    qApp->setApplicationVersion(Utils::version);
-    qApp->setApplicationDisplayName(Utils::appName);
-    qApp->setApplicationName(Utils::appName);
-    qApp->setDesktopFileName(Utils::appName);
-    qApp->setOrganizationDomain(Utils::organizationDomain);
-    qApp->setOrganizationName(Utils::organizationName);
+    qApp->setApplicationVersion(Utils::AppInfo::version);
+    qApp->setApplicationDisplayName(Utils::AppInfo::appName);
+    qApp->setApplicationName(Utils::AppInfo::appName);
+    qApp->setDesktopFileName(Utils::AppInfo::appName);
+    qApp->setOrganizationDomain(Utils::AppInfo::organizationDomain);
+    qApp->setOrganizationName(Utils::AppInfo::organizationName);
     qApp->setWindowIcon(QIcon(":/icon/app.png"));
 }
 
@@ -178,7 +178,7 @@ auto main(int argc, char *argv[]) -> int
 #endif
     Utils::setupHighDpiRounding();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    SharedTools::QtSingleApplication app(Utils::appName, argc, argv);
+    SharedTools::QtSingleApplication app(Utils::AppInfo::appName, argc, argv);
     if (app.isRunning()) {
         qWarning() << "This is already running";
         if (app.sendMessage("raise_window_noop", 5000)) {
@@ -207,7 +207,10 @@ auto main(int argc, char *argv[]) -> int
     QDir::setCurrent(app.applicationDirPath());
 
     Crashpad::Client crashpadClient(
-        Utils::crashPath().toStdString(), app.applicationDirPath().toStdString(), {}, true);
+        Utils::AppInfo::crashPath().path().toStdString(),
+        app.applicationDirPath().toStdString(),
+        {},
+        true);
 
     Utils::languageManager()->loadLanguage();
 
@@ -218,7 +221,7 @@ auto main(int argc, char *argv[]) -> int
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
     Utils::scalePixmapCacheForDpr();
-    Utils::loadFonts((Utils::appInfo().resources / "fonts").toUserOutput());
+    Utils::loadFonts((Utils::AppInfo::resources() / "fonts").toUserOutput());
     // 样式表按当前深浅色方案生成；系统切换时 Theme 会自己重新应用。
     Utils::theme()->apply();
 
@@ -226,7 +229,8 @@ auto main(int argc, char *argv[]) -> int
     // 放在插件之前是因为插件初始化阶段崩溃时，只有挡在启动流程里才能看到提示。
     if (const auto reports = crashpadClient.pendingReports(); !reports.empty()) {
         qInfo() << "pending crash reports:" << reports.size();
-        Crash::CrashDialog dialog(reports, Utils::crashPath(), Utils::logPath());
+        Crash::CrashDialog
+            dialog(reports, Utils::AppInfo::crashPath().path(), Utils::AppInfo::logPath().path());
         dialog.exec();
         // 先标记再重启：否则重启后的新进程会立刻再弹一次。
         crashpadClient.discardReports();
@@ -248,16 +252,17 @@ auto main(int argc, char *argv[]) -> int
     // 与插件加载并行跑，结果只进日志；QRunnable 交给线程池（autoDelete）接管。
     QThreadPool::globalInstance()->start(new HashBenchTask);
 
-    auto *userSettings = new QSettings(Utils::configFilePath(), QSettings::IniFormat);
+    auto *userSettings
+        = new QSettings(Utils::AppInfo::configFilePath().path(), QSettings::IniFormat);
     auto *installSettings = new QSettings(
         QSettings::IniFormat,
         QSettings::SystemScope,
-        QLatin1String(Utils::organizationName),
-        QLatin1String(Utils::appName));
+        QLatin1String(Utils::AppInfo::organizationName),
+        QLatin1String(Utils::AppInfo::appName));
     Utils::setupSettings(userSettings, installSettings);
 
     ExtensionSystem::PluginManager pluginManager;
-    ExtensionSystem::PluginManager::setPluginPaths({Utils::appInfo().plugins});
+    ExtensionSystem::PluginManager::setPluginPaths({Utils::AppInfo::plugins()});
 
     if (const auto result = ExtensionSystem::PluginManager::loadPlugins(); !result) {
         displayError(msgCoreLoadFailure(result.error()));

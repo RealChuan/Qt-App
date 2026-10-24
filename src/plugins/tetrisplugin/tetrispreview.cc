@@ -81,7 +81,7 @@ void TetrisPreview::paintEvent(QPaintEvent *)
 
     // 空格位画一条虚线框，告诉玩家这里会有东西。
     QColor slotLine = palette.color(QPalette::PlaceholderText);
-    slotLine.setAlphaF(0.35);
+    slotLine.setAlphaF(0.35F);
 
     const int count = std::min(static_cast<int>(d_ptr->pieces.size()), d_ptr->slotCount);
     for (int slot = 0; slot < d_ptr->slotCount; ++slot) {

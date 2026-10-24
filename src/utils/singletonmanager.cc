@@ -37,7 +37,7 @@ auto SingletonManager::theme() -> Theme *
 
 void SingletonManager::saveSettings()
 {
-    QSettings settings(Utils::configFilePath(), QSettings::IniFormat);
+    QSettings settings(Utils::AppInfo::configFilePath().path(), QSettings::IniFormat);
     d_ptr->languageManager->saveSettings(settings);
     d_ptr->widgetManager->saveSettings(settings);
 }
@@ -56,7 +56,7 @@ SingletonManager::~SingletonManager()
 
 void SingletonManager::loadSettings()
 {
-    QSettings settings(Utils::configFilePath(), QSettings::IniFormat);
+    QSettings settings(Utils::AppInfo::configFilePath().path(), QSettings::IniFormat);
     d_ptr->languageManager->loadSettings(settings);
     d_ptr->widgetManager->loadSettings(settings);
 }

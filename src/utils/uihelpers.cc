@@ -25,7 +25,8 @@ namespace {
 // core 插件启动时注入，供各处的对话框取默认父窗口。
 QWidget *(*s_dialogParentGetter)() = nullptr;
 
-constexpr qreal kScrimAlpha = 0.80;
+// Qt 6 的 QColor 浮点接口用 float，常量也保持 float，避免 double→float 截断。
+constexpr float kScrimAlpha = 0.80F;
 // 遮罩上的字是游戏里最该被看见的东西，字号按"一眼能读"给，不跟着正文的 13px 走。
 constexpr int kTitlePixelSize = 26;
 constexpr int kNumberPixelSize = 46;
@@ -173,7 +174,7 @@ void paintOverlay(
         painter.setFont(withPixelSize(painter.font(), kHintPixelSize, QFont::Normal));
         // 提示不用 PlaceholderText：那档颜色在遮罩上几乎读不出来。
         QColor hintColor = palette.color(QPalette::Text);
-        hintColor.setAlphaF(0.85);
+        hintColor.setAlphaF(0.85F);
         painter.setPen(hintColor);
         painter.drawText(QRectF(area.left(), top, area.width(), hintHeight), Qt::AlignCenter, hint);
     }

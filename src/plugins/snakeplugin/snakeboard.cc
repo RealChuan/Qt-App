@@ -27,17 +27,18 @@ constexpr qreal kCellInset = 1.5;
 constexpr qreal kHeadInset = 0.5;
 constexpr qreal kCellRadiusRatio = 0.22;
 constexpr qreal kFoodRadiusRatio = 0.30;
-constexpr qreal kTailAlpha = 0.45;
-constexpr qreal kGridAlpha = 0.16;
+// QColor::setAlphaF 是 float 接口，透明度常量直接用 float。
+constexpr float kTailAlpha = 0.45F;
+constexpr float kGridAlpha = 0.16F;
 // 开局提示是"该按键了"的号召，比正文大一档，颜色也用正文色而不是占位色。
 constexpr int kIdlePixelSize = 20;
 
 auto complementOf(const QColor &color) -> QColor
 {
-    qreal hue = color.hsvHueF();
-    if (hue < 0.0)
-        hue = 0.58; // 强调色是灰色时的冷蓝
-    return QColor::fromHsvF(std::fmod(hue + 0.5, 1.0), 0.70, 0.95);
+    float hue = color.hsvHueF();
+    if (hue < 0.0F)
+        hue = 0.58F; // 强调色是灰色时的冷蓝
+    return QColor::fromHsvF(std::fmod(hue + 0.5F, 1.0F), 0.70F, 0.95F);
 }
 
 auto withPixelSize(const QFont &font, int pixelSize, QFont::Weight weight) -> QFont
@@ -144,9 +145,9 @@ void SnakeBoard::SnakeBoardPrivate::paintSnake(
     painter.setPen(Qt::NoPen);
     for (int i = 0; i < count; ++i) {
         // 从头到尾淡出，尾端一眼可辨，不用再画眼睛之类的装饰。
-        const qreal t = count > 1 ? static_cast<qreal>(i) / static_cast<qreal>(count - 1) : 0.0;
+        const float t = count > 1 ? static_cast<float>(i) / static_cast<float>(count - 1) : 0.0F;
         QColor color = base;
-        color.setAlphaF(1.0 - (1.0 - kTailAlpha) * t);
+        color.setAlphaF(1.0F - (1.0F - kTailAlpha) * t);
 
         const qreal inset = i == 0 ? kHeadInset : kCellInset;
         const QRectF target = cellRect(grid, cell, body.at(static_cast<std::size_t>(i)))
