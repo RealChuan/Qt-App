@@ -95,13 +95,6 @@ runs:
           -O /usr/local/bin/linuxdeployqt
         sudo chmod +x /usr/local/bin/linuxdeployqt
 
-    - name: Build libtiff.so.5 on Linux
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        chmod +x packaging/ubuntu/build_libtiff.sh
-        packaging/ubuntu/build_libtiff.sh
-
     # ---------------- Qt ----------------
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
