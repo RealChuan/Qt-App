@@ -9,3 +9,4 @@ add_subdirectory(fractalplugin)      # 后台计算 + 取消
 add_subdirectory(colorpickerplugin)  # 独立工具窗 + 系统能力
 add_subdirectory(snakeplugin)        # 游戏循环 + 键盘焦点 + 存档
 add_subdirectory(tetrisplugin)       # 60 Hz 帧循环 + SRS + DAS/ARR
+add_subdirectory(fortuneplugin)      # 纯逻辑引擎 + 农历表 + 动画揭示

@@ -19,6 +19,9 @@ SOURCES += \
     commandpalette.cc \
     coreplugin.cc \
     mainwindow.cc \
+    mainchrome.cc \
+    mainpages.cc \
+    pageframe.cc \
     plugindetailsview.cc \
     pluginpage.cc \
     pluginview.cc
@@ -29,6 +32,8 @@ HEADERS += \
     commandpalette.hpp \
     coreplugin.hpp \
     mainwindow.hpp \
+    mainwindow_p.hpp \
+    pageframe.hpp \
     plugindetailsview.hpp \
     pluginpage.hpp \
     pluginview.hpp

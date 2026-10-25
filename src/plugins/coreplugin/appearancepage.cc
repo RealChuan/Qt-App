@@ -155,9 +155,11 @@ void AppearancePage::AppearancePagePrivate::setupUi()
     columnLayout->addWidget(windowCard.widget);
     columnLayout->addStretch();
 
+    // 左右各留一个 stretch：卡片列固定在页面中间，不再贴着左边。
     auto *root = new QHBoxLayout(q_ptr);
     root->setContentsMargins({});
     root->setSpacing(0);
+    root->addStretch();
     root->addWidget(column);
     root->addStretch();
 }

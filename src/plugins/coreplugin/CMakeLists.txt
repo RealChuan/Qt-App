@@ -9,6 +9,11 @@ set(PROJECT_SOURCES
     coreplugin.cc
     mainwindow.hpp
     mainwindow.cc
+    mainchrome.cc
+    mainpages.cc
+    mainwindow_p.hpp
+    pageframe.hpp
+    pageframe.cc
     plugindetailsview.hpp
     plugindetailsview.cc
     pluginpage.hpp

@@ -70,6 +70,7 @@ plugins/<模块名>.dll|so|dylib
 | [colorpickerplugin](src/plugins/colorpickerplugin) | 独立工具窗 + 屏幕取色                                    |
 | [snakeplugin](src/plugins/snakeplugin)             | 固定步进循环、键盘焦点、最高分存档                       |
 | [tetrisplugin](src/plugins/tetrisplugin)           | 60 Hz 帧循环、SRS 踢墙、DAS/ARR 连发                     |
+| [fortuneplugin](src/plugins/fortuneplugin)         | 纯逻辑取卦引擎、1901–2100 农历表、Qt 动画揭示            |
 
 ### 新增一个插件
 

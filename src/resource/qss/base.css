@@ -333,6 +333,61 @@ QAbstractSpinBox::down-arrow {
     image: @@arrowDown@@;
 }
 
+/* QDateEdit 的日历按钮：与 QComboBox 用同一套箭头，去掉系统默认方块 */
+QDateEdit::drop-down,
+QDateTimeEdit::drop-down,
+QTimeEdit::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 24px;
+    border: none;
+    background: transparent;
+}
+
+QDateEdit::down-arrow,
+QDateTimeEdit::down-arrow,
+QTimeEdit::down-arrow {
+    width: 8px;
+    height: 5px;
+    image: @@arrowDown@@;
+}
+
+/* 日期弹窗的导航栏和格子跟随主题，不再退回系统浅色控件 */
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background: @@surface@@;
+    border-bottom: 1px solid @@border@@;
+}
+
+QCalendarWidget QToolButton {
+    color: @@text@@;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+QCalendarWidget QToolButton:hover {
+    background: @@surfaceAlt@@;
+}
+
+QCalendarWidget QToolButton:pressed {
+    background: @@surfaceSunken@@;
+}
+
+QCalendarWidget QSpinBox {
+    background: transparent;
+    border: none;
+    min-height: 24px;
+}
+
+QCalendarWidget QAbstractItemView {
+    background: @@surface@@;
+    color: @@text@@;
+    selection-background-color: @@accentSoft@@;
+    selection-color: @@accentText@@;
+    outline: none;
+}
+
 /******************************************************************************
 *   QCheckBox / QRadioButton
 *****************************************************************************/

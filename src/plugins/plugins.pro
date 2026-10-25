@@ -10,4 +10,5 @@ SUBDIRS += \
     fractalplugin \
     colorpickerplugin \
     snakeplugin \
-    tetrisplugin
+    tetrisplugin \
+    fortuneplugin

@@ -1,0 +1,17 @@
+{
+  "Id": "fortuneplugin",
+  "DisplayName": "Cyber Fortune",
+  "Name": "FortunePlugin",
+  "Version": "0.2.1",
+  "CompatVersion": "0.2.1",
+  "Required": false,
+  "VendorId": "Youth",
+  "Vendor": "Youth",
+  "Copyright": "(C) 2026 The Youth Ltd",
+  "License": "GNU General Public License v3.0",
+  "Category": "Entertainment",
+  "Description": "A deterministic Plum Blossom reading built from birth data and the moment of the cast.",
+  "LongDescription": "A teaching sample for a pure-logic domain engine: a compact 1901-2100 lunar table, a simplified Plum Blossom hexagram calculator that never reads the clock itself, English content tables, and a page that reveals the six lines with the Qt animation framework. Birth data and the cast moment determine the hexagram; the name only shifts the moving line. Nothing leaves the machine and no reading is stored.",
+  "Url": "",
+  "DocumentationUrl": ""
+}

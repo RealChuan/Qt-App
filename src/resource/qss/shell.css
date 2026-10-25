@@ -104,6 +104,13 @@
     max-width: 216px;
 }
 
+/* 页面列表放不下时出现滚动条；滚动区不能自己画底色，否则侧栏被切成两段。 */
+#SidebarScroll,
+#SidebarScrollContent {
+    background: transparent;
+    border: none;
+}
+
 /* 命令面板入口：看起来像输入框，实际是按钮 */
 #CommandButton {
     background: @@surfaceAlt@@;
