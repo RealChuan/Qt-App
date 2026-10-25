@@ -194,8 +194,10 @@ void SnakeGame::SnakeGamePrivate::step()
 
 void SnakeGame::SnakeGamePrivate::placeFood()
 {
+    // 先按 qsizetype 相乘：columns/rows 是 int，直接相乘会在转成容量之前就溢出。
+    const qsizetype cellCount = static_cast<qsizetype>(columns) * rows;
     QVector<QPoint> freeCells;
-    freeCells.reserve(columns * rows);
+    freeCells.reserve(cellCount);
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < columns; ++x) {
             const QPoint cell(x, y);
@@ -210,7 +212,7 @@ void SnakeGame::SnakeGamePrivate::placeFood()
         return;
     }
 
-    const double occupancy = static_cast<double>(body.size()) / static_cast<double>(columns * rows);
+    const double occupancy = static_cast<double>(body.size()) / static_cast<double>(cellCount);
     const double bias
         = std::max(kMinFoodBias, centerBiasOf(difficulty) - kBiasErosionPerOccupancy * occupancy);
 

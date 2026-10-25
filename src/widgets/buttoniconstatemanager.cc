@@ -124,7 +124,7 @@ void ButtonIconStateManager::resetToNormal()
     }
 }
 
-void ButtonIconStateManager::onButtonToggled(bool checked)
+void ButtonIconStateManager::onButtonToggled([[maybe_unused]] bool checked)
 {
     updateIconBasedOnState();
 }

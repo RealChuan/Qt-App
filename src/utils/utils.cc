@@ -2,9 +2,7 @@
 
 #include <QApplication>
 #include <QCryptographicHash>
-#include <QDir>
 #include <QElapsedTimer>
-#include <QProcess>
 #include <QRandomGenerator>
 #include <QSysInfo>
 #include <QThread>
@@ -18,6 +16,9 @@ using namespace Qt::StringLiterals;
 namespace Utils {
 
 namespace {
+
+// 重启标记挂在 qApp 上：它是进程里唯一一个所有模块都拿得到、生命周期又覆盖全程的对象。
+constexpr auto kRestartProperty = "restart";
 
 auto compilerString() -> QString
 {
@@ -49,16 +50,20 @@ auto systemInfo() -> QString
     return lines.join(u"\n"_s);
 }
 
-void reboot()
-{
-    QProcess::startDetached(
-        QApplication::applicationFilePath(), QApplication::arguments(), QDir::currentPath());
-    QApplication::exit();
-}
-
 void quitApplication()
 {
     QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
+}
+
+void requestRestart()
+{
+    if (qApp)
+        qApp->setProperty(kRestartProperty, true);
+}
+
+auto restartRequested() -> bool
+{
+    return qApp && qApp->property(kRestartProperty).toBool();
 }
 
 auto formatBytes(qint64 bytes, int precision) -> QString

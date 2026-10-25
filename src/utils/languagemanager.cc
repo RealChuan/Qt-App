@@ -127,7 +127,8 @@ void LanguageManager::loadLanguage()
     }
 
     const auto appFile
-        = u"%1/%2_%3.qm"_s.arg(directory, QString::fromLatin1(Utils::appName).toLower(), suffix);
+        = u"%1/%2_%3.qm"_s
+              .arg(directory, QString::fromLatin1(Utils::AppInfo::appName).toLower(), suffix);
     if (d_ptr->appTranslator->load(appFile)) {
         QCoreApplication::installTranslator(d_ptr->appTranslator.get());
     } else {

@@ -2,6 +2,7 @@
 
 #include "buttoniconstatemanager.hpp"
 
+#include <utils/qtcassert.hpp>
 #include <utils/uihelpers.hpp>
 
 #include <QAction>
@@ -57,8 +58,8 @@ public:
     explicit AppWindowPrivate(AppWindow *q)
         : q_ptr(q)
         , titleButton(new QPushButton(qApp->windowIcon(), qAppName(), q))
-        , centralContainer(new QWidget(q))
         , titleWidget(new QWidget(q))
+        , centralContainer(new QWidget(q))
         , titleBarContainer(new QWidget(q))
     {
         titleButton->setObjectName(QStringLiteral("AppButton"));
@@ -451,8 +452,9 @@ void AppWindow::setResizable(bool resizable)
 
 void AppWindow::setCentralWidget(QWidget *centralWidget)
 {
-    if (!centralWidget)
-        return;
+    // 下面这几个 setter 的指针参数都是必填的：传空是调用方的错，喊一声再退出。
+    // 与 ModalOverlay 不同，这里窗口自身状态完好，后续调用不受影响。
+    QTC_ASSERT(centralWidget, return);
 
     // 换内容时把上一个摘出布局并隐藏：直接删会让调用方手里的指针悬空。
     if (auto *item = d_ptr->centralLayout->takeAt(0)) {
@@ -465,24 +467,21 @@ void AppWindow::setCentralWidget(QWidget *centralWidget)
 
 void AppWindow::addChromeAction(QAction *action)
 {
-    if (!action)
-        return;
+    QTC_ASSERT(action, return);
 
     d_ptr->appendChromeAction(action);
 }
 
 void AppWindow::addMenu(QMenu *menu)
 {
-    if (!menu)
-        return;
+    QTC_ASSERT(menu, return);
 
     d_ptr->appendMenu(menu);
 }
 
 void AppWindow::setTitleBarWidget(QWidget *titleBar)
 {
-    if (!titleBar)
-        return;
+    QTC_ASSERT(titleBar, return);
 
     if (!d_ptr->titleBarLayout) {
         d_ptr->titleBarLayout = new QHBoxLayout(d_ptr->titleBarContainer);
@@ -631,8 +630,8 @@ void AppWindow::setupConnections()
     connect(d_ptr->minButton, &QToolButton::clicked, this, &AppWindow::showMinimized);
     connect(d_ptr->maxButton, &QToolButton::clicked, this, &AppWindow::onShowMaximized);
     connect(d_ptr->restoreButton, &QToolButton::clicked, this, &AppWindow::onShowNormal);
-    connect(d_ptr->closeButton, &QToolButton::clicked, this, &AppWindow::aboutToClose);
-    connect(this, &AppWindow::aboutToClose, this, &AppWindow::close, Qt::QueuedConnection);
+    // 排队而不是直接调 close()：closeEvent 里可能销毁控件，别在按钮自己的信号栈里做。
+    connect(d_ptr->closeButton, &QToolButton::clicked, this, &AppWindow::close, Qt::QueuedConnection);
     connect(this, &AppWindow::windowTitleChanged, d_ptr->titleButton, &QPushButton::setText);
     connect(this, &AppWindow::windowTitleChanged, d_ptr->titleButton, &QPushButton::setToolTip);
     connect(this, &AppWindow::windowIconChanged, d_ptr->titleButton, &QPushButton::setIcon);
@@ -671,8 +670,7 @@ void AppWindow::setResizable(bool resizable)
 
 void AppWindow::setTitleBarWidget(QWidget *widget)
 {
-    if (!widget)
-        return;
+    QTC_ASSERT(widget, return);
 
     // 带上类名：这个调用不报错、不崩溃，只是界面少一块，没有类名几乎查不出来。
     qCWarning(lcAppWindow).noquote()
@@ -691,8 +689,7 @@ void AppWindow::addMenu(QMenu *menu)
 
 void AppWindow::addChromeAction(QAction *action)
 {
-    if (!action)
-        return;
+    QTC_ASSERT(action, return);
 
     // macOS 没有标题栏可以放按钮，命令只能落进系统顶栏的菜单。
     // 菜单按需建一次，用 objectName 找回来，省得为它再加一个成员。

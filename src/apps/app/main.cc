@@ -15,7 +15,7 @@
 #include <utils/theme.hpp>
 #include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
-#include <widgets/waitwidget.hpp>
+#include <widgets/startupsplash.hpp>
 
 #include <QCryptographicHash>
 #include <QMessageBox>
@@ -26,6 +26,8 @@
 #include <QThreadPool>
 
 namespace {
+
+constexpr auto kLogLevelPrefix = "--log-level=";
 
 // 把 --log-level=<name> 的值映射成 QtMsgType；无法识别时返回 fallback
 QtMsgType parseLevel(const QString &name, QtMsgType fallback)
@@ -55,7 +57,7 @@ QtMsgType parseLevel(const QString &name, QtMsgType fallback)
 void startLogger()
 {
     AsyncLog::Config config;
-    config.logPath = Utils::logPath();
+    config.logPath = Utils::AppInfo::logPath().path();
     config.file = !config.logPath.isEmpty();
 
 #ifdef QT_DEBUG
@@ -72,8 +74,8 @@ void startLogger()
         const auto &arg = args[i];
         if (arg == QLatin1String("--console")) {
             config.console = true;
-        } else if (arg.startsWith(QLatin1String("--log-level="))) {
-            config.level = parseLevel(arg.mid(12), config.level); // strlen("--log-level=") == 12
+        } else if (arg.startsWith(QLatin1String(kLogLevelPrefix))) {
+            config.level = parseLevel(arg.mid(QLatin1String(kLogLevelPrefix).size()), config.level);
         }
     }
 
@@ -97,61 +99,63 @@ public:
     }
 };
 
-static inline QString msgCoreLoadFailure(const QString &why)
+QString coreLoadFailureMessage(const QString &why)
 {
     return QCoreApplication::translate("Application", "Failed to load core: %1").arg(why);
 }
 
-static void displayError(const QString &t)
+// 启动失败时故意用原生消息框：此刻出问题的可能正是外壳/插件这一层，
+// 不该再依赖自绘窗口那套东西来报错。
+void displayError(const QString &t)
 {
     if (Utils::HostOsInfo::isWindowsHost() && qApp) {
-        QMessageBox::critical(nullptr, QLatin1String(Utils::appName), t);
+        QMessageBox::critical(nullptr, QLatin1String(Utils::AppInfo::appName), t);
     } else {
         qCritical("%s", qPrintable(t));
     }
 }
 
+// 启动中途中止：日志必须落盘（丢掉的往往正是失败原因），设置也按正常流程销毁。
+// 这条路径上 app.exec() 还没跑，aboutToQuit 不会触发，只能手动收尾。
+int abortStartup(int exitCode)
+{
+    AsyncLog::Logger::instance()->shutdown();
+    Utils::destroySettings();
+    return exitCode;
+}
+
 // 把编译期身份写进 QCoreApplication（设置目录、窗口标题、收件箱都依赖它）。
 void setupApplication()
 {
-    qApp->setApplicationVersion(Utils::version);
-    qApp->setApplicationDisplayName(Utils::appName);
-    qApp->setApplicationName(Utils::appName);
-    qApp->setDesktopFileName(Utils::appName);
-    qApp->setOrganizationDomain(Utils::organizationDomain);
-    qApp->setOrganizationName(Utils::organizationName);
+    qApp->setApplicationVersion(Utils::AppInfo::version);
+    qApp->setApplicationDisplayName(Utils::AppInfo::appName);
+    qApp->setApplicationName(Utils::AppInfo::appName);
+    qApp->setDesktopFileName(Utils::AppInfo::appName);
+    qApp->setOrganizationDomain(Utils::AppInfo::organizationDomain);
+    qApp->setOrganizationName(Utils::AppInfo::organizationName);
     qApp->setWindowIcon(QIcon(":/icon/app.png"));
 }
 
 class Restarter
 {
 public:
-    Restarter(int argc, char *argv[])
-    {
-        Q_UNUSED(argc)
-        m_executable = QString::fromLocal8Bit(argv[0]);
-        m_workingPath = QDir::currentPath();
-    }
+    // 启动目录要在这里抓住：main() 稍后会把 CWD 切到程序目录。
+    Restarter()
+        : m_workingPath(QDir::currentPath())
+    {}
 
+    // 参数必须在 QApplication 构造之后再取：Qt 会整理引号、编码这些细节。
     void setArguments(const QStringList &args) { m_args = args; }
 
-    QString executable() const { return m_executable; }
-    QStringList arguments() const { return m_args; }
-    QString workingPath() const { return m_workingPath; }
-
-    int restartOrExit(int exitCode)
+    // 调用方必须先收好日志：新进程一起来就会开自己的日志文件，
+    // 老进程还在缓冲里的行会晚一步落盘，排查时两边的时序会对不上。
+    void restartIfRequested()
     {
-        return qApp->property("restart").toBool() ? restart(exitCode) : exitCode;
-    }
-
-    int restart(int exitCode)
-    {
-        QProcess::startDetached(m_executable, m_args, m_workingPath);
-        return exitCode;
+        if (Utils::restartRequested())
+            QProcess::startDetached(QCoreApplication::applicationFilePath(), m_args, m_workingPath);
     }
 
 private:
-    QString m_executable;
     QStringList m_args;
     QString m_workingPath;
 };
@@ -168,46 +172,29 @@ void initResource()
 
 auto main(int argc, char *argv[]) -> int
 {
-    Restarter restarter(argc, argv);
-#if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (!qEnvironmentVariableIsSet("QT_OPENGL")) {
-        QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
-    }
-#else
+    Restarter restarter;
     qputenv("QSG_RHI_BACKEND", "opengl");
-#endif
     Utils::setupHighDpiRounding();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    SharedTools::QtSingleApplication app(Utils::appName, argc, argv);
+    SharedTools::QtSingleApplication app(Utils::AppInfo::appName, argc, argv);
+    // Qt 会整理引号与编码，重启时用它解析过的参数比原始的 argv 更可靠。
+    restarter.setArguments(QCoreApplication::arguments().mid(1));
     if (app.isRunning()) {
         qWarning() << "This is already running";
+        // 已有实例收不到消息（卡死或正在退出）时继续启动，宁可出现两个窗口，
+        // 也不要让用户点了图标却什么都没有。
         if (app.sendMessage("raise_window_noop", 5000)) {
             return EXIT_SUCCESS;
         }
     }
-    if (Utils::HostOsInfo::isWindowsHost()) {
-        // The Windows 11 default style (Qt 6.7) has major issues, therefore
-        // set the previous default style: "windowsvista"
-        // FIXME: check newer Qt Versions
-        QApplication::setStyle(QLatin1String("windowsvista"));
-
-        // On scaling different than 100% or 200% use the "fusion" style
-        qreal tmp;
-        const bool fractionalDpi = !qFuzzyIsNull(std::modf(qApp->devicePixelRatio(), &tmp));
-        if (fractionalDpi) {
-            QApplication::setStyle(QLatin1String("fusion"));
-        }
-    }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    app.setAttribute(Qt::AA_UseHighDpiPixmaps);
-    app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
-#endif
-
     setupApplication();
     QDir::setCurrent(app.applicationDirPath());
 
     Crashpad::Client crashpadClient(
-        Utils::crashPath().toStdString(), app.applicationDirPath().toStdString(), {}, true);
+        Utils::AppInfo::crashPath().path().toStdString(),
+        app.applicationDirPath().toStdString(),
+        {},
+        true);
 
     Utils::languageManager()->loadLanguage();
 
@@ -218,7 +205,7 @@ auto main(int argc, char *argv[]) -> int
     initResource();
     qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
     Utils::scalePixmapCacheForDpr();
-    Utils::loadFonts((Utils::appInfo().resources / "fonts").toUserOutput());
+    Utils::loadFonts((Utils::AppInfo::resources() / "fonts").toUserOutput());
     // 样式表按当前深浅色方案生成；系统切换时 Theme 会自己重新应用。
     Utils::theme()->apply();
 
@@ -226,49 +213,52 @@ auto main(int argc, char *argv[]) -> int
     // 放在插件之前是因为插件初始化阶段崩溃时，只有挡在启动流程里才能看到提示。
     if (const auto reports = crashpadClient.pendingReports(); !reports.empty()) {
         qInfo() << "pending crash reports:" << reports.size();
-        Crash::CrashDialog dialog(reports, Utils::crashPath(), Utils::logPath());
+        Crash::CrashDialog
+            dialog(reports, Utils::AppInfo::crashPath().path(), Utils::AppInfo::logPath().path());
         dialog.exec();
         // 先标记再重启：否则重启后的新进程会立刻再弹一次。
         crashpadClient.discardReports();
         if (dialog.action() == Crash::CrashDialog::Action::Restart) {
-            app.setProperty("restart", true);
+            Utils::requestRestart();
             AsyncLog::Logger::instance()->shutdown();
-            return restarter.restartOrExit(0);
+            restarter.restartIfRequested();
+            return 0;
         }
     }
 
     // Make sure we honor the system's proxy settings
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-    // 等待界面
-    auto waitWidget = std::make_unique<Widgets::WaitWidget>();
-    waitWidget->show();
+    // 启动画面：插件加载期间主线程被占住，这里只负责别让用户对着空桌面。
+    auto splash = std::make_unique<Widgets::StartupSplash>();
+    splash->show();
     app.processEvents();
 
     // 与插件加载并行跑，结果只进日志；QRunnable 交给线程池（autoDelete）接管。
     QThreadPool::globalInstance()->start(new HashBenchTask);
 
-    auto *userSettings = new QSettings(Utils::configFilePath(), QSettings::IniFormat);
+    auto *userSettings
+        = new QSettings(Utils::AppInfo::configFilePath().path(), QSettings::IniFormat);
     auto *installSettings = new QSettings(
         QSettings::IniFormat,
         QSettings::SystemScope,
-        QLatin1String(Utils::organizationName),
-        QLatin1String(Utils::appName));
+        QLatin1String(Utils::AppInfo::organizationName),
+        QLatin1String(Utils::AppInfo::appName));
     Utils::setupSettings(userSettings, installSettings);
 
     ExtensionSystem::PluginManager pluginManager;
-    ExtensionSystem::PluginManager::setPluginPaths({Utils::appInfo().plugins});
+    ExtensionSystem::PluginManager::setPluginPaths({Utils::AppInfo::plugins()});
 
     if (const auto result = ExtensionSystem::PluginManager::loadPlugins(); !result) {
-        displayError(msgCoreLoadFailure(result.error()));
-        return 1;
+        displayError(coreLoadFailureMessage(result.error()));
+        return abortStartup(1);
     }
 
     // 外壳插件缺失或被禁用时没有主窗口，直接报错比留一个空界面更好。
     if (!Shell::host()) {
         displayError(
             QCoreApplication::translate("Application", "Shell plugin (coreplugin) is not available."));
-        return 1;
+        return abortStartup(1);
     }
 
     // 单实例：第二个进程把已有窗口拉到前台。
@@ -283,9 +273,7 @@ auto main(int argc, char *argv[]) -> int
         Utils::destroySettings();
     });
 
-    waitWidget->fullProgressBar();
-    app.processEvents();
-    waitWidget->close();
+    splash->close();
 
     // 主窗口不再在自己构造时抢着显示：等等待界面收掉再露出来，避免两个窗叠在一起。
     if (QWidget *mainWindow = Shell::host()->mainWindow())
@@ -299,7 +287,9 @@ auto main(int argc, char *argv[]) -> int
         QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
     }
 
-    auto exitCode = restarter.restartOrExit(app.exec());
+    const int exitCode = app.exec();
+    // 先排空日志，再拉起新进程：两条退出路径都保持这个顺序。
     AsyncLog::Logger::instance()->shutdown();
+    restarter.restartIfRequested();
     return exitCode;
 }

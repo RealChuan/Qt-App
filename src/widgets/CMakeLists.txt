@@ -5,14 +5,16 @@ set(PROJECT_SOURCES
     dialog.hpp
     messagebox.cc
     messagebox.hpp
+    modaloverlay.cc
+    modaloverlay.hpp
     buttoniconstatemanager.cc
     buttoniconstatemanager.hpp
     roundedrowtreeview.cc
     roundedrowtreeview.hpp
+    startupsplash.cc
+    startupsplash.hpp
     treemodel.cc
     treemodel.hpp
-    waitwidget.cc
-    waitwidget.hpp
     widgets_global.hpp)
 
 add_platform_library(widgets ${PROJECT_SOURCES})

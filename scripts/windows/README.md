@@ -1,12 +1,14 @@
 # Windows 本机开发脚本
 
-只有一个 `dev.ps1`，复用 `packaging/windows/Enter-VsDevShell.ps1` 进入 MSVC 环境。
+两个脚本，都复用 `packaging/windows/Enter-VsDevShell.ps1` 进入 MSVC 环境。
+
+## dev.ps1 —— 配置 / 编译 / 运行 / 测试
 
 ```powershell
 .\scripts\windows\dev.ps1 -Action configure                     # 配置，生成 build\compile_commands.json
 .\scripts\windows\dev.ps1                                       # 编译（默认 -Action build）
 .\scripts\windows\dev.ps1 -Action build -Target extensionsystem
-.\scripts\windows\dev.ps1 -Action test                            # 构建并跑 ctest
+.\scripts\windows\dev.ps1 -Action test                          # 构建并跑 ctest
 .\scripts\windows\dev.ps1 -Action run -AppArgs '--console','--log-level=debug'
 ```
 
@@ -22,6 +24,23 @@
 | `-AppArgs`   | 空，仅 `run` 使用                                 |
 
 产物在 `binaries/cmake/x64/bin/<config>/`：`Qt-App.exe`、`plugins/qt-app/`、`resources/`、`translations/`。
+
+## format.ps1 —— clang-format
+
+```powershell
+.\scripts\windows\format.ps1                  # 格式化 src 与 tests
+.\scripts\windows\format.ps1 -Check           # 只检查，有差异时非零退出（CI 用这个）
+.\scripts\windows\format.ps1 -Path src\plugins -IncludeVendored
+```
+
+| 参数               | 默认值                                        |
+| ------------------ | --------------------------------------------- |
+| `-Path`            | `src`、`tests`                                |
+| `-ClangFormat`     | Qt Creator 自带的 clang-format，找不到用 PATH |
+| `-Check`           | 关，开启后不修改文件                          |
+| `-IncludeVendored` | 关，开启后一并格式化 `src/3rdparty`           |
+
+风格取自仓库根的 `.clang-format`。
 
 ## 编码约定：`.ps1` 一律纯 ASCII（UTF-8 无 BOM）
 

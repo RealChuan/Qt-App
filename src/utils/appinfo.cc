@@ -4,7 +4,6 @@
 #include "appinfo.hpp"
 
 #include <QCoreApplication>
-#include <QDir>
 #include <QStandardPaths>
 #include <QString>
 
@@ -12,63 +11,81 @@ namespace Utils {
 
 namespace {
 
-// 目录可能被用户或清理工具删掉，所以每次取路径都要重新确保它存在。
-auto ensureDirectory(const QString &path) -> QString
+auto appDirPath() -> FilePath
 {
-    QDir().mkpath(path);
-    return path;
+    return FilePath::fromUserInput(QCoreApplication::applicationDirPath());
 }
 
-auto buildAppInfo() -> AppInfo
+auto buildPluginsPath() -> FilePath
 {
-    const FilePath appDirPath = FilePath::fromUserInput(QCoreApplication::applicationDirPath());
-    const QString pluginDirName = QString::fromLatin1(appName).toLower();
-
-    AppInfo info;
+    const QString pluginDirName = QString::fromLatin1(AppInfo::appName).toLower();
 #ifdef Q_OS_MACOS
-    info.plugins = (appDirPath / "../PlugIns" / pluginDirName).cleanPath();
-    info.resources = (appDirPath / "../Resources").cleanPath();
+    return (appDirPath() / "../PlugIns" / pluginDirName).cleanPath();
 #else
-    info.plugins = (appDirPath / "plugins" / pluginDirName).cleanPath();
-    info.resources = (appDirPath / "resources").cleanPath();
+    return (appDirPath() / "plugins" / pluginDirName).cleanPath();
 #endif
-    return info;
+}
+
+auto buildResourcesPath() -> FilePath
+{
+#ifdef Q_OS_MACOS
+    return (appDirPath() / "../Resources").cleanPath();
+#else
+    return (appDirPath() / "resources").cleanPath();
+#endif
+}
+
+// 目录可能被用户或清理工具删掉，所以每次取路径都要重新确保它存在。
+auto ensureDirectory(const FilePath &path) -> FilePath
+{
+    path.createDir();
+    return path;
 }
 
 } // namespace
 
-auto appInfo() -> const AppInfo &
+auto AppInfo::plugins() -> const FilePath &
 {
-    static const AppInfo info = buildAppInfo();
-    return info;
+    static const FilePath path = buildPluginsPath();
+    return path;
 }
 
-auto configPath() -> QString
+auto AppInfo::resources() -> const FilePath &
 {
-    return ensureDirectory(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+    static const FilePath path = buildResourcesPath();
+    return path;
 }
 
-auto configFilePath() -> QString
+auto AppInfo::configPath() -> FilePath
 {
-    return QDir(configPath()).filePath(QStringLiteral("config.ini"));
+    return ensureDirectory(
+        FilePath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)));
 }
 
-auto logPath() -> QString
+auto AppInfo::configFilePath() -> FilePath
+{
+    return configPath() / QStringLiteral("config.ini");
+}
+
+auto AppInfo::logPath() -> FilePath
 {
     // 日志属于应用状态，不是配置
-    return ensureDirectory(QDir(QStandardPaths::writableLocation(QStandardPaths::StateLocation))
-                               .filePath(QStringLiteral("log")));
+    return ensureDirectory(
+        FilePath(QStandardPaths::writableLocation(QStandardPaths::StateLocation))
+        / QStringLiteral("log"));
 }
 
-auto crashPath() -> QString
+auto AppInfo::crashPath() -> FilePath
 {
-    return ensureDirectory(QDir(QStandardPaths::writableLocation(QStandardPaths::StateLocation))
-                               .filePath(QStringLiteral("crash")));
+    return ensureDirectory(
+        FilePath(QStandardPaths::writableLocation(QStandardPaths::StateLocation))
+        / QStringLiteral("crash"));
 }
 
-auto cachePath() -> QString
+auto AppInfo::cachePath() -> FilePath
 {
-    return ensureDirectory(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    return ensureDirectory(
+        FilePath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)));
 }
 
 } // namespace Utils

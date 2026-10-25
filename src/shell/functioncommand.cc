@@ -7,6 +7,12 @@ namespace Shell {
 class FunctionCommand::FunctionCommandPrivate
 {
 public:
+    FunctionCommandPrivate(QString id, QString title, std::function<void()> action)
+        : id(std::move(id))
+        , title(std::move(title))
+        , action(std::move(action))
+    {}
+
     QString id;
     QString title;
     QString subtitle;
@@ -16,8 +22,7 @@ public:
 
 FunctionCommand::FunctionCommand(QString id, QString title, std::function<void()> action)
     : d_ptr(
-          std::make_unique<FunctionCommandPrivate>(FunctionCommandPrivate{
-              .id = std::move(id), .title = std::move(title), .action = std::move(action)}))
+          std::make_unique<FunctionCommandPrivate>(std::move(id), std::move(title), std::move(action)))
 {}
 
 FunctionCommand::~FunctionCommand() = default;

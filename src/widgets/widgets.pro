@@ -12,17 +12,19 @@ HEADERS += \
     appwindow.hpp \
     dialog.hpp \
     messagebox.hpp \
+    modaloverlay.hpp \
     buttoniconstatemanager.hpp \
     roundedrowtreeview.hpp \
+    startupsplash.hpp \
     treemodel.hpp \
-    waitwidget.hpp \
     widgets_global.hpp 
 
 SOURCES += \
     appwindow.cc \
     dialog.cc \
     messagebox.cc \
+    modaloverlay.cc \
     buttoniconstatemanager.cc \
     roundedrowtreeview.cc \
-    treemodel.cc \
-    waitwidget.cc
+    startupsplash.cc \
+    treemodel.cc

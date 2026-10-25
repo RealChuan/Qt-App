@@ -17,14 +17,14 @@ namespace Tetris {
 
 namespace {
 
-constexpr int kBorderWidth = 1;
-constexpr qreal kBoardRadius = 10.0;
 constexpr qreal kBlockInset = 1.0;
 constexpr qreal kBlockRadiusRatio = 0.18;
-constexpr qreal kGhostAlpha = 0.45;
-constexpr qreal kFlashAlpha = 0.70;
-// 开局提示是"该按键了"的号召，比正文大一档，颜色也用正文色而不是占位色。
-constexpr int kIdlePixelSize = 20;
+// QColor::setAlphaF 是 float 接口，透明度常量直接用 float。
+constexpr float kGhostAlpha = 0.45F;
+constexpr float kFlashAlpha = 0.70F;
+// 幽灵是描边不是实心块，内缩比实心块多半个像素，两者叠在一起才不糊边。
+constexpr qreal kGhostInset = 1.5;
+constexpr qreal kGhostPenWidth = 1.5;
 
 } // namespace
 
@@ -35,10 +35,7 @@ public:
         : q_ptr(q)
     {}
 
-    [[nodiscard]] auto cellSize() const -> int;
-    [[nodiscard]] auto gridRect(int cell) const -> QRect;
-    [[nodiscard]] auto cellRect(const QRect &grid, int cell, const QPoint &position) const
-        -> QRectF;
+    [[nodiscard]] auto metrics() const -> Utils::GridMetrics;
 
     void paintBlock(QPainter &painter, const QRectF &area, const QColor &color) const;
     void paintGhost(QPainter &painter, const QRectF &area, const QColor &color) const;
@@ -53,33 +50,16 @@ public:
     QString resumeHint;
 };
 
-auto TetrisBoard::TetrisBoardPrivate::cellSize() const -> int
+auto TetrisBoard::TetrisBoardPrivate::metrics() const -> Utils::GridMetrics
 {
-    return TetrisBoard::kCellSize;
-}
-
-auto TetrisBoard::TetrisBoardPrivate::gridRect(int cell) const -> QRect
-{
-    const int width = cell * kColumns;
-    const int height = cell * kVisibleRows;
-    return QRect((q_ptr->width() - width) / 2, (q_ptr->height() - height) / 2, width, height);
-}
-
-auto TetrisBoard::TetrisBoardPrivate::cellRect(
-    const QRect &grid, int cell, const QPoint &position) const -> QRectF
-{
-    return QRectF(grid.left() + position.x() * cell, grid.top() + position.y() * cell, cell, cell);
+    // 控件尺寸本来就是格子的整数倍，这里的 cell 恒等于 TetrisBoard::kCellSize。
+    return Utils::fitGrid(q_ptr->size(), kColumns, kVisibleRows);
 }
 
 void TetrisBoard::TetrisBoardPrivate::paintBlock(
     QPainter &painter, const QRectF &area, const QColor &color) const
 {
-    const qreal radius = std::max(2.0, area.width() * kBlockRadiusRatio);
-
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(color);
-    painter.drawRoundedRect(
-        area.adjusted(kBlockInset, kBlockInset, -kBlockInset, -kBlockInset), radius, radius);
+    Utils::paintCell(painter, area, color, {kBlockInset, kBlockRadiusRatio});
 }
 
 void TetrisBoard::TetrisBoardPrivate::paintGhost(
@@ -87,11 +67,12 @@ void TetrisBoard::TetrisBoardPrivate::paintGhost(
 {
     QColor line = color;
     line.setAlphaF(kGhostAlpha);
-    const qreal radius = std::max(2.0, area.width() * kBlockRadiusRatio);
+    const qreal radius = std::max(Utils::kCellMinRadius, area.width() * kBlockRadiusRatio);
 
-    painter.setPen(QPen(line, 1.5));
+    painter.setPen(QPen(line, kGhostPenWidth));
     painter.setBrush(Qt::NoBrush);
-    painter.drawRoundedRect(area.adjusted(1.5, 1.5, -1.5, -1.5), radius, radius);
+    painter.drawRoundedRect(
+        area.adjusted(kGhostInset, kGhostInset, -kGhostInset, -kGhostInset), radius, radius);
 }
 
 TetrisBoard::TetrisBoard(QWidget *parent)
@@ -129,16 +110,9 @@ void TetrisBoard::paintEvent(QPaintEvent *)
     painter.setRenderHint(QPainter::Antialiasing);
 
     const QPalette palette = QGuiApplication::palette();
-    const qreal inset = kBorderWidth / 2.0;
-    const QRectF outer = QRectF(rect()).adjusted(inset, inset, -inset, -inset);
-
-    QPainterPath shape;
-    shape.addRoundedRect(outer, kBoardRadius, kBoardRadius);
-
     // 用 Dark（borderStrong）而不是 Mid：井的边界要和卡片底色拉开，否则一片糊。
-    painter.setPen(QPen(palette.color(QPalette::Dark), kBorderWidth));
-    painter.setBrush(palette.color(QPalette::AlternateBase));
-    painter.drawPath(shape);
+    const QPainterPath shape
+        = Utils::paintBoardFrame(painter, QRectF(rect()), palette, QPalette::Dark);
 
     if (!d_ptr->game)
         return;
@@ -146,18 +120,15 @@ void TetrisBoard::paintEvent(QPaintEvent *)
     painter.save();
     painter.setClipPath(shape);
 
-    const int cell = d_ptr->cellSize();
-    if (cell > 0) {
-        const QRect grid = d_ptr->gridRect(cell);
-
+    const Utils::GridMetrics grid = d_ptr->metrics();
+    if (grid.cell > 0) {
         for (int y = 0; y < kVisibleRows; ++y) {
             for (int x = 0; x < kColumns; ++x) {
                 const int value = d_ptr->game->settledCellAt(x, y);
                 if (value == 0)
                     continue;
                 const auto type = static_cast<PieceType>(value - 1);
-                d_ptr->paintBlock(
-                    painter, d_ptr->cellRect(grid, cell, QPoint(x, y)), pieceColor(type));
+                d_ptr->paintBlock(painter, grid.cellRect(QPoint(x, y)), pieceColor(type));
             }
         }
 
@@ -165,20 +136,21 @@ void TetrisBoard::paintEvent(QPaintEvent *)
         const QVector<int> rows = d_ptr->game->clearingRows();
         if (!rows.isEmpty()) {
             QColor flash = palette.color(QPalette::Window);
-            flash.setAlphaF(kFlashAlpha * (1.0 - d_ptr->game->clearingProgress()));
+            flash.setAlphaF(
+                kFlashAlpha * (1.0F - static_cast<float>(d_ptr->game->clearingProgress())));
             painter.setPen(Qt::NoPen);
             painter.setBrush(flash);
             for (const int row : rows) {
-                painter.drawRect(QRectF(grid.left(), grid.top() + row * cell, grid.width(), cell));
+                painter.drawRect(grid.rowRect(row));
             }
         }
 
         const QColor activeColor = pieceColor(d_ptr->game->activeType());
         for (const QPoint &ghost : d_ptr->game->ghostCells()) {
-            d_ptr->paintGhost(painter, d_ptr->cellRect(grid, cell, ghost), activeColor);
+            d_ptr->paintGhost(painter, grid.cellRect(ghost), activeColor);
         }
         for (const QPoint &active : d_ptr->game->activeCells()) {
-            d_ptr->paintBlock(painter, d_ptr->cellRect(grid, cell, active), activeColor);
+            d_ptr->paintBlock(painter, grid.cellRect(active), activeColor);
         }
     }
 
@@ -195,12 +167,7 @@ void TetrisBoard::paintEvent(QPaintEvent *)
             QString::number(d_ptr->game->score()),
             d_ptr->playAgainHint);
     } else if (state == GameState::Idle) {
-        QFont font = painter.font();
-        font.setPixelSize(kIdlePixelSize);
-        font.setWeight(QFont::DemiBold);
-        painter.setFont(font);
-        painter.setPen(palette.color(QPalette::Text));
-        painter.drawText(rect(), Qt::AlignCenter, d_ptr->idleText);
+        Utils::paintIdleText(painter, QRectF(rect()), palette, d_ptr->idleText);
     }
 
     painter.restore();

@@ -284,19 +284,35 @@ QAbstractSpinBox:disabled {
     border-color: @@border@@;
 }
 
+/* QSpinBox 内部还有一个 QLineEdit，上面那条 QLineEdit 规则会整个套进去：
+   边框、min-height 叠一层看上去就是"框里还有一个框"，内层圆角还会把按钮切掉。
+   这里只摘掉边框和底色。
+   注意：文字的左右间距不能用 QSS 给——padding 在 windowsvista 样式下不会作用到
+   这个内部编辑框（实测文字始终贴着边框），间距改由 PomodoroPage 里的自旋框设置。 */
+QAbstractSpinBox QLineEdit {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    min-height: 0;
+}
+
+/* 按钮从 padding 区起算，让开 1px 边框；外角跟着外层圆角收（6 - 1 = 5），
+   否则悬停时的方块背景会把圆角连同边框一起盖掉。 */
 QAbstractSpinBox::up-button {
-    subcontrol-origin: border;
+    subcontrol-origin: padding;
     subcontrol-position: top right;
     width: 20px;
     border: none;
+    border-top-right-radius: 5px;
     background: transparent;
 }
 
 QAbstractSpinBox::down-button {
-    subcontrol-origin: border;
+    subcontrol-origin: padding;
     subcontrol-position: bottom right;
     width: 20px;
     border: none;
+    border-bottom-right-radius: 5px;
     background: transparent;
 }
 
@@ -827,7 +843,7 @@ QToolTip {
     color: @@tooltipText@@;
     background: @@tooltipBg@@;
     border: 1px solid @@tooltipBorder@@;
-    padding: 5px 8px;
+    padding: 2px 5px;
 }
 
 /******************************************************************************

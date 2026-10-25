@@ -27,8 +27,8 @@ inline auto pieceColor(PieceType type) -> QColor
 
     const QPalette palette = QGuiApplication::palette();
     const bool isDark = palette.color(QPalette::Window).lightnessF() < 0.5;
-    const qreal hue = kHueDegrees.at(static_cast<std::size_t>(type)) / 360.0;
-    return QColor::fromHsvF(hue, isDark ? 0.62 : 0.78, isDark ? 0.95 : 0.82);
+    const float hue = static_cast<float>(kHueDegrees.at(static_cast<std::size_t>(type))) / 360.0F;
+    return QColor::fromHsvF(hue, isDark ? 0.62F : 0.78F, isDark ? 0.95F : 0.82F);
 }
 
 } // namespace Tetris

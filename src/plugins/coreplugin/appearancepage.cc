@@ -4,10 +4,10 @@
 #include <utils/theme.hpp>
 #include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
+#include <widgets/dialog.hpp>
 
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDialog>
 #include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -208,7 +208,9 @@ void AppearancePage::setupConnections()
 
 void AppearancePage::showTestDialog()
 {
-    QDialog dialog(Utils::dialogParent());
+    // 这里预览的是本应用的弹窗外壳（含遮罩/模糊开关的效果），不是系统对话框。
+    Widgets::Dialog dialog(Utils::dialogParent());
+    dialog.setWindowTitle(tr("Test dialog"));
     dialog.exec();
 }
 

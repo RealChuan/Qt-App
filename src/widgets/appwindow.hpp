@@ -46,9 +46,6 @@ public:
 
     [[nodiscard]] auto shadowPadding() const -> int;
 
-signals:
-    void aboutToClose();
-
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
@@ -85,9 +82,6 @@ public:
     void addChromeAction(QAction *action);
     void addMenu(QMenu *menu);
     [[nodiscard]] auto shadowPadding() const -> int;
-
-signals:
-    void aboutToClose();
 };
 #endif
 

@@ -24,8 +24,12 @@
     border-radius: 10px;
 }
 
+/* 两个下角都要圆：QSS 的 border-radius 只裁自己的背景、不裁子控件，
+   这层夹在 #Frame 与 #MenuWidget 之间，方角会从侧边栏圆角外侧的楔形区漏出来；
+   对话框没有侧边栏，更是直接由这一层决定角的形状。 */
 #CentralWidget {
     background: @@window@@;
+    border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
 }
 

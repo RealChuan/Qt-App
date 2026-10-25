@@ -6,15 +6,16 @@
 #include <QString>
 #include <QStringView>
 
-// 与 QWidget / QPainter 打交道的自由函数在 uihelpers.hpp。
-// 这里只留没有平台分支、确实在用的几件：系统信息、退出/重启、字节格式化、哈希基准。
-// 目录与文件的增删走 FilePath（返回 Result<>），不再提供 bool 版的自由函数。
-
 namespace Utils {
 
 [[nodiscard]] UTILS_EXPORT auto systemInfo() -> QString;
 UTILS_EXPORT void quitApplication();
-UTILS_EXPORT void reboot();
+
+// 重启请求：这里只置标记，真正的重启由 main() 在事件循环退出、日志收尾之后做。
+// 不能当场拉新进程——那时老进程还握着单实例锁，新进程会被当成第二个实例踢掉。
+UTILS_EXPORT void requestRestart();
+[[nodiscard]] UTILS_EXPORT auto restartRequested() -> bool;
+
 [[nodiscard]] UTILS_EXPORT auto formatBytes(qint64 bytes, int precision = 2) -> QString;
 
 // 单线程哈希吞吐：在 durationMs 内反复计算同一块数据，返回 MiB/s，多轮取最好值。

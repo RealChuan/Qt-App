@@ -1,0 +1,1 @@
+add_app_test(tst_startupsplash SOURCES tst_startupsplash.cpp LIBRARIES widgets)

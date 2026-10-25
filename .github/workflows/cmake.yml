@@ -1,4 +1,8 @@
-name: CMake Build and Release
+# CMake 链的完整流水线，三个阶段各自独立、按需串接：
+#   build           三平台构建打包（RelWithDebInfo），产物上传为 artifact
+#   test            三平台单测（Debug + BUILD_TESTS=ON），与 build 并行，互不依赖
+#   github-release  仅 refs/tags/*：build 与 test 全绿才下载 artifact 并发布
+name: CMake
 
 on:
   push:
@@ -40,10 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - windows-latest
-          - macos-latest
-          - ubuntu-latest
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v7
@@ -85,14 +86,75 @@ jobs:
           path: ${{ env.RELEASES_DIR }}
 
   # ============================================================
+  # 单元测试
+  #   BUILD_TESTS 默认 OFF，三条打包链不构建也不感知测试目标，所以测试是
+  #   独立的一遍 configure + build，与 build 并行跑，不占用打包的关键路径。
+  #   工作流的 paths-ignore 只有一套（job 级拿不到路径），因此 packaging/**
+  #   的改动会顺带跑一遍测试；反过来不能为了省这一遍把 packaging/** 加进去，
+  #   那会让打包脚本的改动不触发构建。
+  # ============================================================
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    env:
+      BUILD_DIR: build
+      BUILD_TYPE: Debug
+      CMAKE_GENERATOR: Ninja
+      # runner 没有显示器：QApplication 走 offscreen 平台插件（tst_registry 需要）
+      QT_QPA_PLATFORM: offscreen
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - uses: ./.github/actions/install-dependencies
+
+      # 配置、编译、跑测试必须放在同一个 step 里：Enter-VsDevShell 改的是当前
+      # 进程的环境变量，跨 step 不保留。
+      - name: Configure, build and test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\packaging\windows\Enter-VsDevShell.ps1 -Arch x64 -HostArch x64
+          if ($LASTEXITCODE) { throw "Enter-VsDevShell failed" }
+          # 让 cl 的诊断恒为英文，否则 Ninja 记不到头文件依赖
+          $env:VSLANG = '1033'
+
+          cmake -S . -B $env:BUILD_DIR -G $env:CMAKE_GENERATOR `
+            "-DCMAKE_BUILD_TYPE=$env:BUILD_TYPE" `
+            -DBUILD_TESTS=ON `
+            -DQT_ROOT="$env:QT_ROOT_X64"
+          if ($LASTEXITCODE) { throw "cmake configure failed" }
+
+          cmake --build $env:BUILD_DIR --config $env:BUILD_TYPE
+          if ($LASTEXITCODE) { throw "cmake build failed" }
+
+          ctest --test-dir $env:BUILD_DIR --build-config $env:BUILD_TYPE --output-on-failure
+
+      - name: Configure, build and test (macOS / Linux)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          cmake -S . -B "$BUILD_DIR" -G "$CMAKE_GENERATOR" \
+            -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+            -DBUILD_TESTS=ON
+          cmake --build "$BUILD_DIR"
+          ctest --test-dir "$BUILD_DIR" --output-on-failure
+
+  # ============================================================
   # GitHub Release
   #   触发条件：push tag（refs/tags/*）
-  #   依赖：build（三 OS 全部完成）
+  #   依赖：build + test（三 OS 的打包与单测全绿才发）
   #   流程：下载三份 artifact → 直接发布（文件名已由打包脚本写入版本与日期）
   # ============================================================
   github-release:
     name: Create GitHub Release
-    needs: build
+    needs: [build, test]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:

@@ -8,13 +8,14 @@
 #include <utils/theme.hpp>
 #include <utils/uihelpers.hpp>
 #include <utils/utils.hpp>
+#include <widgets/messagebox.hpp>
+#include <widgets/modaloverlay.hpp>
 
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
 #include <QCloseEvent>
 #include <QEvent>
-#include <QGraphicsBlurEffect>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
@@ -39,13 +40,6 @@ namespace {
 constexpr auto kPageIdProperty = "pageId";
 constexpr auto kPageOrderProperty = "pageOrder";
 constexpr auto kCommandShortcut = "Ctrl+K";
-constexpr auto kMaskObjectName = "BlockMask";
-auto maskStyleSheet() -> const QString &
-{
-    static const QString style = QStringLiteral("#%1 { background: rgba(0, 0, 0, 128); }")
-                                     .arg(QLatin1String(kMaskObjectName));
-    return style;
-}
 constexpr int kWindowWidth = 1060;
 constexpr int kWindowHeight = 680;
 constexpr int kSectionCount = 4;
@@ -132,8 +126,8 @@ public:
     MainWindow *q_ptr = nullptr;
 
     QWidget *central = nullptr;
-    QWidget *maskWidget = nullptr;
-    QGraphicsBlurEffect *blurEffect = nullptr;
+    // 遮挡层是通用组件：这里的窗口只是它的一个使用者。
+    std::unique_ptr<Widgets::ModalOverlay> overlay;
 
     Section sections[kSectionCount];
     QStackedWidget *stack = nullptr;
@@ -258,37 +252,21 @@ void MainWindow::MainWindowPrivate::buildTray()
     qApp->setQuitOnLastWindowClosed(false);
 }
 
-// 遮罩与模糊都盖在内容区（含标题栏），标题栏按钮此时不可点，与模态语义一致。
+// 遮罩盖住整个窗口（含标题栏），模糊只挂在内容区：
+// 两者不能是同一个控件，否则遮罩自己也会被糊掉。
 void MainWindow::MainWindowPrivate::buildOverlay()
 {
-    maskWidget = new QWidget(q_ptr);
-    maskWidget->setObjectName(kMaskObjectName);
-    maskWidget->setStyleSheet(maskStyleSheet());
-    maskWidget->hide();
-
-    blurEffect = new QGraphicsBlurEffect(q_ptr);
-    blurEffect->setEnabled(false);
-    central->setGraphicsEffect(blurEffect);
+    overlay = std::make_unique<Widgets::ModalOverlay>(q_ptr);
+    overlay->setBlurTarget(central);
 }
 
 void MainWindow::MainWindowPrivate::setBlocked(bool blocked)
 {
-    if (!blocked) {
-        maskWidget->hide();
-        blurEffect->setEnabled(false);
-        return;
-    }
-
-    if (Utils::widgetManager()->showMask()) {
-        const int padding = q_ptr->shadowPadding();
-        maskWidget->resize(q_ptr->size() - QSize(padding, padding) * 2);
-        maskWidget->move(padding, padding);
-        maskWidget->show();
-        maskWidget->raise();
-    }
-
-    if (Utils::widgetManager()->blurBackground())
-        blurEffect->setEnabled(true);
+    // 阴影留白在最大化/还原时会变，每次都重新取，别让遮罩留下一条错位的边。
+    overlay->setInset(q_ptr->shadowPadding());
+    // 两个开关在遮挡发生的这一刻读：改完设置，下一次弹窗就生效。
+    overlay->setMaskVisible(blocked && Utils::widgetManager()->showMask());
+    overlay->setBlurActive(blocked && Utils::widgetManager()->blurBackground());
 }
 
 // 插件按需注册，空分组连标题一起隐藏，避免侧栏出现孤立的小标题。
@@ -408,7 +386,8 @@ void MainWindow::retranslateUi()
     d_ptr->sections[2].label->setText(tr("Settings"));
     d_ptr->sections[3].label->setText(tr("Help"));
     d_ptr->footer->setText(
-        QStringLiteral("%1 %2").arg(QLatin1String(Utils::appName), QLatin1String(Utils::version)));
+        QStringLiteral("%1 %2")
+            .arg(QLatin1String(Utils::AppInfo::appName), QLatin1String(Utils::AppInfo::version)));
 
     updateThemeAction();
     d_ptr->languageAction->setText(
@@ -420,7 +399,7 @@ void MainWindow::retranslateUi()
     d_ptr->retranslatePages();
 
     if (d_ptr->tray) {
-        d_ptr->tray->setToolTip(Utils::appName);
+        d_ptr->tray->setToolTip(Utils::AppInfo::appName);
         if (d_ptr->quitAction)
             d_ptr->quitAction->setText(tr("Quit"));
     }
@@ -553,7 +532,7 @@ void MainWindow::showStatusMessage(QAnyStringView text, int timeoutMs)
 
 auto MainWindow::askForRestart(QAnyStringView reason) -> bool
 {
-    const auto answer = QMessageBox::question(
+    const auto answer = Widgets::MessageBox::question(
         this,
         tr("Restart required"),
         reason.toString(),
@@ -562,7 +541,7 @@ auto MainWindow::askForRestart(QAnyStringView reason) -> bool
     if (answer != QMessageBox::Yes)
         return false;
 
-    qApp->setProperty("restart", true);
+    Utils::requestRestart();
     Utils::quitApplication();
     return true;
 }

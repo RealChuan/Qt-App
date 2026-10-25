@@ -29,6 +29,7 @@ function(add_app_test target_name)
 endfunction()
 
 add_subdirectory(utils)
+add_subdirectory(widgets)
 add_subdirectory(extensionsystem)
 add_subdirectory(shell)
 add_subdirectory(snakegame)

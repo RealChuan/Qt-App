@@ -4,6 +4,7 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSpinBox>
@@ -18,6 +19,37 @@ namespace {
 constexpr int kDefaultMinutes = 25;
 constexpr int kDemoSeconds = 10;
 constexpr int kSecondsPerMinute = 60;
+// 文字与边框的间距。QSS 的 padding 在 windowsvista 样式下不会作用到自旋框内部的
+// 编辑框（实测文字始终贴着边框），只能直接设 textMargins。
+constexpr int kTextMargin = 8;
+
+// 每次重新 polish（换主题、换样式）都会重置内部编辑框的 textMargins，
+// 所以放在 StyleChange 里补，而不是构造时设一次。
+class MinutesSpinBox final : public QSpinBox
+{
+public:
+    explicit MinutesSpinBox(QWidget *parent = nullptr)
+        : QSpinBox(parent)
+    {
+        applyTextMargin();
+    }
+
+protected:
+    void changeEvent(QEvent *event) override
+    {
+        QSpinBox::changeEvent(event);
+
+        if (event->type() == QEvent::StyleChange)
+            applyTextMargin();
+    }
+
+private:
+    void applyTextMargin()
+    {
+        if (QLineEdit *edit = lineEdit())
+            edit->setTextMargins(kTextMargin, 0, kTextMargin, 0);
+    }
+};
 
 auto formatTime(int seconds) -> QString
 {
@@ -60,7 +92,7 @@ void PomodoroPage::PomodoroPagePrivate::setupUi()
     progress->setTextVisible(false);
     progress->setFixedHeight(6);
 
-    minutes = new QSpinBox(q_ptr);
+    minutes = new MinutesSpinBox(q_ptr);
     minutes->setObjectName("PomodoroMinutes");
     minutes->setRange(1, 60);
     minutes->setValue(kDefaultMinutes);

@@ -51,7 +51,7 @@ connect(d_ptr->statusTimer, &QTimer::timeout, d_ptr->status, &QLabel::hide);
 - getter 用 `[[nodiscard]]` + 尾置返回：`auto id() const -> QString`。
 - 失败返回 `Utils::Result<>`（`std::expected`），异常不跨插件边界。
 - 导出宏三态：`<MODULE>_LIBRARY` / `<MODULE>_STATIC_LIBRARY` / 其余 import。
-- `new` 只用于 Qt 父子树；平台差异收在单个 `if(APPLE) ... else()`；纯定时器不开线程，重计算才 `QtConcurrent`；魔法数字改 `constexpr`。
+- `new` 只用于 Qt 父子树；纯定时器不开线程，重计算才 `QtConcurrent`；魔法数字改 `constexpr`。
 - `tr()` 只在 QObject 类里调用，配 `changeEvent(QEvent::LanguageChange)` → `retranslateUi()`；注释写"为什么"。
 
 ## 6. 提交前

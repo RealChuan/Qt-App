@@ -3,13 +3,15 @@
 #include "utils_global.hpp"
 
 #include <QColor>
+#include <QPainterPath>
+#include <QPalette>
 #include <QPoint>
+#include <QRect>
+#include <QRectF>
 #include <QString>
 
 class QGraphicsDropShadowEffect;
 class QPainter;
-class QPalette;
-class QRectF;
 class QWidget;
 
 namespace Utils {
@@ -56,5 +58,55 @@ UTILS_EXPORT void paintOverlay(
     const QString &title,
     const QString &number = {},
     const QString &hint = {});
+
+// 棋盘几何：rows×columns 个正方形格子居中摆进控件，格子尺寸取宽高各自除下来更小的那个。
+// 棋盘类的绘制都从这里取坐标，免得每个游戏各写一遍同样的三条公式。
+struct GridMetrics
+{
+    int cell = 0;
+    int columns = 0;
+    int rows = 0;
+    QRect rect;
+
+    [[nodiscard]] auto cellRect(const QPoint &position) const -> QRectF
+    {
+        return QRectF(rect.left() + position.x() * cell, rect.top() + position.y() * cell, cell, cell);
+    }
+
+    // 整行，给消行闪烁这类"按行盖一层"的画法用。
+    [[nodiscard]] auto rowRect(int row) const -> QRectF
+    {
+        return QRectF(rect.left(), rect.top() + row * cell, rect.width(), cell);
+    }
+};
+
+// padding 是棋盘四周的留白。任一方向除下来 <= 0 时 cell 为 0，调用方据此跳过绘制。
+[[nodiscard]] UTILS_EXPORT auto fitGrid(
+    const QSize &available, int columns, int rows, int padding = 0) -> GridMetrics;
+
+// 棋盘底：1px 圆角描边 + AlternateBase 填充，返回路径供调用方 setClipPath。
+// borderRole 默认 Mid；井这类要和卡片底色拉开的地方传 Dark。
+UTILS_EXPORT auto paintBoardFrame(
+    QPainter &painter,
+    const QRectF &area,
+    const QPalette &palette,
+    QPalette::ColorRole borderRole = QPalette::Mid) -> QPainterPath;
+
+// 圆角下限：小格子上按比例算出的圆角会小到看不出来，实心块和描边块共用这个底。
+constexpr qreal kCellMinRadius = 2.0;
+
+// 一颗圆角格子。inset 是格子内缩，radiusRatio 是圆角占格宽的比例。
+struct CellStyle
+{
+    qreal inset = 1.0;
+    qreal radiusRatio = 0.2;
+};
+
+UTILS_EXPORT void paintCell(
+    QPainter &painter, const QRectF &cell, const QColor &color, const CellStyle &style = {});
+
+// Idle 的"按 X 开始"：字号字重与 paintOverlay 同源，两个游戏才不会各写一份还写歪。
+UTILS_EXPORT void paintIdleText(
+    QPainter &painter, const QRectF &area, const QPalette &palette, const QString &text);
 
 } // namespace Utils

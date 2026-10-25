@@ -2,6 +2,8 @@
 
 #include "tetriscolors.hpp"
 
+#include <utils/uihelpers.hpp>
+
 #include <QGuiApplication>
 #include <QPainter>
 #include <QPalette>
@@ -15,8 +17,9 @@ namespace {
 constexpr int kCellSize = 16;
 constexpr int kBoxCells = 4;
 constexpr int kGap = 6;
-constexpr qreal kBlockRadius = 2.0;
 constexpr qreal kBlockInset = 0.5;
+// 预览一直用 2px 圆角；换成比例是为了和棋盘共用同一个"圆角下限 2px"的规则。
+constexpr qreal kBlockRadiusRatio = 2.0 / kCellSize;
 
 } // namespace
 
@@ -81,7 +84,7 @@ void TetrisPreview::paintEvent(QPaintEvent *)
 
     // 空格位画一条虚线框，告诉玩家这里会有东西。
     QColor slotLine = palette.color(QPalette::PlaceholderText);
-    slotLine.setAlphaF(0.35);
+    slotLine.setAlphaF(0.35F);
 
     const int count = std::min(static_cast<int>(d_ptr->pieces.size()), d_ptr->slotCount);
     for (int slot = 0; slot < d_ptr->slotCount; ++slot) {
@@ -99,15 +102,13 @@ void TetrisPreview::paintEvent(QPaintEvent *)
         const int offset = ((kBoxCells - shape.boxSize) * kCellSize) / 2;
         const QColor color = pieceColor(type);
 
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(color);
         for (const QPoint &cell : shape.cells) {
             const QRectF target(
-                offset + cell.x() * kCellSize + kBlockInset,
-                area.top() + offset + cell.y() * kCellSize + kBlockInset,
-                kCellSize - 2 * kBlockInset,
-                kCellSize - 2 * kBlockInset);
-            painter.drawRoundedRect(target, kBlockRadius, kBlockRadius);
+                offset + cell.x() * kCellSize,
+                area.top() + offset + cell.y() * kCellSize,
+                kCellSize,
+                kCellSize);
+            Utils::paintCell(painter, target, color, {kBlockInset, kBlockRadiusRatio});
         }
     }
 }
