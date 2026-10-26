@@ -9,9 +9,8 @@ using namespace Fortune;
 namespace {
 
 auto profile(
-    const QString &name = QStringLiteral("Ada"),
-    const QDate &birthDate = QDate(1990, 6, 15),
-    int birthHour = 6) -> Profile
+    const QString &name = u"Ada"_s, const QDate &birthDate = QDate(1990, 6, 15), int birthHour = 6)
+    -> Profile
 {
     return Profile{name, birthDate, birthHour};
 }
@@ -142,7 +141,7 @@ void TestFortune::birthDateChangesTheCast()
 {
     QSet<int> hexagrams;
     for (int month = 1; month <= 12; ++month) {
-        const Profile p = profile(QStringLiteral("Ada"), QDate(1990, month, 15), 6);
+        const Profile p = profile(u"Ada"_s, QDate(1990, month, 15), 6);
         const auto result = cast(p, kMoment);
         QVERIFY2(result.has_value(), "cast failed");
         hexagrams.insert(result->hexagram);
@@ -153,8 +152,8 @@ void TestFortune::birthDateChangesTheCast()
 
 void TestFortune::birthHourChangesTheBirthChart()
 {
-    const auto first = birthChart(profile(QStringLiteral("Ada"), QDate(1990, 6, 15), 1));
-    const auto second = birthChart(profile(QStringLiteral("Ada"), QDate(1990, 6, 15), 12));
+    const auto first = birthChart(profile(u"Ada"_s, QDate(1990, 6, 15), 1));
+    const auto second = birthChart(profile(u"Ada"_s, QDate(1990, 6, 15), 12));
 
     QVERIFY2(first.has_value(), "first chart failed");
     QVERIFY2(second.has_value(), "second chart failed");
@@ -163,8 +162,8 @@ void TestFortune::birthHourChangesTheBirthChart()
 
 void TestFortune::unknownHourEqualsZi()
 {
-    const auto unknown = birthChart(profile(QStringLiteral("Ada"), QDate(1990, 6, 15), 0));
-    const auto zi = birthChart(profile(QStringLiteral("Ada"), QDate(1990, 6, 15), 1));
+    const auto unknown = birthChart(profile(u"Ada"_s, QDate(1990, 6, 15), 0));
+    const auto zi = birthChart(profile(u"Ada"_s, QDate(1990, 6, 15), 1));
 
     QVERIFY2(unknown.has_value(), "unknown hour chart failed");
     QVERIFY2(zi.has_value(), "zi hour chart failed");
@@ -213,8 +212,8 @@ void TestFortune::adviceIsDistinct()
 
 void TestFortune::invalidInputFails()
 {
-    QVERIFY(!cast(profile(QStringLiteral("Ada"), QDate(1899, 1, 1)), kMoment).has_value());
-    QVERIFY(!cast(profile(QStringLiteral("Ada"), QDate(1990, 6, 15), 13), kMoment).has_value());
+    QVERIFY(!cast(profile(u"Ada"_s, QDate(1899, 1, 1)), kMoment).has_value());
+    QVERIFY(!cast(profile(u"Ada"_s, QDate(1990, 6, 15), 13), kMoment).has_value());
 }
 
 QTEST_GUILESS_MAIN(TestFortune)

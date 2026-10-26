@@ -82,10 +82,8 @@ auto SnakePlugin::initialize(const ExtensionSystem::PluginContext &context) -> U
     d_ptr->page->setBestScore(d_ptr->bestScore(d_ptr->difficulty));
 
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("snakeplugin.play"),
-        tr("Snake: play a round"),
-        std::bind_front(&SnakePlugin::play, this));
-    d_ptr->command->withShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+S")));
+        u"snakeplugin.play"_s, tr("Snake: play a round"), std::bind_front(&SnakePlugin::play, this));
+    d_ptr->command->withShortcut(QKeySequence(u"Ctrl+Alt+S"_s));
 
     connect(d_ptr->page, &SnakePage::gameFinished, this, &SnakePlugin::onGameFinished);
     connect(d_ptr->page, &SnakePage::difficultyChanged, this, &SnakePlugin::onDifficultyChanged);
@@ -104,7 +102,7 @@ void SnakePlugin::play()
 {
     // 先切页面再开局：棋盘出现时已经进入 Running，不会先闪一帧空盘。
     if (auto *shellHost = Shell::host())
-        shellHost->showPage(QStringLiteral("snakeplugin.page"));
+        shellHost->showPage(u"snakeplugin.page"_s);
 
     d_ptr->page->startGame();
 }

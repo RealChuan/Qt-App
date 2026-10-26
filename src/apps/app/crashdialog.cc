@@ -12,6 +12,8 @@
 
 #include <utility>
 
+using namespace Qt::StringLiterals;
+
 namespace Crash {
 
 class CrashDialog::CrashDialogPrivate
@@ -116,7 +118,7 @@ void CrashDialog::CrashDialogPrivate::retranslateUi()
     // 报告按时间升序返回，最后一条即最近一次崩溃。
     const QString time = reports.empty() ? QString()
                                          : QDateTime::fromSecsSinceEpoch(reports.back().createdAt)
-                                               .toString(QStringLiteral("yyyy-MM-dd HH:mm"));
+                                               .toString(u"yyyy-MM-dd HH:mm"_s);
     const int count = int(reports.size());
     const QString countText = count == 1 ? CrashDialog::tr("1 crash report")
                                          : CrashDialog::tr("%1 crash reports").arg(count);

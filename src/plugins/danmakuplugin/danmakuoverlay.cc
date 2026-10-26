@@ -4,6 +4,8 @@
 #include <QLabel>
 #include <QPropertyAnimation>
 
+using namespace Qt::StringLiterals;
+
 namespace Danmaku {
 
 namespace {
@@ -48,11 +50,11 @@ bool DanmakuOverlay::eventFilter(QObject *watched, QEvent *event)
 void DanmakuOverlay::push(const QString &text, const QColor &color)
 {
     auto *label = new QLabel(text, this);
-    label->setStyleSheet(QStringLiteral(
-                             "QLabel { color: %1; background: rgba(0, 0, 0, 110);"
-                             " border-radius: 10px; padding: 4px 12px;"
-                             " font-size: 15px; font-weight: 600; }")
-                             .arg((color.isValid() ? color : QColor(255, 255, 255)).name()));
+    label->setStyleSheet(
+        u"QLabel { color: %1; background: rgba(0, 0, 0, 110);"
+        u" border-radius: 10px; padding: 4px 12px;"
+        u" font-size: 15px; font-weight: 600; }"_s.arg(
+            (color.isValid() ? color : QColor(255, 255, 255)).name()));
 
     label->adjustSize();
     const int lanes = qMax(1, (height() - kTopOffset) / kLaneHeight);

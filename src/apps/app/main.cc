@@ -25,6 +25,8 @@
 #include <QStyle>
 #include <QThreadPool>
 
+using namespace Qt::StringLiterals;
+
 namespace {
 
 constexpr auto kLogLevelPrefix = "--log-level=";
@@ -94,7 +96,7 @@ public:
     {
         const double mibPerSecond = Utils::hashBench(
             kHashBenchIterations, kHashBenchDurationMs, kHashBenchDataSize, QCryptographicHash::Md5);
-        qInfo().noquote() << QStringLiteral("MD5 throughput: %1 MiB/s (single thread, 1 MiB blocks)")
+        qInfo().noquote() << u"MD5 throughput: %1 MiB/s (single thread, 1 MiB blocks)"_s
                                  .arg(mibPerSecond, 0, 'f', 1);
     }
 };

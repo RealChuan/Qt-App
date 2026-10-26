@@ -22,7 +22,7 @@ namespace {
 [[nodiscard]] auto translationSuffix(LanguageManager::Language language) -> QString
 {
     switch (language) {
-    case LanguageManager::Chinese:
+    case LanguageManager::SimplifiedChinese:
         return u"zh_CN"_s;
     case LanguageManager::English:
         break;
@@ -45,7 +45,7 @@ namespace {
 {
     const auto language = static_cast<LanguageManager::Language>(value);
     switch (language) {
-    case LanguageManager::Chinese:
+    case LanguageManager::SimplifiedChinese:
     case LanguageManager::English:
         return language;
     }
@@ -55,7 +55,7 @@ namespace {
 [[nodiscard]] auto systemLanguage() -> LanguageManager::Language
 {
     // 默认语言跟随系统 locale，未覆盖的语言回落到源语言英文。
-    return QLocale::system().language() == QLocale::Chinese ? LanguageManager::Chinese
+    return QLocale::system().language() == QLocale::Chinese ? LanguageManager::SimplifiedChinese
                                                             : LanguageManager::English;
 }
 
@@ -64,7 +64,7 @@ namespace {
 class LanguageManager::LanguageManagerPrivate
 {
 public:
-    LanguageManager::Language currentLanguage = LanguageManager::Chinese;
+    LanguageManager::Language currentLanguage = LanguageManager::SimplifiedChinese;
     std::unique_ptr<QTranslator> appTranslator;
     std::unique_ptr<QTranslator> qtTranslator;
 };

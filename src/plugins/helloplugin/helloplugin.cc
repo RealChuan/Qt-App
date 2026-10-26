@@ -36,10 +36,10 @@ auto HelloPlugin::initialize(const ExtensionSystem::PluginContext &context) -> U
 
     // 命令对象由插件持有，生命周期与插件一致。
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("helloplugin.increment"),
+        u"helloplugin.increment"_s,
         tr("Hello: increment counter"),
         std::bind_front(&HelloPlugin::increment, this));
-    d_ptr->command->withShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+H")));
+    d_ptr->command->withShortcut(QKeySequence(u"Ctrl+Alt+H"_s));
 
     connect(d_ptr->page, &HelloPage::countChanged, this, &HelloPlugin::onCountChanged);
 

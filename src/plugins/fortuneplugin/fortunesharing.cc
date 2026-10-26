@@ -52,8 +52,8 @@ auto shareText(const Reading &reading) -> QString
     lines << QString();
     lines << reading.reading;
     lines << QString();
-    lines << FortuneStrings::tr("Do: %1").arg(reading.doList.join(QStringLiteral(", ")));
-    lines << FortuneStrings::tr("Avoid: %1").arg(reading.avoidList.join(QStringLiteral(", ")));
+    lines << FortuneStrings::tr("Do: %1").arg(reading.doList.join(u", "_s));
+    lines << FortuneStrings::tr("Avoid: %1").arg(reading.avoidList.join(u", "_s));
     lines << FortuneStrings::tr("Lucky element: %1 · number %2")
                  .arg(reading.luckyElement)
                  .arg(reading.luckyNumber);
@@ -61,8 +61,7 @@ auto shareText(const Reading &reading) -> QString
                  .arg(reading.birthHexagram)
                  .arg(hexagramName(reading.changedHexagram));
     lines << QString();
-    lines << FortuneStrings::tr("Cast at %1")
-                 .arg(reading.castAt.toString(QStringLiteral("yyyy-MM-dd HH:mm")));
+    lines << FortuneStrings::tr("Cast at %1").arg(reading.castAt.toString(u"yyyy-MM-dd HH:mm"_s));
     lines << FortuneStrings::tr(
         "For entertainment only. A simplified Plum Blossom reading, "
         "not advice.");
@@ -75,14 +74,14 @@ auto renderShareImage(const Reading &reading) -> QImage
     const HexagramInfo &info = hexagram(reading.hexagram);
 
     QWidget outer;
-    outer.setObjectName(QStringLiteral("FortuneShareOuter"));
+    outer.setObjectName(u"FortuneShareOuter"_s);
     outer.setAttribute(Qt::WA_DontShowOnScreen);
 
     auto *outerLayout = new QVBoxLayout(&outer);
     outerLayout->setContentsMargins(kOuterMargin, kOuterMargin, kOuterMargin, kOuterMargin);
 
     auto *card = new QFrame(&outer);
-    card->setObjectName(QStringLiteral("Card"));
+    card->setObjectName(u"Card"_s);
     card->setFixedWidth(kCardWidth);
 
     auto *cardLayout = new QVBoxLayout(card);
@@ -92,15 +91,15 @@ auto renderShareImage(const Reading &reading) -> QImage
     auto *headerRow = new QHBoxLayout;
     headerRow->setContentsMargins(0, 0, 0, 0);
     auto *titleLabel = new QLabel(FortuneStrings::tr("Cyber Fortune"), card);
-    titleLabel->setObjectName(QStringLiteral("CardTitle"));
-    auto *dateLabel = new QLabel(reading.castAt.toString(QStringLiteral("yyyy-MM-dd HH:mm")), card);
-    dateLabel->setObjectName(QStringLiteral("HeroMeta"));
+    titleLabel->setObjectName(u"CardTitle"_s);
+    auto *dateLabel = new QLabel(reading.castAt.toString(u"yyyy-MM-dd HH:mm"_s), card);
+    dateLabel->setObjectName(u"HeroMeta"_s);
     headerRow->addWidget(titleLabel);
     headerRow->addStretch();
     headerRow->addWidget(dateLabel);
 
     auto *divider = new QFrame(card);
-    divider->setObjectName(QStringLiteral("Divider"));
+    divider->setObjectName(u"Divider"_s);
     divider->setFrameShape(QFrame::NoFrame);
 
     auto *board = new HexagramBoard(card);
@@ -116,34 +115,33 @@ auto renderShareImage(const Reading &reading) -> QImage
     auto *nameLabel = new QLabel(
         FortuneStrings::tr("Hexagram %1: %2").arg(info.number).arg(hexagramName(reading.hexagram)),
         infoPanel);
-    nameLabel->setObjectName(QStringLiteral("HeroTitle"));
+    nameLabel->setObjectName(u"HeroTitle"_s);
     nameLabel->setWordWrap(true);
 
     auto *trigramLabel = new QLabel(trigramPair(info.upper, info.lower), infoPanel);
-    trigramLabel->setObjectName(QStringLiteral("HeroMeta"));
+    trigramLabel->setObjectName(u"HeroMeta"_s);
 
-    auto *gradeLabel = new QLabel(
-        QStringLiteral("%1 · %2").arg(gradeText(reading.grade), reading.headline), infoPanel);
-    gradeLabel->setObjectName(QStringLiteral("CardTitle"));
+    auto *gradeLabel
+        = new QLabel(u"%1 · %2"_s.arg(gradeText(reading.grade), reading.headline), infoPanel);
+    gradeLabel->setObjectName(u"CardTitle"_s);
     gradeLabel->setWordWrap(true);
 
     auto *judgmentLabel = new QLabel(reading.judgment, infoPanel);
-    judgmentLabel->setObjectName(QStringLiteral("CardHint"));
+    judgmentLabel->setObjectName(u"CardHint"_s);
     judgmentLabel->setWordWrap(true);
 
     auto *readingLabel = new QLabel(reading.reading, infoPanel);
-    readingLabel->setObjectName(QStringLiteral("CardHint"));
+    readingLabel->setObjectName(u"CardHint"_s);
     readingLabel->setWordWrap(true);
 
-    auto *doLabel = new QLabel(
-        FortuneStrings::tr("Do: %1").arg(reading.doList.join(QStringLiteral(" · "))), infoPanel);
-    doLabel->setObjectName(QStringLiteral("CardHint"));
+    auto *doLabel
+        = new QLabel(FortuneStrings::tr("Do: %1").arg(reading.doList.join(u" · "_s)), infoPanel);
+    doLabel->setObjectName(u"CardHint"_s);
     doLabel->setWordWrap(true);
 
     auto *avoidLabel = new QLabel(
-        FortuneStrings::tr("Avoid: %1").arg(reading.avoidList.join(QStringLiteral(" · "))),
-        infoPanel);
-    avoidLabel->setObjectName(QStringLiteral("CardHint"));
+        FortuneStrings::tr("Avoid: %1").arg(reading.avoidList.join(u" · "_s)), infoPanel);
+    avoidLabel->setObjectName(u"CardHint"_s);
     avoidLabel->setWordWrap(true);
 
     auto *luckyLabel = new QLabel(
@@ -151,14 +149,14 @@ auto renderShareImage(const Reading &reading) -> QImage
             .arg(reading.luckyElement)
             .arg(reading.luckyNumber),
         infoPanel);
-    luckyLabel->setObjectName(QStringLiteral("CardHint"));
+    luckyLabel->setObjectName(u"CardHint"_s);
 
     auto *birthLabel = new QLabel(
         FortuneStrings::tr("Birth hexagram: %1 · Changed: %2")
             .arg(reading.birthHexagram)
             .arg(hexagramName(reading.changedHexagram)),
         infoPanel);
-    birthLabel->setObjectName(QStringLiteral("HeroMeta"));
+    birthLabel->setObjectName(u"HeroMeta"_s);
     birthLabel->setWordWrap(true);
 
     infoLayout->addWidget(nameLabel);
@@ -181,7 +179,7 @@ auto renderShareImage(const Reading &reading) -> QImage
     auto *footerLabel = new QLabel(
         FortuneStrings::tr("For entertainment only. A simplified Plum Blossom reading, not advice."),
         card);
-    footerLabel->setObjectName(QStringLiteral("Placeholder"));
+    footerLabel->setObjectName(u"Placeholder"_s);
     footerLabel->setWordWrap(true);
 
     cardLayout->addLayout(headerRow);

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace ExtensionSystem {
 class PluginSpec;
 }
@@ -27,10 +29,7 @@ public:
     explicit PluginPage(QWidget *parent = nullptr);
     ~PluginPage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("coreplugin.plugins");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"coreplugin.plugins"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Plugins"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

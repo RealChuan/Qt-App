@@ -272,7 +272,7 @@ auto cast(const Profile &profile, const QDateTime &moment) -> Utils::Result<Read
                           .arg(trigramName(useTrigram))
                           .arg(trigramName(bodyTrigram))
                           .arg(relationSentence(useElement, bodyElement))
-                      + QStringLiteral("\n\n") + birthSentence + QStringLiteral("\n\n")
+                      + u"\n\n"_s + birthSentence + u"\n\n"_s
                       + FortuneStrings::tr(
                             "With the moving line turned, the reading becomes %1: %2.")
                             .arg(changedHexagram)

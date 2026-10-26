@@ -13,6 +13,8 @@
 #include <QListWidget>
 #include <QVBoxLayout>
 
+using namespace Qt::StringLiterals;
+
 namespace Core {
 
 namespace {
@@ -68,7 +70,7 @@ void CommandPalette::CommandPalettePrivate::refresh(const QString &filter)
         item->setText(
             command->shortcut().isEmpty()
                 ? command->title()
-                : QStringLiteral("%1    %2").arg(command->title(), command->shortcut().toString()));
+                : u"%1    %2"_s.arg(command->title(), command->shortcut().toString()));
         item->setData(Qt::UserRole, QVariant::fromValue(command));
         if (!command->subtitle().isEmpty())
             item->setToolTip(command->subtitle());

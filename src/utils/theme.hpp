@@ -9,6 +9,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Utils {
 
 // 主题模式。System 表示跟随操作系统的深色/浅色设置。
@@ -26,10 +28,9 @@ enum class ThemeMode { System = 0, Light = 1, Dark = 2 };
 struct ThemeConfig
 {
     // 令牌文件与样式表所在目录，必须以 '/' 结尾。
-    QString directory = QStringLiteral(":/qss/");
+    QString directory = u":/qss/"_s;
     // 依次拼接，越靠后的规则优先级越高。
-    QStringList styleSheets{
-        QStringLiteral("base.css"), QStringLiteral("shell.css"), QStringLiteral("pages.css")};
+    QStringList styleSheets{u"base.css"_s, u"shell.css"_s, u"pages.css"_s};
 };
 
 // 为什么需要这一层：QSS 一旦声明了颜色就会覆盖 QPalette，

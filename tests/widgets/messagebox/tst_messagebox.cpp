@@ -5,6 +5,7 @@
 #include <QTest>
 #include <QTimer>
 
+using namespace Qt::StringLiterals;
 using namespace Widgets;
 
 namespace {
@@ -78,9 +79,9 @@ void TestMessageBox::buildsButtonsFromStandardButtons()
     MessageBox box;
     box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
-    QCOMPARE(visibleButtonTexts(box), QStringList({QStringLiteral("No"), QStringLiteral("Yes")}));
-    QVERIFY(buttonFor(box, QStringLiteral("Yes")));
-    QVERIFY(box.button(QMessageBox::No) == buttonFor(box, QStringLiteral("No")));
+    QCOMPARE(visibleButtonTexts(box), QStringList({u"No"_s, u"Yes"_s}));
+    QVERIFY(buttonFor(box, u"Yes"_s));
+    QVERIFY(box.button(QMessageBox::No) == buttonFor(box, u"No"_s));
 }
 
 void TestMessageBox::fallsBackToCloseWhenNothingIsSupported()
@@ -94,7 +95,7 @@ void TestMessageBox::fallsBackToCloseWhenNothingIsSupported()
     // Save 没有自绘实现：告警后忽略，但必须留下一个能关窗的按钮。
     box.setStandardButtons(QMessageBox::Save);
 
-    QCOMPARE(visibleButtonTexts(box), QStringList({QStringLiteral("Close")}));
+    QCOMPARE(visibleButtonTexts(box), QStringList({u"Close"_s}));
 #endif
 }
 
@@ -125,7 +126,7 @@ void TestMessageBox::execReturnsClickedButton()
 {
     MessageBox box;
     box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    clickLater(box, QStringLiteral("No"));
+    clickLater(box, u"No"_s);
 
     QCOMPARE(box.exec(), int(QMessageBox::No));
 }

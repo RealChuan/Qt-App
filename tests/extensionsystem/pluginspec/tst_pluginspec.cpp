@@ -25,30 +25,24 @@ void TestPluginSpec::versionCompare_data()
     QTest::addColumn<QString>("rhs");
     QTest::addColumn<int>("expected");
 
-    QTest::newRow("patch 10 beats patch 9")
-        << QStringLiteral("1.2.10") << QStringLiteral("1.2.9") << 1;
-    QTest::newRow("patch 9 loses to patch 10")
-        << QStringLiteral("1.2.9") << QStringLiteral("1.2.10") << -1;
-    QTest::newRow("minor beats patch") << QStringLiteral("1.3.0") << QStringLiteral("1.2.99") << 1;
-    QTest::newRow("major dominates") << QStringLiteral("2.0") << QStringLiteral("1.99.99") << 1;
-    QTest::newRow("missing segments are zero")
-        << QStringLiteral("1.2") << QStringLiteral("1.2.0") << 0;
-    QTest::newRow("zero padded segments")
-        << QStringLiteral("1.2.0.0") << QStringLiteral("1.2") << 0;
-    QTest::newRow("longer version wins") << QStringLiteral("1.2.1") << QStringLiteral("1.2") << 1;
-    QTest::newRow("numeric not lexicographic")
-        << QStringLiteral("10.0") << QStringLiteral("9.0") << 1;
-    QTest::newRow("leading zeros ignored") << QStringLiteral("1.02") << QStringLiteral("1.2") << 0;
+    QTest::newRow("patch 10 beats patch 9") << u"1.2.10"_s << u"1.2.9"_s << 1;
+    QTest::newRow("patch 9 loses to patch 10") << u"1.2.9"_s << u"1.2.10"_s << -1;
+    QTest::newRow("minor beats patch") << u"1.3.0"_s << u"1.2.99"_s << 1;
+    QTest::newRow("major dominates") << u"2.0"_s << u"1.99.99"_s << 1;
+    QTest::newRow("missing segments are zero") << u"1.2"_s << u"1.2.0"_s << 0;
+    QTest::newRow("zero padded segments") << u"1.2.0.0"_s << u"1.2"_s << 0;
+    QTest::newRow("longer version wins") << u"1.2.1"_s << u"1.2"_s << 1;
+    QTest::newRow("numeric not lexicographic") << u"10.0"_s << u"9.0"_s << 1;
+    QTest::newRow("leading zeros ignored") << u"1.02"_s << u"1.2"_s << 0;
     QTest::newRow("empty equals empty") << QString() << QString() << 0;
-    QTest::newRow("empty equals zero") << QString() << QStringLiteral("0") << 0;
-    QTest::newRow("empty loses to one") << QString() << QStringLiteral("1") << -1;
+    QTest::newRow("empty equals zero") << QString() << u"0"_s << 0;
+    QTest::newRow("empty loses to one") << QString() << u"1"_s << -1;
     // 预发布后缀不参与比较，只取前四段数字
-    QTest::newRow("suffix ignored") << QStringLiteral("1.2.3-beta") << QStringLiteral("1.2.3") << 0;
+    QTest::newRow("suffix ignored") << u"1.2.3-beta"_s << u"1.2.3"_s << 0;
     // 非数字段解析失败后按 0 处理
-    QTest::newRow("garbage equals zero") << QStringLiteral("abc") << QStringLiteral("0") << 0;
+    QTest::newRow("garbage equals zero") << u"abc"_s << u"0"_s << 0;
     // 只有前四段有效，第五段不影响结果
-    QTest::newRow("fifth segment ignored")
-        << QStringLiteral("1.2.3.4.5") << QStringLiteral("1.2.3.4") << 0;
+    QTest::newRow("fifth segment ignored") << u"1.2.3.4.5"_s << u"1.2.3.4"_s << 0;
 }
 
 void TestPluginSpec::versionCompare()
@@ -63,13 +57,7 @@ void TestPluginSpec::versionCompare()
 void TestPluginSpec::versionCompareIsAntisymmetric()
 {
     const QStringList versions
-        = {QStringLiteral("0"),
-           QStringLiteral("1"),
-           QStringLiteral("1.2"),
-           QStringLiteral("1.2.0"),
-           QStringLiteral("1.2.9"),
-           QStringLiteral("1.2.10"),
-           QStringLiteral("2.0.0.1")};
+        = {u"0"_s, u"1"_s, u"1.2"_s, u"1.2.0"_s, u"1.2.9"_s, u"1.2.10"_s, u"2.0.0.1"_s};
 
     for (const QString &lhs : versions) {
         for (const QString &rhs : versions) {
@@ -107,14 +95,14 @@ void TestPluginSpec::freshSpecIsInvalid()
 void TestPluginSpec::dependencyEquality()
 {
     PluginDependency first;
-    first.id = QStringLiteral("danmakuplugin");
-    first.version = QStringLiteral("0.2.1");
+    first.id = u"danmakuplugin"_s;
+    first.version = u"0.2.1"_s;
     first.type = PluginDependency::Type::Optional;
 
     PluginDependency same = first;
     QVERIFY(first == same);
 
-    same.version = QStringLiteral("0.2.2");
+    same.version = u"0.2.2"_s;
     QVERIFY(first != same);
 }
 

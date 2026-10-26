@@ -28,7 +28,7 @@ public:
 
 signals:
     void castAgainRequested();
-    void resetRequested();
+    void editRequested();
 
 protected:
     void changeEvent(QEvent *event) override;
@@ -46,6 +46,7 @@ private:
     void retranslateUi();
     void setupConnections();
     void startReveal();
+    void updateCastButtonText();
 
     class FortuneReadingViewPrivate;
     std::unique_ptr<FortuneReadingViewPrivate> d_ptr;

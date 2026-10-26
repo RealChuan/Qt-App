@@ -12,8 +12,9 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-namespace Core {
+using namespace Qt::StringLiterals;
 
+namespace Core {
 namespace {
 
 constexpr auto kPageIdProperty = "pageId";
@@ -70,7 +71,7 @@ void MainWindow::MainWindowPrivate::retranslatePages()
 auto MainWindow::MainWindowPrivate::buttonForPage(Shell::IPage *page) -> QPushButton *
 {
     auto *button = new QPushButton(page->title());
-    button->setObjectName(QStringLiteral("SidebarButton"));
+    button->setObjectName(u"SidebarButton"_s);
     button->setCheckable(true);
     button->setCursor(Qt::PointingHandCursor);
     button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

@@ -19,6 +19,8 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+using namespace Qt::StringLiterals;
+
 namespace ColorPicker {
 
 namespace {
@@ -114,7 +116,7 @@ void ColorPickerWidget::ColorPickerWidgetPrivate::fitToContent()
     info->ensurePolished();
     const QFontMetrics metrics(info->font());
     // 必须用 setFixedWidth：setMinimumWidth 不改 sizeHint，adjustSize() 仍会压窄。
-    info->setFixedWidth(metrics.horizontalAdvance(QStringLiteral("#FFFFFF  rgb(255, 255, 255)")));
+    info->setFixedWidth(metrics.horizontalAdvance(u"#FFFFFF  rgb(255, 255, 255)"_s));
     q_ptr->adjustSize();
 }
 
@@ -146,13 +148,12 @@ void ColorPickerWidget::ColorPickerWidgetPrivate::refreshFromCursor()
         magnifier->setPixmap(scaled);
     }
 
-    info->setText(QStringLiteral("%1  rgb(%2, %3, %4)")
-                      .arg(color.name(QColor::HexRgb).toUpper())
+    info->setText(u"%1  rgb(%2, %3, %4)"_s.arg(color.name(QColor::HexRgb).toUpper())
                       .arg(color.red())
                       .arg(color.green())
                       .arg(color.blue()));
     // 色块的颜色只能来自运行时，其余外观都由样式表决定。
-    swatch->setStyleSheet(QStringLiteral("background: %1; border-radius: 5px;").arg(color.name()));
+    swatch->setStyleSheet(u"background: %1; border-radius: 5px;"_s.arg(color.name()));
 
     reposition();
 }

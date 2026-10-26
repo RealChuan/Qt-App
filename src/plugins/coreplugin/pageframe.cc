@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+using namespace Qt::StringLiterals;
+
 namespace Core {
 
 class PageFrame::PageFramePrivate
@@ -16,13 +18,13 @@ PageFrame::PageFrame(QWidget *content, QWidget *parent)
     : QWidget(parent)
     , d_ptr(std::make_unique<PageFramePrivate>())
 {
-    setObjectName(QStringLiteral("PageFrame"));
+    setObjectName(u"PageFrame"_s);
 
     d_ptr->title = new QLabel(this);
-    d_ptr->title->setObjectName(QStringLiteral("PageTitle"));
+    d_ptr->title->setObjectName(u"PageTitle"_s);
 
     d_ptr->subtitle = new QLabel(this);
-    d_ptr->subtitle->setObjectName(QStringLiteral("PageSubtitle"));
+    d_ptr->subtitle->setObjectName(u"PageSubtitle"_s);
     d_ptr->subtitle->setWordWrap(true);
 
     auto *layout = new QVBoxLayout(this);

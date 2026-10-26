@@ -28,8 +28,8 @@ namespace Core {
 
 namespace {
 
-constexpr int kWindowWidth = 1180;
-constexpr int kWindowHeight = 820;
+constexpr int kWindowWidth = 1060;
+constexpr int kWindowHeight = 680;
 constexpr int kMinWindowWidth = 900;
 constexpr int kMinWindowHeight = 600;
 constexpr int kScreenMargin = 80;

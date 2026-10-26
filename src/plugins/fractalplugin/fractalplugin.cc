@@ -24,7 +24,7 @@ auto FractalPlugin::initialize(const ExtensionSystem::PluginContext &) -> Utils:
 {
     d_ptr->page = new FractalPage;
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("fractalplugin.reset"),
+        u"fractalplugin.reset"_s,
         tr("Fractal: reset view"),
         std::bind_front(&FractalPlugin::resetView, this));
     return Utils::ResultOk;

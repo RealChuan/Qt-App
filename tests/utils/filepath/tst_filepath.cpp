@@ -50,45 +50,39 @@ private slots:
 
 void TestFilePath::fromStringNormalizesSeparators()
 {
-    QCOMPARE(FilePath::fromString(QStringLiteral("a\\b\\c")).path(), QStringLiteral("a/b/c"));
-    QCOMPARE(FilePath::fromString(QStringLiteral("a//b///c")).path(), QStringLiteral("a/b/c"));
+    QCOMPARE(FilePath::fromString(u"a\\b\\c"_s).path(), u"a/b/c"_s);
+    QCOMPARE(FilePath::fromString(u"a//b///c"_s).path(), u"a/b/c"_s);
 }
 
 void TestFilePath::fromStringCollapsesDotSegments()
 {
-    QCOMPARE(FilePath::fromString(QStringLiteral("a/b/../c")).path(), QStringLiteral("a/c"));
-    QCOMPARE(FilePath::fromString(QStringLiteral("./a/b")).path(), QStringLiteral("a/b"));
-    QCOMPARE(FilePath::fromString(QStringLiteral("a/./b")).path(), QStringLiteral("a/b"));
+    QCOMPARE(FilePath::fromString(u"a/b/../c"_s).path(), u"a/c"_s);
+    QCOMPARE(FilePath::fromString(u"./a/b"_s).path(), u"a/b"_s);
+    QCOMPARE(FilePath::fromString(u"a/./b"_s).path(), u"a/b"_s);
 }
 
 void TestFilePath::pathAppended()
 {
     // 尾部斜杠不能导致出现双斜杠
-    QCOMPARE(
-        (FilePath(QStringLiteral("/a/b/")) / QStringLiteral("c")).path(), QStringLiteral("/a/b/c"));
-    QCOMPARE(
-        (FilePath(QStringLiteral("/a/b")) / QStringLiteral("c/d")).path(),
-        QStringLiteral("/a/b/c/d"));
+    QCOMPARE((FilePath(u"/a/b/"_s) / u"c"_s).path(), u"/a/b/c"_s);
+    QCOMPARE((FilePath(u"/a/b"_s) / u"c/d"_s).path(), u"/a/b/c/d"_s);
     // 传入反斜杠也按分隔符处理
-    QCOMPARE(
-        (FilePath(QStringLiteral("/a")) / QStringLiteral("b\\c")).path(), QStringLiteral("/a/b/c"));
+    QCOMPARE((FilePath(u"/a"_s) / u"b\\c"_s).path(), u"/a/b/c"_s);
     // 空路径作为基底：结果就是参数本身
-    QCOMPARE((FilePath() / QStringLiteral("a/b")).path(), QStringLiteral("a/b"));
+    QCOMPARE((FilePath() / u"a/b"_s).path(), u"a/b"_s);
     // 参数里的 ".." 会被清理
-    QCOMPARE(
-        (FilePath(QStringLiteral("/a/b")) / QStringLiteral("../c")).path(), QStringLiteral("/a/c"));
+    QCOMPARE((FilePath(u"/a/b"_s) / u"../c"_s).path(), u"/a/c"_s);
 }
 
 void TestFilePath::pathAppendedKeepsEmptyArgument()
 {
-    const FilePath base(QStringLiteral("/a/b"));
+    const FilePath base(u"/a/b"_s);
     QCOMPARE((base / QString()).path(), base.path());
 }
 
 void TestFilePath::pathAppendedReplacesOnAbsoluteArgument()
 {
-    QCOMPARE(
-        (FilePath(QStringLiteral("/a/b")) / QStringLiteral("/c/d")).path(), QStringLiteral("/c/d"));
+    QCOMPARE((FilePath(u"/a/b"_s) / u"/c/d"_s).path(), u"/c/d"_s);
 }
 
 void TestFilePath::pathComponents()
@@ -101,40 +95,37 @@ void TestFilePath::pathComponents()
     };
 
     QCOMPARE(
-        toStringList(FilePath(QStringLiteral("/a/b/c")).pathComponents()),
-        QStringList({QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")}));
+        toStringList(FilePath(u"/a/b/c"_s).pathComponents()), QStringList({u"a"_s, u"b"_s, u"c"_s}));
     // 空段（连续斜杠、根斜杠）不产生组件
-    QCOMPARE(
-        toStringList(FilePath(QStringLiteral("/a//b")).pathComponents()),
-        QStringList({QStringLiteral("a"), QStringLiteral("b")}));
-    QVERIFY(FilePath(QStringLiteral("/")).pathComponents().isEmpty());
+    QCOMPARE(toStringList(FilePath(u"/a//b"_s).pathComponents()), QStringList({u"a"_s, u"b"_s}));
+    QVERIFY(FilePath(u"/"_s).pathComponents().isEmpty());
     QVERIFY(FilePath().pathComponents().isEmpty());
 }
 
 void TestFilePath::fileNameWithPathComponents()
 {
-    const FilePath path(QStringLiteral("/a/b/c.txt"));
-    QCOMPARE(path.fileNameWithPathComponents(1), QStringLiteral("c.txt"));
-    QCOMPARE(path.fileNameWithPathComponents(2), QStringLiteral("b/c.txt"));
-    QCOMPARE(path.fileNameWithPathComponents(3), QStringLiteral("a/b/c.txt"));
+    const FilePath path(u"/a/b/c.txt"_s);
+    QCOMPARE(path.fileNameWithPathComponents(1), u"c.txt"_s);
+    QCOMPARE(path.fileNameWithPathComponents(2), u"b/c.txt"_s);
+    QCOMPARE(path.fileNameWithPathComponents(3), u"a/b/c.txt"_s);
     // 越界与非正数都退化为纯文件名
-    QCOMPARE(path.fileNameWithPathComponents(0), QStringLiteral("c.txt"));
-    QCOMPARE(path.fileNameWithPathComponents(-1), QStringLiteral("c.txt"));
-    QCOMPARE(path.fileNameWithPathComponents(9), QStringLiteral("c.txt"));
+    QCOMPARE(path.fileNameWithPathComponents(0), u"c.txt"_s);
+    QCOMPARE(path.fileNameWithPathComponents(-1), u"c.txt"_s);
+    QCOMPARE(path.fileNameWithPathComponents(9), u"c.txt"_s);
 }
 
 void TestFilePath::fileNameParts()
 {
-    const FilePath path(QStringLiteral("/a/b.tar.gz"));
-    QCOMPARE(path.fileName(), QStringLiteral("b.tar.gz"));
-    QCOMPARE(path.baseName(), QStringLiteral("b"));
-    QCOMPARE(path.completeBaseName(), QStringLiteral("b.tar"));
-    QCOMPARE(path.suffix(), QStringLiteral("tar.gz"));
-    QCOMPARE(path.completeSuffix(), QStringLiteral("gz"));
+    const FilePath path(u"/a/b.tar.gz"_s);
+    QCOMPARE(path.fileName(), u"b.tar.gz"_s);
+    QCOMPARE(path.baseName(), u"b"_s);
+    QCOMPARE(path.completeBaseName(), u"b.tar"_s);
+    QCOMPARE(path.suffix(), u"tar.gz"_s);
+    QCOMPARE(path.completeSuffix(), u"gz"_s);
 
-    const FilePath noSuffix(QStringLiteral("/a/noext"));
-    QCOMPARE(noSuffix.baseName(), QStringLiteral("noext"));
-    QCOMPARE(noSuffix.completeBaseName(), QStringLiteral("noext"));
+    const FilePath noSuffix(u"/a/noext"_s);
+    QCOMPARE(noSuffix.baseName(), u"noext"_s);
+    QCOMPARE(noSuffix.completeBaseName(), u"noext"_s);
     QVERIFY(noSuffix.suffix().isEmpty());
     QVERIFY(noSuffix.completeSuffix().isEmpty());
 }
@@ -144,10 +135,10 @@ void TestFilePath::parentDir_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("expected");
 
-    QTest::newRow("nested") << QStringLiteral("/a/b") << QStringLiteral("/a");
-    QTest::newRow("one level below root") << QStringLiteral("/a") << QStringLiteral("/");
-    QTest::newRow("root") << QStringLiteral("/") << QStringLiteral("/");
-    QTest::newRow("no separator") << QStringLiteral("abc") << QString();
+    QTest::newRow("nested") << u"/a/b"_s << u"/a"_s;
+    QTest::newRow("one level below root") << u"/a"_s << u"/"_s;
+    QTest::newRow("root") << u"/"_s << u"/"_s;
+    QTest::newRow("no separator") << u"abc"_s << QString();
     QTest::newRow("empty") << QString() << QString();
 }
 
@@ -165,15 +156,13 @@ void TestFilePath::isChildOf_data()
     QTest::addColumn<QString>("parent");
     QTest::addColumn<bool>("expected");
 
-    QTest::newRow("direct child") << QStringLiteral("/a/b/c") << QStringLiteral("/a/b") << true;
-    QTest::newRow("grand child") << QStringLiteral("/a/b/c") << QStringLiteral("/a") << true;
-    QTest::newRow("same path") << QStringLiteral("/a/b") << QStringLiteral("/a/b") << false;
+    QTest::newRow("direct child") << u"/a/b/c"_s << u"/a/b"_s << true;
+    QTest::newRow("grand child") << u"/a/b/c"_s << u"/a"_s << true;
+    QTest::newRow("same path") << u"/a/b"_s << u"/a/b"_s << false;
     // 前缀相同但下一字符不是分隔符，不能算子路径
-    QTest::newRow("sibling with shared prefix")
-        << QStringLiteral("/a/bc") << QStringLiteral("/a/b") << false;
-    QTest::newRow("parent with trailing slash")
-        << QStringLiteral("/a/b/c") << QStringLiteral("/a/b/") << true;
-    QTest::newRow("empty parent") << QStringLiteral("/a/b") << QString() << false;
+    QTest::newRow("sibling with shared prefix") << u"/a/bc"_s << u"/a/b"_s << false;
+    QTest::newRow("parent with trailing slash") << u"/a/b/c"_s << u"/a/b/"_s << true;
+    QTest::newRow("empty parent") << u"/a/b"_s << QString() << false;
 }
 
 void TestFilePath::isChildOf()
@@ -193,80 +182,69 @@ void TestFilePath::isChildOfIgnoresCaseOnWindows()
 #else
         false;
 #endif
-    QCOMPARE(FilePath(QStringLiteral("/a/B/c")).isChildOf(FilePath(QStringLiteral("/a/b"))), expected);
+    QCOMPARE(FilePath(u"/a/B/c"_s).isChildOf(FilePath(u"/a/b"_s)), expected);
 }
 
 void TestFilePath::relativeChildPath()
 {
-    QCOMPARE(
-        FilePath(QStringLiteral("/a/b/c")).relativeChildPath(FilePath(QStringLiteral("/a/b"))).path(),
-        QStringLiteral("c"));
-    QCOMPARE(
-        FilePath(QStringLiteral("/a/b/c/d")).relativeChildPath(FilePath(QStringLiteral("/a"))).path(),
-        QStringLiteral("b/c/d"));
+    QCOMPARE(FilePath(u"/a/b/c"_s).relativeChildPath(FilePath(u"/a/b"_s)).path(), u"c"_s);
+    QCOMPARE(FilePath(u"/a/b/c/d"_s).relativeChildPath(FilePath(u"/a"_s)).path(), u"b/c/d"_s);
     // 不是子路径时返回空，而不是抛异常
-    QVERIFY(
-        FilePath(QStringLiteral("/x/y")).relativeChildPath(FilePath(QStringLiteral("/a"))).isEmpty());
+    QVERIFY(FilePath(u"/x/y"_s).relativeChildPath(FilePath(u"/a"_s)).isEmpty());
 }
 
 void TestFilePath::withSuffixAppends()
 {
     // 语义是「追加」而不是「替换」，容易被误用，这里锁住
-    QCOMPARE(
-        FilePath(QStringLiteral("/a/b.txt")).withSuffix(QStringLiteral(".bak")).path(),
-        QStringLiteral("/a/b.txt.bak"));
+    QCOMPARE(FilePath(u"/a/b.txt"_s).withSuffix(u".bak"_s).path(), u"/a/b.txt.bak"_s);
 }
 
 void TestFilePath::resourcePathRoundTrip()
 {
-    const FilePath resource(QStringLiteral(":/qss/base.css"));
+    const FilePath resource(u":/qss/base.css"_s);
     QVERIFY(resource.isResourceFile());
     QVERIFY(resource.isAbsolutePath());
-    QCOMPARE(resource.toUrl(), QUrl(QStringLiteral("qrc:/qss/base.css")));
+    QCOMPARE(resource.toUrl(), QUrl(u"qrc:/qss/base.css"_s));
 
-    const FilePath local = FilePath::fromUrl(QUrl::fromLocalFile(QStringLiteral("/a/b c.css")));
-    QCOMPARE(local.path(), QStringLiteral("/a/b c.css"));
+    const FilePath local = FilePath::fromUrl(QUrl::fromLocalFile(u"/a/b c.css"_s));
+    QCOMPARE(local.path(), u"/a/b c.css"_s);
     QVERIFY(!local.isResourceFile());
 }
 
 void TestFilePath::equalityAndOrdering()
 {
-    const FilePath first(QStringLiteral("/a/b"));
-    const FilePath same(QStringLiteral("/a/b"));
-    const FilePath other(QStringLiteral("/a/c"));
+    const FilePath first(u"/a/b"_s);
+    const FilePath same(u"/a/b"_s);
+    const FilePath other(u"/a/c"_s);
 
     QVERIFY(first == same);
     QVERIFY(first != other);
     QVERIFY(first < other);
 
-    FilePaths paths = FilePaths::fromStrings(
-        {QStringLiteral("/b"), QStringLiteral("/a"), QStringLiteral("/c")});
+    FilePaths paths = FilePaths::fromStrings({u"/b"_s, u"/a"_s, u"/c"_s});
     paths.sort();
-    QCOMPARE(
-        paths.toFsPathStrings(),
-        QStringList({QStringLiteral("/a"), QStringLiteral("/b"), QStringLiteral("/c")}));
+    QCOMPARE(paths.toFsPathStrings(), QStringList({u"/a"_s, u"/b"_s, u"/c"_s}));
 }
 
 void TestFilePath::filePathsCommonPath()
 {
-    const FilePaths paths = FilePaths::fromStrings(
-        {QStringLiteral("/a/b/c"), QStringLiteral("/a/b/d"), QStringLiteral("/a/e")});
-    QCOMPARE(paths.commonPath().path(), QStringLiteral("/a"));
+    const FilePaths paths = FilePaths::fromStrings({u"/a/b/c"_s, u"/a/b/d"_s, u"/a/e"_s});
+    QCOMPARE(paths.commonPath().path(), u"/a"_s);
 
-    const FilePaths single = FilePaths::fromStrings({QStringLiteral("/a/b")});
-    QCOMPARE(single.commonPath().path(), QStringLiteral("/a/b"));
+    const FilePaths single = FilePaths::fromStrings({u"/a/b"_s});
+    QCOMPARE(single.commonPath().path(), u"/a/b"_s);
 }
 
 void TestFilePath::filePathsCommonPathWithUnrelatedRelativePaths()
 {
     // 回归：相对路径且首段不同时曾退化成死循环（parentDir() 返回空路径后不再收敛）
-    const FilePaths paths = FilePaths::fromStrings({QStringLiteral("abc"), QStringLiteral("abd")});
+    const FilePaths paths = FilePaths::fromStrings({u"abc"_s, u"abd"_s});
     QVERIFY(paths.commonPath().isEmpty());
 }
 
 void TestFilePath::filePathsSettingsRoundTrip()
 {
-    const FilePaths paths = FilePaths::fromStrings({QStringLiteral("/a/b"), QStringLiteral("/c/d")});
+    const FilePaths paths = FilePaths::fromStrings({u"/a/b"_s, u"/c/d"_s});
     const FilePaths restored = FilePaths::fromSettings(paths.toSettings());
     QCOMPARE(restored, paths);
 }
@@ -276,7 +254,7 @@ void TestFilePath::fileContentsRoundTrip()
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
 
-    const FilePath file = FilePath::fromString(dir.filePath(QStringLiteral("sample.txt")));
+    const FilePath file = FilePath::fromString(dir.filePath(u"sample.txt"_s));
     QVERIFY(!file.exists());
 
     const QByteArray payload = QByteArrayLiteral("hello\nworld\n");
@@ -307,11 +285,11 @@ void TestFilePath::copyAndRemove()
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
 
-    const FilePath source = FilePath::fromString(dir.filePath(QStringLiteral("a.txt")));
+    const FilePath source = FilePath::fromString(dir.filePath(u"a.txt"_s));
     const auto seeded = source.writeFileContents(QByteArrayLiteral("payload"));
     QVERIFY2(seeded.has_value(), qPrintable(errorText(seeded)));
 
-    const FilePath targetDir = FilePath::fromString(dir.filePath(QStringLiteral("sub")));
+    const FilePath targetDir = FilePath::fromString(dir.filePath(u"sub"_s));
     const auto created = targetDir.ensureWritableDir();
     QVERIFY2(created.has_value(), qPrintable(errorText(created)));
 
@@ -319,7 +297,7 @@ void TestFilePath::copyAndRemove()
     const auto copied = source.copyFile(targetDir);
     QVERIFY2(copied.has_value(), qPrintable(errorText(copied)));
 
-    const FilePath target = targetDir / QStringLiteral("a.txt");
+    const FilePath target = targetDir / u"a.txt"_s;
     QVERIFY(target.exists());
     const auto targetContents = target.fileContents();
     QVERIFY2(targetContents.has_value(), qPrintable(errorText(targetContents)));

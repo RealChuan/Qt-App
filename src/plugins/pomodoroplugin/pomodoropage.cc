@@ -53,8 +53,7 @@ private:
 
 auto formatTime(int seconds) -> QString
 {
-    return QStringLiteral("%1:%2")
-        .arg(seconds / kSecondsPerMinute, 2, 10, QLatin1Char('0'))
+    return u"%1:%2"_s.arg(seconds / kSecondsPerMinute, 2, 10, QLatin1Char('0'))
         .arg(seconds % kSecondsPerMinute, 2, 10, QLatin1Char('0'));
 }
 

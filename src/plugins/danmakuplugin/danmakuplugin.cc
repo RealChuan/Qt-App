@@ -32,7 +32,7 @@ auto DanmakuPlugin::initialize(const ExtensionSystem::PluginContext &) -> Utils:
     ExtensionSystem::PluginManager::addObject(d_ptr->service);
 
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("danmakuplugin.push"),
+        u"danmakuplugin.push"_s,
         tr("Danmaku: send a message"),
         std::bind_front(&DanmakuPlugin::pushDemoMessage, this));
     d_ptr->command->withSubtitle(tr("Broadcast to the overlay"));
@@ -64,14 +64,13 @@ auto DanmakuPlugin::aboutToShutdown() -> ExtensionSystem::IPlugin::ShutdownFlag
 void DanmakuPlugin::pushDemoMessage()
 {
     d_ptr->service->push(
-        QStringLiteral("Hello from danmakuplugin at %1")
-            .arg(QDateTime::currentDateTime().toString(QStringLiteral("HH:mm:ss"))),
+        tr("Hello from danmakuplugin at %1")
+            .arg(QDateTime::currentDateTime().toString(u"HH:mm:ss"_s)),
         QColor(120, 220, 255));
 
     // 顺便演示"另一个插件也能推"：通过对象池把自己找回来。
     if (auto *service = ExtensionSystem::PluginManager::object<IDanmaku>()) {
-        service
-            ->push(QStringLiteral("PluginManager::object<IDanmaku>() works"), QColor(255, 200, 120));
+        service->push(tr("%1 works").arg("PluginManager::object<IDanmaku>()"), QColor(255, 200, 120));
     }
 }
 

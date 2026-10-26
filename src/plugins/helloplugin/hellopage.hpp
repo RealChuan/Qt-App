@@ -6,6 +6,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Hello {
 
 // 模板插件的页面：一个居中标签 + 计数。
@@ -17,7 +19,7 @@ public:
     explicit HelloPage(QWidget *parent = nullptr);
     ~HelloPage() override;
 
-    [[nodiscard]] auto id() const -> QString override { return QStringLiteral("helloplugin.page"); }
+    [[nodiscard]] auto id() const -> QString override { return u"helloplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Hello"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

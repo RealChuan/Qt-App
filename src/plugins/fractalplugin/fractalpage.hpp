@@ -10,6 +10,8 @@
 #include <atomic>
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Fractal {
 
 // 一次异步渲染的参数。用共享指针传给工作线程，主线程改视图时把旧的标记为取消。
@@ -42,10 +44,7 @@ public:
     explicit FractalPage(QWidget *parent = nullptr);
     ~FractalPage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("fractalplugin.page");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"fractalplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Fractal"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

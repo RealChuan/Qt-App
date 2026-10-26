@@ -5,6 +5,8 @@
 #include <QSignalSpy>
 #include <QTest>
 
+using namespace Qt::StringLiterals;
+
 namespace {
 
 class TestPage : public Shell::IPage
@@ -15,7 +17,7 @@ public:
     {}
 
     auto id() const -> QString override { return m_id; }
-    auto title() const -> QString override { return QStringLiteral("Test page"); }
+    auto title() const -> QString override { return u"Test page"_s; }
     auto widget() -> QWidget * override { return nullptr; }
 
 private:
@@ -30,7 +32,7 @@ public:
     {}
 
     auto id() const -> QString override { return m_id; }
-    auto title() const -> QString override { return QStringLiteral("Test command"); }
+    auto title() const -> QString override { return u"Test command"_s; }
     void execute() override {}
 
 private:
@@ -84,7 +86,7 @@ void TestRegistry::addPageEmitsPagesChanged()
     const int before = int(registry()->pages().size());
     QSignalSpy spy(registry(), &Shell::Registry::pagesChanged);
 
-    auto *page = new TestPage(QStringLiteral("test.page.signal"));
+    auto *page = new TestPage(u"test.page.signal"_s);
     registry()->addPage(page);
 
     QCOMPARE(int(registry()->pages().size()), before + 1);
@@ -94,8 +96,8 @@ void TestRegistry::addPageEmitsPagesChanged()
 
 void TestRegistry::duplicatePageIdIsRejected()
 {
-    auto *first = new TestPage(QStringLiteral("test.page.duplicate"));
-    auto *second = new TestPage(QStringLiteral("test.page.duplicate"));
+    auto *first = new TestPage(u"test.page.duplicate"_s);
+    auto *second = new TestPage(u"test.page.duplicate"_s);
 
     registry()->addPage(first);
     const int before = int(registry()->pages().size());
@@ -113,8 +115,8 @@ void TestRegistry::pagesKeepRegistrationOrder()
 {
     const int before = int(registry()->pages().size());
 
-    auto *first = new TestPage(QStringLiteral("test.page.order.1"));
-    auto *second = new TestPage(QStringLiteral("test.page.order.2"));
+    auto *first = new TestPage(u"test.page.order.1"_s);
+    auto *second = new TestPage(u"test.page.order.2"_s);
     registry()->addPage(first);
     registry()->addPage(second);
 
@@ -129,7 +131,7 @@ void TestRegistry::addCommandEmitsCommandsChanged()
     const int before = int(registry()->commands().size());
     QSignalSpy spy(registry(), &Shell::Registry::commandsChanged);
 
-    auto *command = new TestCommand(QStringLiteral("test.command.signal"));
+    auto *command = new TestCommand(u"test.command.signal"_s);
     registry()->addCommand(command);
 
     QCOMPARE(int(registry()->commands().size()), before + 1);
@@ -139,8 +141,8 @@ void TestRegistry::addCommandEmitsCommandsChanged()
 
 void TestRegistry::duplicateCommandIdIsRejected()
 {
-    auto *first = new TestCommand(QStringLiteral("test.command.duplicate"));
-    auto *second = new TestCommand(QStringLiteral("test.command.duplicate"));
+    auto *first = new TestCommand(u"test.command.duplicate"_s);
+    auto *second = new TestCommand(u"test.command.duplicate"_s);
 
     registry()->addCommand(first);
     const int before = int(registry()->commands().size());

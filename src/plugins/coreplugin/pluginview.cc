@@ -59,8 +59,7 @@ public:
         if (role == kFilterRole) {
             if (column != NameColumn)
                 return {};
-            return QStringLiteral("%1 %2 %3")
-                .arg(m_spec->id(), m_spec->displayName(), m_spec->category());
+            return u"%1 %2 %3"_s.arg(m_spec->id(), m_spec->displayName(), m_spec->category());
         }
 
         switch (column) {
@@ -68,7 +67,7 @@ public:
             if (role == Qt::DisplayRole || role == kSortRole)
                 return m_spec->displayName();
             if (role == Qt::ToolTipRole) {
-                return QStringLiteral("%1\n%2").arg(m_spec->id(), m_spec->filePath().toUserOutput());
+                return u"%1\n%2"_s.arg(m_spec->id(), m_spec->filePath().toUserOutput());
             }
             if (role == Qt::DecorationRole && m_spec->hasError())
                 return errorIcon();
@@ -98,8 +97,7 @@ public:
             break;
         case LoadTimeColumn:
             if (role == Qt::DisplayRole)
-                return m_spec->loadTimeMs() > 0 ? QString::number(m_spec->loadTimeMs())
-                                                : QStringLiteral("-");
+                return m_spec->loadTimeMs() > 0 ? QString::number(m_spec->loadTimeMs()) : u"-"_s;
             break;
         default:
             break;
@@ -263,10 +261,10 @@ public:
         }
 
         if (!required.isEmpty())
-            appendGroup(requiredTitle, required, QStringLiteral("0"));
+            appendGroup(requiredTitle, required, u"0"_s);
 
         for (auto it = groups.cbegin(); it != groups.cend(); ++it)
-            appendGroup(it.key(), it.value(), QStringLiteral("1"));
+            appendGroup(it.key(), it.value(), u"1"_s);
     }
 
     [[nodiscard]] auto itemForSpec(PluginSpec *spec) const -> PluginItem *
@@ -351,7 +349,7 @@ void PluginView::PluginViewPrivate::setupUi()
     view->setModel(proxy);
     view->setAlternatingRowColors(false);
     view->setUniformRowHeights(true);
-    view->setAllColumnsShowFocus(true);
+    view->setAllColumnsShowFocus(false);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);

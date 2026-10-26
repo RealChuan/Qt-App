@@ -4,6 +4,7 @@
 #include <QProgressBar>
 #include <QTest>
 
+using namespace Qt::StringLiterals;
 using namespace Widgets;
 
 // 启动画面在插件加载期间不会收到事件，所以它不能自带任何定时器：
@@ -21,7 +22,7 @@ private slots:
 void TestStartupSplash::hidesProgressUntilFirstUpdate()
 {
     StartupSplash splash;
-    auto *progress = splash.findChild<QProgressBar *>(QStringLiteral("SplashProgress"));
+    auto *progress = splash.findChild<QProgressBar *>(u"SplashProgress"_s);
     QVERIFY(progress);
 
     // 启动流程不推进度，进度条就不该占位置。
@@ -35,7 +36,7 @@ void TestStartupSplash::hidesProgressUntilFirstUpdate()
 void TestStartupSplash::clampsProgressToRange()
 {
     StartupSplash splash;
-    auto *progress = splash.findChild<QProgressBar *>(QStringLiteral("SplashProgress"));
+    auto *progress = splash.findChild<QProgressBar *>(u"SplashProgress"_s);
     QVERIFY(progress);
 
     splash.setProgress(-5);
@@ -48,7 +49,7 @@ void TestStartupSplash::clampsProgressToRange()
 void TestStartupSplash::showsStatusText()
 {
     StartupSplash splash;
-    auto *label = splash.findChild<QLabel *>(QStringLiteral("SplashText"));
+    auto *label = splash.findChild<QLabel *>(u"SplashText"_s);
     QVERIFY(label);
     QVERIFY(!label->text().isEmpty());
 }

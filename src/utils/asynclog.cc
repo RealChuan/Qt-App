@@ -27,6 +27,8 @@
 #include <utility>
 #include <vector>
 
+using namespace Qt::StringLiterals;
+
 namespace AsyncLog {
 
 namespace {
@@ -84,9 +86,8 @@ void appendLine(std::string &out, const LogRecord &record)
 {
     static const QRegularExpression invalid(R"([<>:"/\\|?*\s])");
     auto cleaned = version.trimmed();
-    cleaned.replace(invalid, QStringLiteral("-"));
-    return QStringLiteral("%1_%2")
-        .arg(baseName, cleaned.isEmpty() ? QStringLiteral("unknown") : cleaned);
+    cleaned.replace(invalid, u"-"_s);
+    return u"%1_%2"_s.arg(baseName, cleaned.isEmpty() ? u"unknown"_s : cleaned);
 }
 
 // —— FileSink：滚动文件 sink，纯内部实现，整个类只在 .cc 可见 ——
@@ -115,8 +116,7 @@ public:
     {
         QDir dir(params.dir);
         if (!dir.exists() && !dir.mkpath(".")) {
-            return std::unexpected(
-                QStringLiteral("cannot create log directory: %1").arg(params.dir));
+            return std::unexpected(u"cannot create log directory: %1"_s.arg(params.dir));
         }
         auto sink = std::make_unique<FileSink>(params);
         {
@@ -124,7 +124,7 @@ public:
             sink->rollFile(); // 打开首个日志文件，失败在下面报告
         }
         if (!sink->file.isOpen()) {
-            return std::unexpected(QStringLiteral("cannot open log file in: %1").arg(params.dir));
+            return std::unexpected(u"cannot open log file in: %1"_s.arg(params.dir));
         }
         return sink;
     }
@@ -210,15 +210,13 @@ private:
         }
 
         const auto nowSecs = QDateTime::currentSecsSinceEpoch();
-        QString name = QStringLiteral("%1_%2_%3_%4")
-                           .arg(
-                               namePrefix,
-                               hostName,
-                               pid,
-                               QDateTime::fromSecsSinceEpoch(nowSecs).toString(
-                                   QStringLiteral("yyyyMMdd_hhmmss")));
+        QString name = u"%1_%2_%3_%4"_s.arg(
+            namePrefix,
+            hostName,
+            pid,
+            QDateTime::fromSecsSinceEpoch(nowSecs).toString(u"yyyyMMdd_hhmmss"_s));
         if (nowSecs == lastNameSec) {
-            name += QStringLiteral("_%1").arg(++rollSeq); // 同秒滚动加序号
+            name += u"_%1"_s.arg(++rollSeq); // 同秒滚动加序号
         } else {
             rollSeq = 0;
             lastNameSec = nowSecs;
@@ -242,9 +240,8 @@ private:
     [[nodiscard]] QRegularExpression ownNamePattern() const
     {
         return QRegularExpression(
-            QRegularExpression::anchoredPattern(
-                QStringLiteral("%1_.+_\\d{8}_\\d{6}(_\\d+)?\\.log")
-                    .arg(QRegularExpression::escape(params.baseName))));
+            QRegularExpression::anchoredPattern(u"%1_.+_\\d{8}_\\d{6}(_\\d+)?\\.log"_s.arg(
+                QRegularExpression::escape(params.baseName))));
     }
 
     // 清理只针对匹配自身命名模式的过期日志，绝不波及目录里其他文件

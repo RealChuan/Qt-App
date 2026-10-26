@@ -14,7 +14,7 @@ class UTILS_EXPORT LanguageManager : public QObject
 {
     Q_OBJECT
 public:
-    enum Language : int { Chinese, English };
+    enum Language : int { SimplifiedChinese, English };
     Q_ENUM(Language)
 
     explicit LanguageManager(QObject *parent = nullptr);

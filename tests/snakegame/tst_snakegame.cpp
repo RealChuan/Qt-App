@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 
+using namespace Qt::StringLiterals;
 using namespace Snake;
 
 namespace {
@@ -191,8 +192,7 @@ void TestSnakeGame::foodFavoursTheCentreOnEasy()
 
     qInfo(
         "%s",
-        qPrintable(QStringLiteral("easy=%1 normal=%2 hard=%3")
-                       .arg(easy, 0, 'f', 3)
+        qPrintable(u"easy=%1 normal=%2 hard=%3"_s.arg(easy, 0, 'f', 3)
                        .arg(normal, 0, 'f', 3)
                        .arg(hard, 0, 'f', 3)));
 

@@ -7,6 +7,7 @@ TARGET = $$add_app_plugin(fortuneplugin)
 LIBS += \
     -l$$replaceLibName(shell) \
     -l$$replaceLibName(extensionsystem) \
+    -l$$replaceLibName(widgets) \
     -l$$replaceLibName(utils)
 
 include(../../../qmake/VcpkgToolchain.pri)

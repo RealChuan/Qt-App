@@ -30,7 +30,7 @@ auto ColorPickerPlugin::initialize(const ExtensionSystem::PluginContext &) -> Ut
     connect(d_ptr->page, &ColorPickerPage::openRequested, this, &ColorPickerPlugin::openPicker);
 
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("colorpickerplugin.pick"),
+        u"colorpickerplugin.pick"_s,
         tr("Color picker: pick a color"),
         std::bind_front(&ColorPickerPlugin::openPicker, this));
     d_ptr->command->withSubtitle(tr("Magnifier follows the cursor, click to copy HEX"));
