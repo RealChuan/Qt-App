@@ -42,10 +42,10 @@ auto TetrisPlugin::initialize(const ExtensionSystem::PluginContext &context) -> 
     d_ptr->page->setBestScore(d_ptr->bestScore);
 
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("tetrisplugin.play"),
+        u"tetrisplugin.play"_s,
         tr("Tetris: play a round"),
         std::bind_front(&TetrisPlugin::play, this));
-    d_ptr->command->withShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+T")));
+    d_ptr->command->withShortcut(QKeySequence(u"Ctrl+Alt+T"_s));
 
     connect(d_ptr->page, &TetrisPage::gameFinished, this, &TetrisPlugin::onGameFinished);
 
@@ -63,7 +63,7 @@ void TetrisPlugin::play()
 {
     // 先切页面再开局：棋盘出现时已经在跑，不会先闪一帧空盘。
     if (auto *shellHost = Shell::host())
-        shellHost->showPage(QStringLiteral("tetrisplugin.page"));
+        shellHost->showPage(u"tetrisplugin.page"_s);
 
     d_ptr->page->startGame();
 }

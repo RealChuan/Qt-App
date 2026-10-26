@@ -102,15 +102,12 @@ void dumpBacktrace(int maxdepth)
         IMAGEHLP_LINE64 lineInfo;
         SymSetOptions(SYMOPT_LOAD_LINES);
 
-        QString out = QStringLiteral("  %1: 0x%2 at %3")
-                          .arg(depth)
+        QString out = u"  %1: 0x%2 at %3"_s.arg(depth)
                           .arg(QString::number(pSymbol->Address, 16))
                           .arg(QString::fromLatin1(&pSymbol->Name[0], pSymbol->NameLen));
         if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &symDisplacement, &lineInfo)) {
-            out.append(QStringLiteral(" (%1:%2)")
-                           .arg(
-                               QString::fromLatin1(lineInfo.FileName),
-                               QString::number(lineInfo.LineNumber)));
+            out.append(u" (%1:%2)"_s.arg(
+                QString::fromLatin1(lineInfo.FileName), QString::number(lineInfo.LineNumber)));
         }
         qDebug().noquote() << out;
         if (depth == maxdepth)

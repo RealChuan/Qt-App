@@ -6,6 +6,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Core {
 
 // 外观与语言设置页。类名与页面 id / 标题保持一致（coreplugin.appearance）。
@@ -17,10 +19,7 @@ public:
     explicit AppearancePage(QWidget *parent = nullptr);
     ~AppearancePage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("coreplugin.appearance");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"coreplugin.appearance"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Appearance"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

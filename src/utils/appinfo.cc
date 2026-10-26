@@ -64,22 +64,20 @@ auto AppInfo::configPath() -> FilePath
 
 auto AppInfo::configFilePath() -> FilePath
 {
-    return configPath() / QStringLiteral("config.ini");
+    return configPath() / u"config.ini"_s;
 }
 
 auto AppInfo::logPath() -> FilePath
 {
     // 日志属于应用状态，不是配置
     return ensureDirectory(
-        FilePath(QStandardPaths::writableLocation(QStandardPaths::StateLocation))
-        / QStringLiteral("log"));
+        FilePath(QStandardPaths::writableLocation(QStandardPaths::StateLocation)) / u"log"_s);
 }
 
 auto AppInfo::crashPath() -> FilePath
 {
     return ensureDirectory(
-        FilePath(QStandardPaths::writableLocation(QStandardPaths::StateLocation))
-        / QStringLiteral("crash"));
+        FilePath(QStandardPaths::writableLocation(QStandardPaths::StateLocation)) / u"crash"_s);
 }
 
 auto AppInfo::cachePath() -> FilePath

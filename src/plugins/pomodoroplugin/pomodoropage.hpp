@@ -6,6 +6,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Pomodoro {
 
 // 纯视图：只做布局，并把用户操作转成信号；倒计时状态由 PomodoroPlugin 持有。
@@ -17,10 +19,7 @@ public:
     explicit PomodoroPage(QWidget *parent = nullptr);
     ~PomodoroPage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("pomodoroplugin.page");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"pomodoroplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Pomodoro"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

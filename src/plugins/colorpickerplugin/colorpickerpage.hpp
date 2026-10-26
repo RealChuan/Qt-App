@@ -4,6 +4,12 @@
 
 #include <QWidget>
 
+#include <memory>
+
+class QEvent;
+
+using namespace Qt::StringLiterals;
+
 namespace ColorPicker {
 
 class ColorPickerPage final : public QWidget, public Shell::IPage
@@ -12,11 +18,9 @@ class ColorPickerPage final : public QWidget, public Shell::IPage
 
 public:
     explicit ColorPickerPage(QWidget *parent = nullptr);
+    ~ColorPickerPage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("colorpickerplugin.page");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"colorpickerplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Color Picker"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {
@@ -27,6 +31,17 @@ public:
 
 signals:
     void openRequested();
+
+protected:
+    void changeEvent(QEvent *event) override;
+
+private:
+    void setupUi();
+    void retranslateUi();
+    void setupConnections();
+
+    class ColorPickerPagePrivate;
+    std::unique_ptr<ColorPickerPagePrivate> d_ptr;
 };
 
 } // namespace ColorPicker

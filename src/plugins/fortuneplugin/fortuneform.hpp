@@ -22,9 +22,14 @@ public:
     void clear();
     [[nodiscard]] auto profile() const -> Profile;
     void focusName();
+    // 编辑已保存的档案时才露出返回和删除：首次填写既没有可退回的页面，
+    // 也没有可删的档案，两个按钮都没有意义。
+    void setEditing(bool editing);
 
 signals:
     void submitted(const Profile &profile);
+    void backRequested();
+    void deleteRequested();
 
 protected:
     void changeEvent(QEvent *event) override;

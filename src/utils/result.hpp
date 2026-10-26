@@ -13,6 +13,8 @@
 
 #include <expected>
 
+using namespace Qt::StringLiterals;
+
 namespace Utils {
 
 // C++23 std::expected：成功值类型 T，错误类型固定为可展示给用户的 QString。
@@ -87,7 +89,7 @@ private:
 #define QTC_ASSERT_AND_ERROR_OUT(cond) \
     QTC_ASSERT( \
         cond, \
-        return ::Utils::ResultError(QStringLiteral("The condition %1 failed unexpectedly in %2:%3") \
+        return ::Utils::ResultError(u"The condition %1 failed unexpectedly in %2:%3"_s \
                                         .arg(QStringLiteral(#cond), QStringLiteral(__FILE__)) \
                                         .arg(__LINE__)))
 
@@ -97,8 +99,7 @@ private:
 #define QTC_ASSERT_RESULT(result, action) \
     if (Q_LIKELY(result)) { \
     } else { \
-        ::Utils::writeAssertLocation(QStringLiteral("%1:%2: %3") \
-                                         .arg(QStringLiteral(__FILE__)) \
+        ::Utils::writeAssertLocation(u"%1:%2: %3"_s.arg(QStringLiteral(__FILE__)) \
                                          .arg(__LINE__) \
                                          .arg(result.error()) \
                                          .toUtf8() \
@@ -111,8 +112,7 @@ private:
 #define QTC_CHECK_RESULT(result) \
     if (Q_LIKELY(result)) { \
     } else { \
-        ::Utils::writeAssertLocation(QStringLiteral("%1:%2: %3") \
-                                         .arg(QStringLiteral(__FILE__)) \
+        ::Utils::writeAssertLocation(u"%1:%2: %3"_s.arg(QStringLiteral(__FILE__)) \
                                          .arg(__LINE__) \
                                          .arg(result.error()) \
                                          .toUtf8() \

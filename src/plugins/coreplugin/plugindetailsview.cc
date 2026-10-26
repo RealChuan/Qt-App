@@ -168,7 +168,7 @@ void PluginDetailsView::updateContents()
     d_ptr->version->setText(
         spec->version() == spec->compatVersion()
             ? spec->version()
-            : QStringLiteral("%1 (%2)").arg(spec->version(), spec->compatVersion()));
+            : u"%1 (%2)"_s.arg(spec->version(), spec->compatVersion()));
     d_ptr->vendor->setText(spec->vendor());
     d_ptr->category->setText(spec->category());
     d_ptr->location->setText(spec->filePath().toUserOutput());
@@ -177,13 +177,12 @@ void PluginDetailsView::updateContents()
     for (const ExtensionSystem::PluginDependency &dependency : spec->dependencies()) {
         QString text = dependency.id;
         if (!dependency.version.isEmpty())
-            text += QStringLiteral(" >= %1").arg(dependency.version);
+            text += u" >= %1"_s.arg(dependency.version);
         if (dependency.type == ExtensionSystem::PluginDependency::Type::Optional)
-            text += QStringLiteral(" (%1)").arg(tr("optional"));
+            text += u" (%1)"_s.arg(tr("optional"));
         dependencies.append(text);
     }
-    d_ptr->dependencies->setText(
-        dependencies.isEmpty() ? tr("None") : dependencies.join(QStringLiteral(", ")));
+    d_ptr->dependencies->setText(dependencies.isEmpty() ? tr("None") : dependencies.join(u", "_s));
 
     d_ptr->description->setText(spec->longDescription());
 

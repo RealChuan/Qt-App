@@ -20,12 +20,14 @@
 #include <QToolButton>
 #include <QWindow>
 
+#include <array>
+
+using namespace Qt::StringLiterals;
+
 // 和 qtapp.shell / qtapp.plugin / qtapp.crashpad 保持同一套分类，
 // 排查时可以用 QT_LOGGING_RULES="qtapp.widgets.warning=false" 单独关掉。
 // 置于 #ifdef 内：Windows 分支不需要这个分类，否则会留下未使用的静态对象。
 Q_LOGGING_CATEGORY(lcAppWindow, "qtapp.widgets", QtInfoMsg)
-
-#include <array>
 
 namespace Widgets {
 
@@ -62,7 +64,7 @@ public:
         , centralContainer(new QWidget(q))
         , titleBarContainer(new QWidget(q))
     {
-        titleButton->setObjectName(QStringLiteral("AppButton"));
+        titleButton->setObjectName(u"AppButton"_s);
         titleButton->setCursor(Qt::PointingHandCursor);
         titleButton->setFlat(true);
 
@@ -363,7 +365,7 @@ private:
         const QSize size{18, 18};
 
         // 统一前缀
-        const QString basePath = QStringLiteral(":/titlebar/titlebutton-");
+        const QString basePath = u":/titlebar/titlebutton-"_s;
 
         // 后缀表：普通态总是 4 个（含 alt）；hover / pressed 分「带 alt」与「不带 alt」两种
         const QStringList kNormalSuffix{".png", "@2.png", "-alt.png", "-alt@2.png"};
@@ -401,11 +403,10 @@ private:
             return button;
         };
 
-        minButton
-            = createTitleButton(QStringLiteral("minimize"), kHoverSuffixAlt, kPressedSuffixAlt);
-        maxButton = createTitleButton(QStringLiteral("maximize"), kHoverSuffix, kPressedSuffix);
-        restoreButton = createTitleButton(QStringLiteral("restore"), kHoverSuffix, kPressedSuffix);
-        closeButton = createTitleButton(QStringLiteral("close"), kHoverSuffix, kPressedSuffix);
+        minButton = createTitleButton(u"minimize"_s, kHoverSuffixAlt, kPressedSuffixAlt);
+        maxButton = createTitleButton(u"maximize"_s, kHoverSuffix, kPressedSuffix);
+        restoreButton = createTitleButton(u"restore"_s, kHoverSuffix, kPressedSuffix);
+        closeButton = createTitleButton(u"close"_s, kHoverSuffix, kPressedSuffix);
 
         // titleButton 是独立的菜单按钮，只共用 iconSize
         titleButton->setIconSize(size);
@@ -674,11 +675,9 @@ void AppWindow::setTitleBarWidget(QWidget *widget)
 
     // 带上类名：这个调用不报错、不崩溃，只是界面少一块，没有类名几乎查不出来。
     qCWarning(lcAppWindow).noquote()
-        << QStringLiteral(
-               "AppWindow::setTitleBarWidget(%1): macOS has no custom title bar, "
-               "the widget is dropped; use addChromeAction() for code that has to "
-               "work on every platform")
-               .arg(QLatin1String(widget->metaObject()->className()));
+        << u"AppWindow::setTitleBarWidget(%1): macOS has no custom title bar, "
+           u"the widget is dropped; use addChromeAction() for code that has to "
+           u"work on every platform"_s.arg(QLatin1String(widget->metaObject()->className()));
 }
 
 void AppWindow::addMenu(QMenu *menu)
@@ -693,7 +692,7 @@ void AppWindow::addChromeAction(QAction *action)
 
     // macOS 没有标题栏可以放按钮，命令只能落进系统顶栏的菜单。
     // 菜单按需建一次，用 objectName 找回来，省得为它再加一个成员。
-    const auto kMenuName = QStringLiteral("ChromeActionsMenu");
+    const auto kMenuName = u"ChromeActionsMenu"_s;
     auto *menu = menuBar()->findChild<QMenu *>(kMenuName);
     if (!menu) {
         menu = menuBar()->addMenu(tr("View"));

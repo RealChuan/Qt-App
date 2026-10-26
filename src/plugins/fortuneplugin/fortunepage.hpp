@@ -9,6 +9,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Fortune {
 
 class FortuneForm;
@@ -22,10 +24,7 @@ public:
     explicit Fortunepage(QWidget *parent = nullptr);
     ~Fortunepage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("fortuneplugin.page");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"fortuneplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Cyber Fortune"); }
     [[nodiscard]] auto subtitle() const -> QString override;
     [[nodiscard]] auto area() const -> Shell::PageArea override
@@ -55,7 +54,9 @@ protected:
 private slots:
     void onProfileSubmitted(const Profile &profile);
     void onCastAgainClicked();
-    void onResetClicked();
+    void onEditClicked();
+    void onBackClicked();
+    void onDeleteClicked();
 
 private:
     void setupUi();

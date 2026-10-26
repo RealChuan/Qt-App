@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+using namespace Qt::StringLiterals;
+
 namespace Widgets {
 
 namespace {
@@ -47,7 +49,7 @@ ModalOverlay::ModalOverlay(QWidget *target)
     d_ptr->mask->setObjectName(QLatin1String(kMaskObjectName));
     // 纯 QWidget 默认不画背景，QSS 的 background 要配合这个属性才会生效。
     d_ptr->mask->setAttribute(Qt::WA_StyledBackground, true);
-    d_ptr->mask->setStyleSheet(QStringLiteral("QWidget#%1 { background: %2; }")
+    d_ptr->mask->setStyleSheet(u"QWidget#%1 { background: %2; }"_s
                                    .arg(QLatin1String(kMaskObjectName), QLatin1String(kMaskColor)));
     d_ptr->mask->hide();
 

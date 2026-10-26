@@ -325,10 +325,10 @@ public:
 void FractalPage::FractalPagePrivate::setupUi()
 {
     coordinates = new QLabel(q_ptr);
-    coordinates->setObjectName(QStringLiteral("FieldLabel"));
+    coordinates->setObjectName(u"FieldLabel"_s);
 
     zoom = new QLabel(q_ptr);
-    zoom->setObjectName(QStringLiteral("HeroMeta"));
+    zoom->setObjectName(u"HeroMeta"_s);
 
     reset = new QPushButton(q_ptr);
     reset->setCursor(Qt::PointingHandCursor);
@@ -374,11 +374,10 @@ auto FractalPage::FractalPagePrivate::isDark() const -> bool
 
 void FractalPage::FractalPagePrivate::updateStatus()
 {
-    coordinates->setText(QStringLiteral("%1, %2")
-                             .arg(centerX, 0, 'f', kCoordinateDecimals)
+    coordinates->setText(u"%1, %2"_s.arg(centerX, 0, 'f', kCoordinateDecimals)
                              .arg(centerY, 0, 'f', kCoordinateDecimals));
     // 语言无关，因此不用 tr()，Private 里也不该出现 tr()。
-    zoom->setText(QStringLiteral("%1×").arg(formatZoom(kDefaultScale / scale)));
+    zoom->setText(u"%1×"_s.arg(formatZoom(kDefaultScale / scale)));
 }
 
 void FractalPage::FractalPagePrivate::resetView()

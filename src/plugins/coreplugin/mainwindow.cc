@@ -53,14 +53,14 @@ void MainWindow::retranslateUi()
     d_ptr->sections[2].label->setText(tr("Settings"));
     d_ptr->sections[3].label->setText(tr("Help"));
     d_ptr->footer->setText(
-        QStringLiteral("%1 %2")
+        u"%1 %2"_s
             .arg(QLatin1String(Utils::AppInfo::appName), QLatin1String(Utils::AppInfo::version)));
 
     updateThemeAction();
     d_ptr->languageAction->setText(
-        Utils::languageManager()->currentLanguage() == Utils::LanguageManager::Chinese
-            ? QStringLiteral("zh-CN")
-            : QStringLiteral("EN"));
+        Utils::languageManager()->currentLanguage() == Utils::LanguageManager::SimplifiedChinese
+            ? u"zh-CN"_s
+            : u"EN"_s);
     d_ptr->languageAction->setToolTip(tr("Switch language"));
 
     d_ptr->retranslatePages();
@@ -121,8 +121,9 @@ void MainWindow::onLanguageActionTriggered()
 {
     const auto current = Utils::languageManager()->currentLanguage();
     Utils::languageManager()->loadLanguage(
-        current == Utils::LanguageManager::Chinese ? Utils::LanguageManager::English
-                                                   : Utils::LanguageManager::Chinese);
+        current == Utils::LanguageManager::SimplifiedChinese
+            ? Utils::LanguageManager::English
+            : Utils::LanguageManager::SimplifiedChinese);
 }
 
 void MainWindow::setupConnections()

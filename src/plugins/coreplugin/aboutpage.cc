@@ -4,6 +4,7 @@
 #include <utils/utils.hpp>
 
 #include <QApplication>
+#include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -12,36 +13,56 @@
 
 namespace Core {
 
+class AboutPage::AboutPagePrivate
+{
+public:
+    QLabel *icon = nullptr;
+    QLabel *name = nullptr;
+    QLabel *version = nullptr;
+    QLabel *info = nullptr;
+    QLabel *copyright = nullptr;
+    QPushButton *aboutQt = nullptr;
+};
+
 AboutPage::AboutPage(QWidget *parent)
     : QWidget(parent)
+    , d_ptr(std::make_unique<AboutPagePrivate>())
 {
-    auto *icon = new QLabel(this);
-    icon->setPixmap(qApp->windowIcon().pixmap(QSize(72, 72)));
-    icon->setAlignment(Qt::AlignCenter);
+    setupUi();
+    retranslateUi();
+    setupConnections();
+}
 
-    auto *name = new QLabel(QLatin1String(Utils::AppInfo::appName), this);
-    name->setObjectName("AboutName");
-    name->setAlignment(Qt::AlignCenter);
+AboutPage::~AboutPage() = default;
 
-    auto *version = new QLabel(tr("Version %1").arg(QLatin1String(Utils::AppInfo::version)), this);
-    version->setObjectName("AboutVersion");
-    version->setAlignment(Qt::AlignCenter);
+void AboutPage::setupUi()
+{
+    d_ptr->icon = new QLabel(this);
+    d_ptr->icon->setPixmap(qApp->windowIcon().pixmap(QSize(72, 72)));
+    d_ptr->icon->setAlignment(Qt::AlignCenter);
 
-    auto *info = new QLabel(Utils::systemInfo(), this);
-    info->setObjectName("AboutInfo");
-    info->setAlignment(Qt::AlignCenter);
-    info->setWordWrap(true);
-    info->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    d_ptr->name = new QLabel(this);
+    d_ptr->name->setObjectName("AboutName");
+    d_ptr->name->setAlignment(Qt::AlignCenter);
 
-    auto *copyright = new QLabel(QLatin1String(Utils::AppInfo::copyright), this);
-    copyright->setObjectName("AboutCopyright");
-    copyright->setAlignment(Qt::AlignCenter);
-    copyright->setWordWrap(true);
+    d_ptr->version = new QLabel(this);
+    d_ptr->version->setObjectName("AboutVersion");
+    d_ptr->version->setAlignment(Qt::AlignCenter);
+
+    d_ptr->info = new QLabel(this);
+    d_ptr->info->setObjectName("AboutInfo");
+    d_ptr->info->setAlignment(Qt::AlignCenter);
+    d_ptr->info->setWordWrap(true);
+    d_ptr->info->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    d_ptr->copyright = new QLabel(this);
+    d_ptr->copyright->setObjectName("AboutCopyright");
+    d_ptr->copyright->setAlignment(Qt::AlignCenter);
+    d_ptr->copyright->setWordWrap(true);
 
     // 默认的次级按钮样式：有边框和底色，才看得出这里可以点。
-    auto *aboutQt = new QPushButton(tr("About Qt"), this);
-    aboutQt->setCursor(Qt::PointingHandCursor);
-    connect(aboutQt, &QPushButton::clicked, qApp, &QApplication::aboutQt);
+    d_ptr->aboutQt = new QPushButton(this);
+    d_ptr->aboutQt->setCursor(Qt::PointingHandCursor);
 
     auto *card = new QFrame(this);
     card->setObjectName("Card");
@@ -50,16 +71,16 @@ AboutPage::AboutPage(QWidget *parent)
     auto *cardLayout = new QVBoxLayout(card);
     cardLayout->setContentsMargins(32, 30, 32, 24);
     cardLayout->setSpacing(6);
-    cardLayout->addWidget(icon);
+    cardLayout->addWidget(d_ptr->icon);
     cardLayout->addSpacing(10);
-    cardLayout->addWidget(name);
-    cardLayout->addWidget(version);
+    cardLayout->addWidget(d_ptr->name);
+    cardLayout->addWidget(d_ptr->version);
     cardLayout->addSpacing(18);
-    cardLayout->addWidget(info);
+    cardLayout->addWidget(d_ptr->info);
     cardLayout->addSpacing(14);
-    cardLayout->addWidget(copyright);
+    cardLayout->addWidget(d_ptr->copyright);
     cardLayout->addSpacing(12);
-    cardLayout->addWidget(aboutQt, 0, Qt::AlignCenter);
+    cardLayout->addWidget(d_ptr->aboutQt, 0, Qt::AlignCenter);
 
     auto *centerRow = new QHBoxLayout;
     centerRow->addStretch();
@@ -71,6 +92,28 @@ AboutPage::AboutPage(QWidget *parent)
     layout->addStretch();
     layout->addLayout(centerRow);
     layout->addStretch();
+}
+
+void AboutPage::retranslateUi()
+{
+    d_ptr->name->setText(QLatin1String(Utils::AppInfo::appName));
+    d_ptr->copyright->setText(QLatin1String(Utils::AppInfo::copyright));
+    d_ptr->version->setText(tr("Version %1").arg(QLatin1String(Utils::AppInfo::version)));
+    d_ptr->info->setText(Utils::systemInfo());
+    d_ptr->aboutQt->setText(tr("About Qt"));
+}
+
+void AboutPage::setupConnections()
+{
+    connect(d_ptr->aboutQt, &QPushButton::clicked, qApp, &QApplication::aboutQt);
+}
+
+void AboutPage::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::LanguageChange)
+        retranslateUi();
+
+    QWidget::changeEvent(event);
 }
 
 } // namespace Core

@@ -8,6 +8,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Snake {
 
 // 一局游戏：状态与定时器都归页面持有，棋盘只负责画和收键。
@@ -22,7 +24,7 @@ public:
     explicit SnakePage(QWidget *parent = nullptr);
     ~SnakePage() override;
 
-    [[nodiscard]] auto id() const -> QString override { return QStringLiteral("snakeplugin.page"); }
+    [[nodiscard]] auto id() const -> QString override { return u"snakeplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Snake"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Particles {
 
 // 自绘 + 帧驱动的最小示例：点击处炸开一团粒子，页面隐藏时停表。
@@ -17,10 +19,7 @@ public:
     explicit ParticlesPage(QWidget *parent = nullptr);
     ~ParticlesPage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("particlesplugin.page");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"particlesplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Particles"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

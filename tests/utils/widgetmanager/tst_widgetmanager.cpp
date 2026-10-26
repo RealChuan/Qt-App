@@ -42,7 +42,7 @@ void TestWidgetManager::saveLoadRoundTrip()
 {
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
-    QSettings settings(dir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat);
+    QSettings settings(dir.filePath(u"settings.ini"_s), QSettings::IniFormat);
 
     WidgetManager saved;
     saved.setShowMask(false);
@@ -62,10 +62,10 @@ void TestWidgetManager::invalidStoredModeFallsBackToSystem()
 {
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
-    QSettings settings(dir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat);
+    QSettings settings(dir.filePath(u"settings.ini"_s), QSettings::IniFormat);
 
     // 超出枚举范围的数字必须收敛到 System，而不是原样 static_cast
-    settings.setValue(QStringLiteral("Widget/themeMode"), 42);
+    settings.setValue(u"Widget/themeMode"_s, 42);
     settings.sync();
 
     WidgetManager loaded;
@@ -77,7 +77,7 @@ void TestWidgetManager::emptySettingsKeepDefaults()
 {
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
-    QSettings settings(dir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat);
+    QSettings settings(dir.filePath(u"settings.ini"_s), QSettings::IniFormat);
 
     WidgetManager loaded;
     loaded.loadSettings(settings);

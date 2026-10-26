@@ -1,4 +1,5 @@
 #include "filepath.hpp"
+#include "utilstr.hpp"
 
 #include <QDateTime>
 #include <QDebug>
@@ -208,7 +209,7 @@ FilePath FilePath::parentDir() const
     if (index < 0)
         return {};
     if (index == 0)
-        return FilePath(QStringLiteral("/"));
+        return FilePath(u"/"_s);
     if (index == 2 && m_path.size() > 1 && m_path.at(1) == QLatin1Char(':'))
         return FilePath(m_path.left(3));
 
@@ -326,10 +327,9 @@ bool FilePath::createDir() const
 Result<> FilePath::ensureWritableDir() const
 {
     if (isDir())
-        return isWritableDir() ? ResultOk
-                               : ResultError(QStringLiteral("Directory is not writable"));
+        return isWritableDir() ? ResultOk : ResultError(Tr::tr("Directory is not writable"));
     if (!createDir())
-        return ResultError(QStringLiteral("Cannot create directory"));
+        return ResultError(Tr::tr("Cannot create directory"));
     return ResultOk;
 }
 
@@ -344,36 +344,34 @@ bool FilePath::ensureExistingFile() const
 Result<> FilePath::removeFile() const
 {
     if (!isFile())
-        return ResultError(QStringLiteral("Not a file"));
-    return QFile::remove(m_path) ? ResultOk : ResultError(QStringLiteral("Cannot remove file"));
+        return ResultError(Tr::tr("Not a file"));
+    return QFile::remove(m_path) ? ResultOk : ResultError(Tr::tr("Cannot remove file"));
 }
 
 Result<> FilePath::removeRecursively() const
 {
     if (!isDir())
-        return ResultError(QStringLiteral("Not a directory"));
-    return QDir(m_path).removeRecursively()
-               ? ResultOk
-               : ResultError(QStringLiteral("Cannot remove directory"));
+        return ResultError(Tr::tr("Not a directory"));
+    return QDir(m_path).removeRecursively() ? ResultOk
+                                            : ResultError(Tr::tr("Cannot remove directory"));
 }
 
 Result<> FilePath::copyFile(const FilePath &target) const
 {
     const FilePath destination = target.isDir() ? target / fileName() : target;
     if (destination.exists() && !destination.isDir() && !QFile::remove(destination.path()))
-        return ResultError(QStringLiteral("Cannot overwrite target"));
-    return QFile::copy(m_path, destination.path())
-               ? ResultOk
-               : ResultError(QStringLiteral("Cannot copy file"));
+        return ResultError(Tr::tr("Cannot overwrite target"));
+    return QFile::copy(m_path, destination.path()) ? ResultOk
+                                                   : ResultError(Tr::tr("Cannot copy file"));
 }
 
 Result<> FilePath::copyRecursively(const FilePath &target) const
 {
     if (!isDir())
-        return ResultError(QStringLiteral("Not a directory"));
+        return ResultError(Tr::tr("Not a directory"));
 
     if (!QDir().mkpath(target.path()))
-        return ResultError(QStringLiteral("Cannot create target directory"));
+        return ResultError(Tr::tr("Cannot create target directory"));
 
     const FilePaths entries = dirEntries(
         QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
@@ -393,17 +391,17 @@ Result<> FilePath::renameFile(const FilePath &target) const
 {
     const FilePath destination = target.isDir() ? target / fileName() : target;
     return QFile::rename(m_path, destination.path()) ? ResultOk
-                                                     : ResultError(QStringLiteral("Cannot rename"));
+                                                     : ResultError(Tr::tr("Cannot rename"));
 }
 
 Result<> FilePath::createSymLink(const FilePath &symLink) const
 {
 #ifdef Q_OS_WIN
     Q_UNUSED(symLink)
-    return ResultError(QStringLiteral("Symlinks are not supported"));
+    return ResultError(Tr::tr("Symlinks are not supported"));
 #else
     return QFile::link(m_path, symLink.path()) ? ResultOk
-                                               : ResultError(QStringLiteral("Cannot create link"));
+                                               : ResultError(Tr::tr("Cannot create link"));
 #endif
 }
 
@@ -431,7 +429,7 @@ Result<> FilePath::setPermissions(QFile::Permissions permissions) const
 {
     return QFile::setPermissions(m_path, permissions)
                ? ResultOk
-               : ResultError(QStringLiteral("Cannot set permissions"));
+               : ResultError(Tr::tr("Cannot set permissions"));
 }
 
 Result<> FilePath::makeWritable() const
@@ -445,14 +443,14 @@ Result<QByteArray> FilePath::fileContents(qint64 maxSize, qint64 offset) const
 {
     QFile file(m_path);
     if (!file.open(QIODevice::ReadOnly))
-        return ResultError(QStringLiteral("Cannot open file"));
+        return ResultError(Tr::tr("Cannot open file"));
 
     if (offset > 0 && !file.seek(offset))
-        return ResultError(QStringLiteral("Cannot seek in file"));
+        return ResultError(Tr::tr("Cannot seek in file"));
 
     const QByteArray contents = maxSize < 0 ? file.readAll() : file.read(maxSize);
     if (maxSize >= 0 && contents.size() < maxSize && file.error() != QFileDevice::NoError)
-        return ResultError(QStringLiteral("Cannot read file"));
+        return ResultError(Tr::tr("Cannot read file"));
 
     return contents;
 }
@@ -461,11 +459,11 @@ Result<qint64> FilePath::writeFileContents(const QByteArray &data) const
 {
     QFile file(m_path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-        return ResultError(QStringLiteral("Cannot open file for writing"));
+        return ResultError(Tr::tr("Cannot open file for writing"));
 
     const qint64 written = file.write(data);
     if (written != data.size())
-        return ResultError(QStringLiteral("Cannot write file"));
+        return ResultError(Tr::tr("Cannot write file"));
     return written;
 }
 
@@ -546,10 +544,9 @@ Result<FilePath> FilePath::tmpDir() const
 
 Result<FilePath> FilePath::createTempFile() const
 {
-    auto tempFile = std::make_unique<QTemporaryFile>(
-        QDir::tempPath() + QStringLiteral("/qtc-XXXXXX"));
+    auto tempFile = std::make_unique<QTemporaryFile>(QDir::tempPath() + u"/qtc-XXXXXX"_s);
     if (!tempFile->open())
-        return ResultError(QStringLiteral("Cannot create temporary file"));
+        return ResultError(Tr::tr("Cannot create temporary file"));
     const QString name = tempFile->fileName();
     tempFile->setAutoRemove(false);
     return FilePath::fromString(name);
@@ -557,9 +554,9 @@ Result<FilePath> FilePath::createTempFile() const
 
 Result<FilePath> FilePath::createTempDir() const
 {
-    auto tempDir = std::make_unique<QTemporaryDir>(QDir::tempPath() + QStringLiteral("/qtc-XXXXXX"));
+    auto tempDir = std::make_unique<QTemporaryDir>(QDir::tempPath() + u"/qtc-XXXXXX"_s);
     if (!tempDir->isValid())
-        return ResultError(QStringLiteral("Cannot create temporary directory"));
+        return ResultError(Tr::tr("Cannot create temporary directory"));
     const QString name = tempDir->path();
     tempDir->setAutoRemove(false);
     return FilePath::fromString(name);

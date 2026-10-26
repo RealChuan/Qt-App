@@ -28,6 +28,8 @@
 #include <memory>
 #include <vector>
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcPluginSystem, "qtapp.plugin", QtInfoMsg)
 
 namespace ExtensionSystem {
@@ -260,7 +262,7 @@ auto PluginManagerPrivate::pluginSettingsFor(const PluginSpec *spec) -> QSetting
 {
     QSettings *base = PluginManager::settings();
     auto *settings = new QSettings(base->fileName(), base->format());
-    settings->beginGroup(QStringLiteral("PluginData/%1").arg(spec->id()));
+    settings->beginGroup(u"PluginData/%1"_s.arg(spec->id()));
     state().pluginSettings.append(settings);
     return settings;
 }
@@ -299,8 +301,7 @@ auto PluginManager::loadPlugins() -> Utils::Result<>
         QStringList searched;
         for (const Utils::FilePath &path : std::as_const(manager.paths))
             searched.append(path.toUserOutput());
-        return Utils::ResultError(
-            Tr::tr("No plugins found in: %1").arg(searched.join(QStringLiteral(", "))));
+        return Utils::ResultError(Tr::tr("No plugins found in: %1").arg(searched.join(u", "_s)));
     }
 
     PluginManagerPrivate::applySettings();
@@ -354,9 +355,8 @@ auto PluginManager::loadPlugins() -> Utils::Result<>
 
         spec->setLoadTimeMs(timer.elapsed());
         spec->setState(PluginSpec::State::Initialized);
-        qCInfo(lcPluginSystem).noquote() << QStringLiteral("plugin initialized: %1 (%2 ms)")
-                                                .arg(spec->id())
-                                                .arg(spec->loadTimeMs());
+        qCInfo(lcPluginSystem).noquote()
+            << u"plugin initialized: %1 (%2 ms)"_s.arg(spec->id()).arg(spec->loadTimeMs());
     }
 
     for (PluginSpec *spec : std::as_const(manager.loadOrder)) {
@@ -373,9 +373,9 @@ auto PluginManager::loadPlugins() -> Utils::Result<>
     for (PluginSpec *spec : std::as_const(manager.plugins)) {
         if (spec->hasError())
             qCWarning(lcPluginSystem).noquote()
-                << QStringLiteral("plugin error: %1: %2").arg(spec->id(), spec->errorString());
+                << u"plugin error: %1: %2"_s.arg(spec->id(), spec->errorString());
         if (spec->isRequired() && spec->hasError())
-            return Utils::ResultError(QStringLiteral("%1: %2").arg(spec->id(), spec->errorString()));
+            return Utils::ResultError(u"%1: %2"_s.arg(spec->id(), spec->errorString()));
     }
 
     return Utils::ResultOk;
@@ -424,7 +424,7 @@ auto PluginManager::allErrors() -> QStringList
     QStringList errors;
     for (const PluginSpec *spec : std::as_const(state().plugins)) {
         if (spec->hasError())
-            errors.append(QStringLiteral("%1: %2").arg(spec->id(), spec->errorString()));
+            errors.append(u"%1: %2"_s.arg(spec->id(), spec->errorString()));
     }
     return errors;
 }

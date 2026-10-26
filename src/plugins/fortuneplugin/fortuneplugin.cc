@@ -71,10 +71,10 @@ auto FortunePlugin::initialize(const ExtensionSystem::PluginContext &context) ->
     d_ptr->page->setHistory(history);
 
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("fortuneplugin.cast"),
+        u"fortuneplugin.cast"_s,
         tr("Cyber Fortune: cast"),
         std::bind_front(&FortunePlugin::castFromCommand, this));
-    d_ptr->command->withShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+G")));
+    d_ptr->command->withShortcut(QKeySequence(u"Ctrl+Alt+G"_s));
 
     connect(d_ptr->page, &Fortunepage::profileSaved, this, &FortunePlugin::onProfileSaved);
     connect(d_ptr->page, &Fortunepage::profileCleared, this, &FortunePlugin::onProfileCleared);
@@ -93,7 +93,7 @@ void FortunePlugin::extensionsInitialized()
 void FortunePlugin::castFromCommand()
 {
     if (auto *shellHost = Shell::host())
-        shellHost->showPage(QStringLiteral("fortuneplugin.page"));
+        shellHost->showPage(u"fortuneplugin.page"_s);
 
     if (d_ptr->page->hasProfile())
         d_ptr->page->castNow();

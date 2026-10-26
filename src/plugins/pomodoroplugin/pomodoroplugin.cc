@@ -92,7 +92,7 @@ auto PomodoroPlugin::initialize(const ExtensionSystem::PluginContext &) -> Utils
     connect(d_ptr->page, &PomodoroPage::resetRequested, this, &PomodoroPlugin::onResetRequested);
 
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("pomodoroplugin.start"),
+        u"pomodoroplugin.start"_s,
         tr("Pomodoro: start 25 minutes"),
         std::bind_front(&PomodoroPlugin::startPomodoro, this));
 

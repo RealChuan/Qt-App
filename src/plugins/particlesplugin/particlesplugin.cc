@@ -24,7 +24,7 @@ auto ParticlesPlugin::initialize(const ExtensionSystem::PluginContext &) -> Util
 {
     d_ptr->page = new ParticlesPage;
     d_ptr->command = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("particlesplugin.burst"),
+        u"particlesplugin.burst"_s,
         tr("Particles: launch a burst"),
         std::bind_front(&ParticlesPlugin::burstInCenter, this));
     return Utils::ResultOk;

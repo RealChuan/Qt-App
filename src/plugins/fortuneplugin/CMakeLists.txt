@@ -20,4 +20,5 @@ set(PROJECT_SOURCES
     fortunecontent.cc)
 
 add_app_plugin(fortuneplugin ${PROJECT_SOURCES})
-target_link_libraries(fortuneplugin PRIVATE shell extensionsystem utils Qt::Widgets)
+target_link_libraries(fortuneplugin PRIVATE shell extensionsystem widgets utils
+                                            Qt::Widgets)

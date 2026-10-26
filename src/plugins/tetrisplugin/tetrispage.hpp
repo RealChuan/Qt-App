@@ -8,6 +8,8 @@
 
 #include <memory>
 
+using namespace Qt::StringLiterals;
+
 namespace Tetris {
 
 // 一局的宿主：持有模型与 60 Hz 帧循环，输入连发（DAS/ARR）也在这里。
@@ -22,10 +24,7 @@ public:
     explicit TetrisPage(QWidget *parent = nullptr);
     ~TetrisPage() override;
 
-    [[nodiscard]] auto id() const -> QString override
-    {
-        return QStringLiteral("tetrisplugin.page");
-    }
+    [[nodiscard]] auto id() const -> QString override { return u"tetrisplugin.page"_s; }
     [[nodiscard]] auto title() const -> QString override { return tr("Tetris"); }
     [[nodiscard]] auto subtitle() const -> QString override
     {

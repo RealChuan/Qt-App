@@ -67,7 +67,7 @@ void CorePlugin::extensionsInitialized()
 
     // 外壳自己贡献一条"退出"命令，顺便作为命令面板的示例。
     d_ptr->quitCommand = std::make_unique<Shell::FunctionCommand>(
-        QStringLiteral("coreplugin.quit"), tr("Application: quit"), &Utils::quitApplication);
+        u"coreplugin.quit"_s, tr("Application: quit"), &Utils::quitApplication);
 
     auto *registry = Shell::Registry::instance();
     registry->addPage(d_ptr->appearancePage.get());

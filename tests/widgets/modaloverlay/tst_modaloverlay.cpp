@@ -4,13 +4,14 @@
 #include <QTest>
 #include <QWidget>
 
+using namespace Qt::StringLiterals;
 using namespace Widgets;
 
 namespace {
 
 auto maskOf(const QWidget &target) -> QWidget *
 {
-    return target.findChild<QWidget *>(QStringLiteral("ModalMask"));
+    return target.findChild<QWidget *>(u"ModalMask"_s);
 }
 
 } // namespace

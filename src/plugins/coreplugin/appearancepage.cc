@@ -103,7 +103,7 @@ void AppearancePage::AppearancePagePrivate::setupUi()
 
     language = new QComboBox(q_ptr);
     language->setView(new QListView(language));
-    language->addItem(QString(), Utils::LanguageManager::Language::Chinese);
+    language->addItem(QString(), Utils::LanguageManager::Language::SimplifiedChinese);
     language->addItem(QString(), Utils::LanguageManager::Language::English);
     language->setCurrentIndex(Utils::languageManager()->currentLanguage());
 
@@ -187,7 +187,7 @@ void AppearancePage::retranslateUi()
 
     d_ptr->languageCard.title->setText(tr("Language"));
     d_ptr->languageLabel->setText(tr("Interface"));
-    d_ptr->language->setItemText(0, tr("Chinese"));
+    d_ptr->language->setItemText(0, tr("Simplified Chinese"));
     d_ptr->language->setItemText(1, tr("English"));
     d_ptr->languageHint->setText(tr("Applies immediately, no restart needed."));
 

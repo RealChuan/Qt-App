@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+using namespace Qt::StringLiterals;
+
 namespace Utils {
 
 namespace {
@@ -53,15 +55,14 @@ void loadFonts(const QString &fontPath)
     if (!dir.exists())
         return;
 
-    const QFileInfoList fonts = dir.entryInfoList({QStringLiteral("*.ttf")}, QDir::Files);
+    const QFileInfoList fonts = dir.entryInfoList({u"*.ttf"_s}, QDir::Files);
     for (const QFileInfo &info : fonts) {
         const int fontId = QFontDatabase::addApplicationFont(info.absoluteFilePath());
         if (fontId == -1) {
-            qWarning().noquote() << QStringLiteral("Loading Fonts file: %1 Failed.")
-                                        .arg(info.fileName());
+            qWarning().noquote() << u"Loading Fonts file: %1 Failed."_s.arg(info.fileName());
             continue;
         }
-        qInfo().noquote() << QStringLiteral("Loading Fonts file: %1.").arg(info.fileName())
+        qInfo().noquote() << u"Loading Fonts file: %1."_s.arg(info.fileName())
                           << QFontDatabase::applicationFontFamilies(fontId);
     }
 }
@@ -129,7 +130,7 @@ void setMacComboBoxStyle(QWidget *parent)
 #ifdef Q_OS_MACOS
     const auto comboBoxes = parent->findChildren<QComboBox *>();
     for (QComboBox *comboBox : comboBoxes)
-        comboBox->setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
+        comboBox->setStyle(QStyleFactory::create(u"Fusion"_s));
 #else
     Q_UNUSED(parent)
 #endif

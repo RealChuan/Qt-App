@@ -55,7 +55,7 @@ public:
     QPushButton *skipButton = nullptr;
     QPushButton *copyButton = nullptr;
     QPushButton *saveButton = nullptr;
-    QPushButton *resetButton = nullptr;
+    QPushButton *editButton = nullptr;
     QParallelAnimationGroup *revealGroup = nullptr;
     QPropertyAnimation *boardAnimation = nullptr;
     Reading reading;
@@ -77,6 +77,7 @@ FortuneReadingView::~FortuneReadingView() = default;
 void FortuneReadingView::showIdle(const BirthChart &chart, const Profile &profile)
 {
     d_ptr->hasReading = false;
+    updateCastButtonText();
     d_ptr->copyButton->setVisible(false);
     d_ptr->saveButton->setVisible(false);
     finishReveal();
@@ -105,6 +106,7 @@ void FortuneReadingView::showReading(const Reading &reading)
 {
     d_ptr->reading = reading;
     d_ptr->hasReading = true;
+    updateCastButtonText();
     d_ptr->copyButton->setVisible(true);
     d_ptr->saveButton->setVisible(true);
 
@@ -120,12 +122,12 @@ void FortuneReadingView::showReading(const Reading &reading)
     d_ptr->readingLabel->setVisible(true);
     d_ptr->readingLabel->setText(reading.reading);
     d_ptr->doLabel->setVisible(true);
-    d_ptr->doLabel->setText(tr("Do: %1").arg(reading.doList.join(QStringLiteral(" · "))));
+    d_ptr->doLabel->setText(tr("Do: %1").arg(reading.doList.join(u" · "_s)));
     d_ptr->avoidLabel->setVisible(true);
-    d_ptr->avoidLabel->setText(tr("Avoid: %1").arg(reading.avoidList.join(QStringLiteral(" · "))));
+    d_ptr->avoidLabel->setText(tr("Avoid: %1").arg(reading.avoidList.join(u" · "_s)));
     d_ptr->luckySwatch->setVisible(true);
     d_ptr->luckySwatch->setStyleSheet(
-        QStringLiteral("background: %1; border-radius: 6px;").arg(reading.luckyColor));
+        u"background: %1; border-radius: 6px;"_s.arg(reading.luckyColor));
     d_ptr->luckyLabel->setVisible(true);
     d_ptr->luckyLabel->setText(
         tr("Element %1 · lucky number %2").arg(reading.luckyElement).arg(reading.luckyNumber));
@@ -141,6 +143,7 @@ void FortuneReadingView::showReading(const Reading &reading)
 void FortuneReadingView::clear()
 {
     d_ptr->hasReading = false;
+    updateCastButtonText();
     d_ptr->copyButton->setVisible(false);
     d_ptr->saveButton->setVisible(false);
     finishReveal();
@@ -153,7 +156,7 @@ void FortuneReadingView::finishReveal()
     d_ptr->board->setRevealProgress(6.0);
     d_ptr->skipButton->setVisible(false);
     d_ptr->againButton->setEnabled(true);
-    d_ptr->resetButton->setEnabled(true);
+    d_ptr->editButton->setEnabled(true);
     d_ptr->copyButton->setEnabled(d_ptr->hasReading);
     d_ptr->saveButton->setEnabled(d_ptr->hasReading);
     d_ptr->isBusy = false;
@@ -206,8 +209,7 @@ void FortuneReadingView::onSaveImageClicked()
         directory = QDir::homePath();
 
     const QString suggested = QDir(directory).filePath(
-        QStringLiteral("cyber-fortune-%1.png")
-            .arg(d_ptr->reading.castAt.toString(QStringLiteral("yyyyMMdd-HHmmss"))));
+        u"cyber-fortune-%1.png"_s.arg(d_ptr->reading.castAt.toString(u"yyyyMMdd-HHmmss"_s)));
     const QString path = QFileDialog::getSaveFileName(
         this, tr("Save reading as image"), suggested, tr("PNG image (*.png)"));
     if (path.isEmpty())
@@ -244,47 +246,47 @@ void FortuneReadingView::setupUi()
     d_ptr->board->setFixedSize(kBoardWidth, kBoardHeight);
 
     auto *infoPanel = new QWidget(this);
-    infoPanel->setObjectName(QStringLiteral("FortuneInfo"));
+    infoPanel->setObjectName(u"FortuneInfo"_s);
     infoPanel->setMinimumWidth(kInfoMinWidth);
     infoPanel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
     d_ptr->nameLabel = new QLabel(infoPanel);
-    d_ptr->nameLabel->setObjectName(QStringLiteral("HeroTitle"));
+    d_ptr->nameLabel->setObjectName(u"HeroTitle"_s);
     d_ptr->nameLabel->setWordWrap(true);
 
     d_ptr->trigramLabel = new QLabel(infoPanel);
-    d_ptr->trigramLabel->setObjectName(QStringLiteral("HeroMeta"));
+    d_ptr->trigramLabel->setObjectName(u"HeroMeta"_s);
     d_ptr->trigramLabel->setWordWrap(true);
 
     d_ptr->gradeLabel = new QLabel(infoPanel);
-    d_ptr->gradeLabel->setObjectName(QStringLiteral("CardTitle"));
+    d_ptr->gradeLabel->setObjectName(u"CardTitle"_s);
     d_ptr->gradeLabel->setWordWrap(true);
 
     d_ptr->judgmentLabel = new QLabel(infoPanel);
-    d_ptr->judgmentLabel->setObjectName(QStringLiteral("CardHint"));
+    d_ptr->judgmentLabel->setObjectName(u"CardHint"_s);
     d_ptr->judgmentLabel->setWordWrap(true);
 
     d_ptr->idleLabel = new QLabel(infoPanel);
-    d_ptr->idleLabel->setObjectName(QStringLiteral("Placeholder"));
+    d_ptr->idleLabel->setObjectName(u"Placeholder"_s);
     d_ptr->idleLabel->setWordWrap(true);
 
     d_ptr->readingLabel = new QLabel(infoPanel);
-    d_ptr->readingLabel->setObjectName(QStringLiteral("CardHint"));
+    d_ptr->readingLabel->setObjectName(u"CardHint"_s);
     d_ptr->readingLabel->setWordWrap(true);
 
     d_ptr->doLabel = new QLabel(infoPanel);
-    d_ptr->doLabel->setObjectName(QStringLiteral("CardHint"));
+    d_ptr->doLabel->setObjectName(u"CardHint"_s);
     d_ptr->doLabel->setWordWrap(true);
 
     d_ptr->avoidLabel = new QLabel(infoPanel);
-    d_ptr->avoidLabel->setObjectName(QStringLiteral("CardHint"));
+    d_ptr->avoidLabel->setObjectName(u"CardHint"_s);
     d_ptr->avoidLabel->setWordWrap(true);
 
     d_ptr->luckySwatch = new QLabel(infoPanel);
     d_ptr->luckySwatch->setFixedSize(12, 12);
 
     d_ptr->luckyLabel = new QLabel(infoPanel);
-    d_ptr->luckyLabel->setObjectName(QStringLiteral("CardHint"));
+    d_ptr->luckyLabel->setObjectName(u"CardHint"_s);
     d_ptr->luckyLabel->setWordWrap(true);
 
     auto *luckyRow = new QHBoxLayout;
@@ -294,7 +296,7 @@ void FortuneReadingView::setupUi()
     luckyRow->addWidget(d_ptr->luckyLabel, 1);
 
     d_ptr->birthLabel = new QLabel(infoPanel);
-    d_ptr->birthLabel->setObjectName(QStringLiteral("HeroMeta"));
+    d_ptr->birthLabel->setObjectName(u"HeroMeta"_s);
     d_ptr->birthLabel->setWordWrap(true);
 
     auto *infoLayout = new QVBoxLayout(infoPanel);
@@ -313,12 +315,11 @@ void FortuneReadingView::setupUi()
     infoLayout->addStretch();
 
     auto *textScroll = new QScrollArea(this);
-    textScroll->setObjectName(QStringLiteral("FortuneTextScroll"));
+    textScroll->setObjectName(u"FortuneTextScroll"_s);
     textScroll->setWidgetResizable(true);
     textScroll->setFrameShape(QFrame::NoFrame);
     textScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    textScroll->setStyleSheet(
-        QStringLiteral("QScrollArea { background: transparent; border: none; }"));
+    textScroll->setStyleSheet(u"QScrollArea { background: transparent; border: none; }"_s);
     textScroll->viewport()->setAutoFillBackground(false);
     textScroll->setWidget(infoPanel);
 
@@ -329,7 +330,7 @@ void FortuneReadingView::setupUi()
     topRow->addWidget(textScroll, 1);
 
     d_ptr->againButton = new QPushButton(this);
-    d_ptr->againButton->setObjectName(QStringLiteral("PrimaryButton"));
+    d_ptr->againButton->setObjectName(u"PrimaryButton"_s);
 
     d_ptr->skipButton = new QPushButton(this);
     d_ptr->skipButton->setVisible(false);
@@ -340,7 +341,7 @@ void FortuneReadingView::setupUi()
     d_ptr->saveButton = new QPushButton(this);
     d_ptr->saveButton->setVisible(false);
 
-    d_ptr->resetButton = new QPushButton(this);
+    d_ptr->editButton = new QPushButton(this);
 
     auto *buttonRow = new QHBoxLayout;
     buttonRow->setContentsMargins(0, 0, 0, 0);
@@ -350,7 +351,7 @@ void FortuneReadingView::setupUi()
     buttonRow->addWidget(d_ptr->copyButton);
     buttonRow->addWidget(d_ptr->saveButton);
     buttonRow->addStretch();
-    buttonRow->addWidget(d_ptr->resetButton);
+    buttonRow->addWidget(d_ptr->editButton);
 
     root->addLayout(topRow, 1);
     root->addLayout(buttonRow);
@@ -367,18 +368,24 @@ void FortuneReadingView::setupUi()
 
 void FortuneReadingView::retranslateUi()
 {
-    d_ptr->againButton->setText(tr("Cast again"));
+    updateCastButtonText();
     d_ptr->skipButton->setText(tr("Skip"));
     d_ptr->copyButton->setText(tr("Copy"));
     d_ptr->saveButton->setText(tr("Save image"));
-    d_ptr->resetButton->setText(tr("Reset profile"));
+    d_ptr->editButton->setText(tr("Edit profile"));
     d_ptr->idleLabel->setText(tr("Press Cast to ask about today."));
+}
+
+void FortuneReadingView::updateCastButtonText()
+{
+    // 还没起过卦时按钮说 "Cast again" 没有前提，先叫 Cast；起过一次再改成 again。
+    d_ptr->againButton->setText(d_ptr->hasReading ? tr("Cast again") : tr("Cast"));
 }
 
 void FortuneReadingView::setupConnections()
 {
     connect(d_ptr->againButton, &QPushButton::clicked, this, &FortuneReadingView::castAgainRequested);
-    connect(d_ptr->resetButton, &QPushButton::clicked, this, &FortuneReadingView::resetRequested);
+    connect(d_ptr->editButton, &QPushButton::clicked, this, &FortuneReadingView::editRequested);
     connect(d_ptr->skipButton, &QPushButton::clicked, this, &FortuneReadingView::onSkipClicked);
     connect(d_ptr->copyButton, &QPushButton::clicked, this, &FortuneReadingView::onCopyClicked);
     connect(d_ptr->saveButton, &QPushButton::clicked, this, &FortuneReadingView::onSaveImageClicked);
@@ -395,7 +402,7 @@ void FortuneReadingView::startReveal()
     d_ptr->board->setRevealProgress(0.0);
     d_ptr->skipButton->setVisible(true);
     d_ptr->againButton->setEnabled(false);
-    d_ptr->resetButton->setEnabled(false);
+    d_ptr->editButton->setEnabled(false);
     d_ptr->copyButton->setEnabled(false);
     d_ptr->saveButton->setEnabled(false);
     d_ptr->isBusy = true;

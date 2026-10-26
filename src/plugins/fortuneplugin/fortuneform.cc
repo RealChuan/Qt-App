@@ -46,6 +46,8 @@ public:
     QDateEdit *birthEdit = nullptr;
     QComboBox *hourBox = nullptr;
     QPushButton *castButton = nullptr;
+    QPushButton *backButton = nullptr;
+    QPushButton *deleteButton = nullptr;
 };
 
 FortuneForm::FortuneForm(QWidget *parent)
@@ -55,6 +57,7 @@ FortuneForm::FortuneForm(QWidget *parent)
     setupUi();
     retranslateUi();
     setupConnections();
+    setEditing(false);
 }
 
 FortuneForm::~FortuneForm() = default;
@@ -84,6 +87,12 @@ void FortuneForm::focusName()
     d_ptr->nameEdit->setFocus();
 }
 
+void FortuneForm::setEditing(bool editing)
+{
+    d_ptr->backButton->setVisible(editing);
+    d_ptr->deleteButton->setVisible(editing);
+}
+
 void FortuneForm::changeEvent(QEvent *event)
 {
     if (event->type() == QEvent::LanguageChange)
@@ -108,18 +117,18 @@ void FortuneForm::setupUi()
     grid->setVerticalSpacing(10);
 
     d_ptr->nameLabel = new QLabel(this);
-    d_ptr->nameLabel->setObjectName(QStringLiteral("FieldLabel"));
+    d_ptr->nameLabel->setObjectName(u"FieldLabel"_s);
     d_ptr->birthLabel = new QLabel(this);
-    d_ptr->birthLabel->setObjectName(QStringLiteral("FieldLabel"));
+    d_ptr->birthLabel->setObjectName(u"FieldLabel"_s);
     d_ptr->hourLabel = new QLabel(this);
-    d_ptr->hourLabel->setObjectName(QStringLiteral("FieldLabel"));
+    d_ptr->hourLabel->setObjectName(u"FieldLabel"_s);
 
     d_ptr->nameEdit = new QLineEdit(this);
     d_ptr->nameEdit->setMaxLength(48);
 
     d_ptr->birthEdit = new QDateEdit(this);
     d_ptr->birthEdit->setCalendarPopup(true);
-    d_ptr->birthEdit->setDisplayFormat(QStringLiteral("yyyy-MM-dd"));
+    d_ptr->birthEdit->setDisplayFormat(u"yyyy-MM-dd"_s);
     d_ptr->birthEdit->setDateRange(QDate(1901, 2, 19), QDate(2100, 12, 31));
     d_ptr->birthEdit->setDate(QDate(2000, 1, 1));
 
@@ -134,13 +143,19 @@ void FortuneForm::setupUi()
     grid->setColumnStretch(1, 1);
 
     d_ptr->castButton = new QPushButton(this);
-    d_ptr->castButton->setObjectName(QStringLiteral("PrimaryButton"));
+    d_ptr->castButton->setObjectName(u"PrimaryButton"_s);
     d_ptr->castButton->setDefault(true);
 
+    d_ptr->backButton = new QPushButton(this);
+    d_ptr->deleteButton = new QPushButton(this);
+
+    // 主操作和正文同侧起步，破坏性的删除单独推到最右，按错位置也按不到。
     auto *buttonRow = new QHBoxLayout;
     buttonRow->setContentsMargins(0, 4, 0, 0);
     buttonRow->addWidget(d_ptr->castButton);
+    buttonRow->addWidget(d_ptr->backButton);
     buttonRow->addStretch();
+    buttonRow->addWidget(d_ptr->deleteButton);
 
     root->addLayout(grid);
     root->addLayout(buttonRow);
@@ -154,6 +169,8 @@ void FortuneForm::retranslateUi()
     d_ptr->hourLabel->setText(tr("Hour of birth"));
     d_ptr->nameEdit->setPlaceholderText(tr("Leave empty to read as Seeker"));
     d_ptr->castButton->setText(tr("Cast"));
+    d_ptr->backButton->setText(tr("Back"));
+    d_ptr->deleteButton->setText(tr("Delete profile"));
 
     const int currentHour = d_ptr->hourBox->currentIndex();
     {
@@ -171,6 +188,8 @@ void FortuneForm::setupConnections()
 {
     connect(d_ptr->castButton, &QPushButton::clicked, this, &FortuneForm::onSubmitClicked);
     connect(d_ptr->nameEdit, &QLineEdit::returnPressed, this, &FortuneForm::onSubmitClicked);
+    connect(d_ptr->backButton, &QPushButton::clicked, this, &FortuneForm::backRequested);
+    connect(d_ptr->deleteButton, &QPushButton::clicked, this, &FortuneForm::deleteRequested);
 }
 
 } // namespace Fortune
