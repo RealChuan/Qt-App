@@ -8,6 +8,7 @@
 *   通用卡片
 *****************************************************************************/
 
+/* 卡片浮起来靠 window/surface 的明度差 + 这圈发丝线，缺一都会糊进背景 */
 #Card {
     background: @@surface@@;
     border: 1px solid @@border@@;
@@ -16,7 +17,7 @@
 
 #CardTitle {
     color: @@text@@;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
 }
 
@@ -36,9 +37,9 @@
     font-size: 14px;
 }
 
-/* 卡片内部的分隔线 */
+/* 用 divider：1px 实线要比容器边框深一档才看得见 */
 #Divider {
-    background: @@border@@;
+    background: @@divider@@;
     border: none;
     min-height: 1px;
     max-height: 1px;
@@ -54,13 +55,13 @@
 
 #HeroNumber {
     color: @@text@@;
-    font-size: 46px;
+    font-size: 42px;
     font-weight: 600;
 }
 
 #HeroTitle {
     color: @@text@@;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -80,13 +81,13 @@
 
 #AboutName {
     color: @@text@@;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
 }
 
 #AboutVersion {
     color: @@textSubtle@@;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 #AboutInfo {
@@ -96,7 +97,7 @@
 
 #AboutCopyright {
     color: @@textSubtle@@;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 /******************************************************************************
@@ -104,8 +105,8 @@
 *****************************************************************************/
 
 #FilterEdit {
-    min-height: 30px;
-    max-height: 30px;
+    min-height: 28px;
+    max-height: 28px;
 }
 
 /* 列表放进卡片里，边框由卡片负责 */
@@ -129,7 +130,7 @@
 
 #DetailsTitle {
     color: @@text@@;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
 }
 
@@ -145,7 +146,7 @@
 
 #DetailsSectionTitle {
     color: @@textSubtle@@;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
 }
 
@@ -177,7 +178,7 @@
 }
 
 #PaletteSeparator {
-    background: @@border@@;
+    background: @@divider@@;
     border: none;
     min-height: 1px;
     max-height: 1px;
@@ -197,7 +198,7 @@
 
 #PaletteHint {
     color: @@textSubtle@@;
-    font-size: 12px;
+    font-size: 13px;
     padding: 8px 12px;
 }
 
@@ -236,7 +237,7 @@
 
 #CrashTitle {
     color: @@text@@;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
 }
 
@@ -247,7 +248,7 @@
 
 #CrashBody {
     color: @@textMuted@@;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 #CrashPath {
@@ -279,7 +280,7 @@
 
 #ColorPickerHint {
     color: @@textSubtle@@;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 /******************************************************************************

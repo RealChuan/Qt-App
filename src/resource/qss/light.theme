@@ -1,31 +1,36 @@
 ; 浅色方案的令牌。CSS 里只出现令牌占位符，由 Utils::Theme 在应用样式表前替换。
-; 注意：url() 必须带引号。文件名里的 @2x 后缀会让 Qt 的 QSS 解析器直接报错。
+; 注意：url() 必须带引号，文件名里的 @2x 会让 Qt 的 QSS 解析器直接报错。
+;
+; 改色守四条：window < surfaceAlt < surface 三层要能分开；border 给容器、
+; borderStrong 给可交互控件、divider 给 1px 横线；textSubtle 不低于 4.5:1；
+; 强调色别动，资源里的 *@2x 勾选框图标是按它画的。
 
 [colors]
-window=#F5F6F8
+window=#E9EDF4
 surface=#FFFFFF
-surfaceAlt=#F2F4F7
-surfaceSunken=#E9ECF1
-border=#E3E7EE
-borderStrong=#CCD3DE
-text=#171A1F
-textMuted=#5F6875
-textSubtle=#98A1AE
-textDisabled=#B7BFCB
+surfaceAlt=#EDF1F7
+surfaceSunken=#E0E6EF
+border=#D5DBE6
+divider=#CBD3DF
+borderStrong=#A6B1C2
+text=#16191F
+textMuted=#4F5A68
+textSubtle=#626B79
+textDisabled=#8F99A8
 accent=#0E6BFF
 accentHover=#0B5BE0
 accentPressed=#0A4CC0
 accentText=#0B57D0
-accentSoft=#E8F0FF
-accentSoftHover=#DBE8FF
+accentSoft=#E7EFFF
+accentSoftHover=#D9E7FF
 onAccent=#FFFFFF
-danger=#D14343
-success=#1E9A62
+danger=#C93B3B
+success=#12855A
 tooltipBg=#FFFFFF
-tooltipText=#171A1F
-tooltipBorder=#D5DCE6
-scrollHandle=#C7CFDA
-scrollHandleHover=#AFB9C7
+tooltipText=#16191F
+tooltipBorder=#BFC9D8
+scrollHandle=#AEB9C9
+scrollHandleHover=#94A1B4
 
 [icons]
 checkUnchecked=url(":/controls/checkbox-unchecked@2.png")

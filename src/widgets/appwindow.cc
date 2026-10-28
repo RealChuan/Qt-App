@@ -17,6 +17,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QStyle>
 #include <QToolButton>
 #include <QWindow>
 
@@ -45,6 +46,8 @@ constexpr int kMinWindowHeight = 320;
 constexpr int kResizeHandleCount = 8;
 // 标题栏里命令按钮的对象名，样式表按 #TitleBarButton 命中，换名字要一起改 QSS。
 constexpr auto kTitleBarButtonObjectName = "TitleBarButton";
+// 主体是否当卡片面绘制，同样由 QSS 的 [card="true"] 选择器读取。
+constexpr auto kCardBodyProperty = "card";
 } // namespace
 
 class AppWindow::AppWindowPrivate
@@ -109,6 +112,21 @@ public:
 
         updateHandleGeometry();
         raiseHandles();
+    }
+
+    // 主体改成卡片面：默认的 window 是页面画布色，对话框直接铺上去会像一块洞。
+    void setBodyAsCard(bool card)
+    {
+        if (cardBody == card)
+            return;
+        cardBody = card;
+
+        for (QWidget *widget : {frame, centralContainer}) {
+            widget->setProperty(kCardBodyProperty, card);
+            // 属性参与 QSS 选择器，改完得让样式重新算一遍才知道换了规则。
+            widget->style()->unpolish(widget);
+            widget->style()->polish(widget);
+        }
     }
 
     // 最大化时窗口铺满屏幕，阴影边距必须收掉，否则四周会留一圈透明缝。
@@ -316,6 +334,7 @@ public:
     int shadowPadding = kShadowPadding;
     bool maxRestoreVisible = true;
     bool isResizable = true;
+    bool cardBody = false;
 
     // 手工兜底拉伸用：窗口管理器拒绝系统拉伸时才用到。
     Qt::Edges manualEdges;
@@ -449,6 +468,11 @@ void AppWindow::setResizable(bool resizable)
 {
     d_ptr->isResizable = resizable;
     d_ptr->updateHandleGeometry();
+}
+
+void AppWindow::setBodyAsCard(bool card)
+{
+    d_ptr->setBodyAsCard(card);
 }
 
 void AppWindow::setCentralWidget(QWidget *centralWidget)
@@ -667,6 +691,12 @@ void AppWindow::setResizable(bool resizable)
                "it cannot be disabled; constrain the layout and the minimum/maximum sizes "
                "instead";
     }
+}
+
+void AppWindow::setBodyAsCard(bool card)
+{
+    // 原生窗口的底色由系统给，没有自绘的 #Frame 可调，忽略即可。
+    Q_UNUSED(card)
 }
 
 void AppWindow::setTitleBarWidget(QWidget *widget)

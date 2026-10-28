@@ -1,18 +1,15 @@
 /******************************************************************************
 *   base.css —— Qt 基础控件的通用样式
 *
-*   颜色与图标全部写成令牌占位符，由 Utils::Theme 在加载时按当前方案
-*   （light.theme / dark.theme）替换，因此同一份文件可以服务深浅两套主题。
-*
-*   移植到别的 Qt 程序：把 base.css 与两个 .theme 一起放进它的 qrc，然后
+*   颜色与图标写成令牌占位符，由 Utils::Theme 按 light.theme / dark.theme 替换。
+*   移植：把本文件与两个 .theme 放进目标程序的 qrc，然后
 *       Utils::theme()->setConfig({":/qss/", {"base.css", "myapp.css"}});
 *       Utils::theme()->apply();
-*   myapp.css 里继续用同一批令牌即可跟随深浅色，也可以直接写死颜色。
 *
-*   约定：
-*     - 圆角统一 6px（控件）、12px（卡片，定义在 pages.css）
-*     - 控件高度统一 28px，主要行高 32px
-*     - 选中/焦点只用一个强调色，不做多色装饰
+*   约定：圆角 6px（控件）/ 12px（卡片）；控件高 28px，列表行 30px；
+*   字号七档 42/20/16/15/14/13/12，12px 只给拉丁字母；
+*   可交互控件用 borderStrong，容器用 border，1px 横线用 divider；
+*   自绘控件从 QPalette 取色，并沿用同一套字号。
 ******************************************************************************/
 
 /******************************************************************************
@@ -66,9 +63,9 @@ QToolButton {
     background: @@surface@@;
     border: 1px solid @@borderStrong@@;
     border-radius: 6px;
-    min-width: 64px;
+    min-width: 68px;
     min-height: 28px;
-    padding: 0 14px;
+    padding: 0 16px;
 }
 
 QPushButton:hover,
@@ -138,13 +135,15 @@ QPushButton#GrayButton:hover {
 *   QLineEdit / QTextEdit / QPlainTextEdit
 *****************************************************************************/
 
+/* 输入框的边框用 borderStrong 而不是 border：输入框的底色和卡片一样是 surface，
+   边框是唯一能说明“这里可以打字”的东西，发丝线在 1.4:1 下几乎等于没有。 */
 QLineEdit {
     color: @@text@@;
     background: @@surface@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@borderStrong@@;
     border-radius: 6px;
     min-height: 28px;
-    padding: 0 9px;
+    padding: 0 10px;
     selection-background-color: @@accent@@;
     selection-color: @@onAccent@@;
     placeholder-text-color: @@textSubtle@@;
@@ -177,9 +176,9 @@ QTextEdit,
 QPlainTextEdit {
     color: @@text@@;
     background: @@surface@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@borderStrong@@;
     border-radius: 6px;
-    padding: 6px 8px;
+    padding: 8px 10px;
     selection-background-color: @@accent@@;
     selection-color: @@onAccent@@;
 }
@@ -201,7 +200,7 @@ QPlainTextEdit:read-only {
 QComboBox {
     color: @@text@@;
     background: @@surface@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@borderStrong@@;
     border-radius: 6px;
     min-width: 96px;
     min-height: 28px;
@@ -240,7 +239,7 @@ QComboBox::down-arrow {
 
 QComboBox QAbstractItemView {
     background: @@surface@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@borderStrong@@;
     border-radius: 8px;
     padding: 4px;
     outline: none;
@@ -250,7 +249,7 @@ QComboBox QAbstractItemView {
 
 QComboBox QAbstractItemView::item {
     min-height: 28px;
-    padding-left: 8px;
+    padding-left: 9px;
     border-radius: 5px;
 }
 
@@ -261,7 +260,7 @@ QComboBox QAbstractItemView::item {
 QAbstractSpinBox {
     color: @@text@@;
     background: @@surface@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@borderStrong@@;
     border-radius: 6px;
     min-height: 28px;
     min-width: 72px;
@@ -355,7 +354,7 @@ QTimeEdit::down-arrow {
 /* 日期弹窗的导航栏和格子跟随主题，不再退回系统浅色控件 */
 QCalendarWidget QWidget#qt_calendar_navigationbar {
     background: @@surface@@;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
 }
 
 QCalendarWidget QToolButton {
@@ -462,8 +461,8 @@ QAbstractItemView {
    给 ::item 加圆角会在相邻列之间留下透明缝隙（单行选中时尤其明显）。
    圆角只给“整行就是一个 item”的单列列表，例如下拉框和命令面板。 */
 QAbstractItemView::item {
-    min-height: 28px;
-    padding-left: 6px;
+    min-height: 30px;
+    padding-left: 7px;
     border: none;
     color: @@text@@;
 }
@@ -533,14 +532,15 @@ QHeaderView {
     border: none;
 }
 
+/* 表头 13px + 600：小字号靠字重和对比度（5:1）撑，不再靠放大 */
 QHeaderView::section {
     color: @@textSubtle@@;
     background: @@surface@@;
     border: none;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
     padding: 0 8px;
     min-height: 30px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
 }
 
@@ -551,7 +551,7 @@ QHeaderView::section:hover {
 QTableCornerButton::section {
     background: @@surface@@;
     border: none;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
 }
 
 /******************************************************************************
@@ -577,7 +577,7 @@ QTabBar::tab {
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
-    padding: 6px 14px;
+    padding: 7px 14px;
     margin-right: 4px;
 }
 
@@ -657,7 +657,7 @@ QMenu::item {
     background: transparent;
     border: none;
     border-radius: 5px;
-    padding: 6px 26px 6px 12px;
+    padding: 7px 26px 7px 12px;
 }
 
 QMenu::item:selected {
@@ -671,7 +671,7 @@ QMenu::item:disabled {
 
 QMenu::separator {
     height: 1px;
-    background: @@border@@;
+    background: @@divider@@;
     margin: 5px 8px;
 }
 
@@ -685,14 +685,15 @@ QMenu::indicator {
     padding-left: 8px;
 }
 
+/* 必须走令牌：写死的浅色图标在深色下是白底 */
 QMenu::indicator:non-exclusive:unchecked,
 QMenu::indicator:exclusive:unchecked {
-    image: url(":/controls/checkbox-unchecked@2.png");
+    image: @@checkUnchecked@@;
 }
 
 QMenu::indicator:non-exclusive:checked,
 QMenu::indicator:exclusive:checked {
-    image: url(":/controls/checkbox-checked-selectionmode@2.png");
+    image: @@checkChecked@@;
 }
 
 QMenuBar {
@@ -839,7 +840,7 @@ QToolBox {
 QToolBox::tab {
     color: @@textMuted@@;
     background: transparent;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
     padding: 8px 10px;
 }
 
@@ -855,13 +856,13 @@ QToolBox::tab:selected {
 QToolBar {
     background: @@surface@@;
     border: none;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
     spacing: 4px;
     padding: 3px 6px;
 }
 
 QToolBar::separator {
-    background: @@border@@;
+    background: @@divider@@;
     width: 1px;
     margin: 4px 6px;
 }
@@ -869,7 +870,7 @@ QToolBar::separator {
 QStatusBar {
     color: @@textMuted@@;
     background: @@surface@@;
-    border-top: 1px solid @@border@@;
+    border-top: 1px solid @@divider@@;
 }
 
 QStatusBar::item {
@@ -884,7 +885,7 @@ QDockWidget {
 
 QDockWidget::title {
     background: @@surfaceAlt@@;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
     padding: 6px 10px;
 }
 
@@ -898,7 +899,8 @@ QToolTip {
     color: @@tooltipText@@;
     background: @@tooltipBg@@;
     border: 1px solid @@tooltipBorder@@;
-    padding: 2px 5px;
+    padding: 3px 7px;
+    font-size: 13px;
 }
 
 /******************************************************************************
@@ -923,7 +925,7 @@ QLCDNumber {
 
 QCalendarWidget QWidget#qt_calendar_navigationbar {
     background: @@surfaceAlt@@;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
 }
 
 QCalendarWidget QAbstractItemView {

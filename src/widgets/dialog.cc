@@ -39,6 +39,8 @@ Dialog::Dialog(QWidget *parent)
     setMinButtonVisible(false);
     setRestoreMaxButtonVisible(false);
     setResizable(false);
+    // 对话框没有页面层，主体自己当卡片面，否则露出的画布色会和背后的主界面糊在一起。
+    setBodyAsCard(true);
     resize(600, 370);
 }
 

@@ -1,32 +1,35 @@
 ; 深色方案的令牌。强调色与资源里的 *-dark 图标同族（#5294E2），
-; 保证勾选框、单选框不会和按钮、选中态出现两种蓝。
-; 注意：url() 必须带引号，否则文件名里的 @2x 会让 QSS 解析失败。
+; 不会出现两种蓝。注意：url() 必须带引号，否则 @2x 会让 QSS 解析失败。
+;
+; 深色下三层靠明度顺序区分：surface 比 window 亮、border 比 surface 亮，
+; window 不用纯黑。具体比值见 light.theme 顶部，两套主题目标一致。
 
 [colors]
-window=#101216
-surface=#171A20
-surfaceAlt=#1E222A
-surfaceSunken=#242932
-border=#262C36
-borderStrong=#39414E
-text=#E7EAEF
-textMuted=#A1AAB8
-textSubtle=#6F7987
-textDisabled=#5A636F
+window=#0B0E13
+surface=#191D25
+surfaceAlt=#232934
+surfaceSunken=#2C333F
+border=#313845
+divider=#3B4351
+borderStrong=#525D6F
+text=#E8EBF1
+textMuted=#A6AFBE
+textSubtle=#8A93A2
+textDisabled=#6B7583
 accent=#5294E2
 accentHover=#6AA5EB
 accentPressed=#3F7FCC
-accentText=#7FB3F0
-accentSoft=#1B2A3E
-accentSoftHover=#22344C
+accentText=#86B8F2
+accentSoft=#1D2C40
+accentSoftHover=#243553
 onAccent=#0B1016
-danger=#E26D6D
-success=#4BC08A
-tooltipBg=#22262E
-tooltipText=#E7EAEF
-tooltipBorder=#3A424F
-scrollHandle=#3A424F
-scrollHandleHover=#4C5666
+danger=#E87777
+success=#53C894
+tooltipBg=#232833
+tooltipText=#E8EBF1
+tooltipBorder=#414A59
+scrollHandle=#414A59
+scrollHandleHover=#556172
 
 [icons]
 checkUnchecked=url(":/controls/checkbox-unchecked-dark@2.png")

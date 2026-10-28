@@ -64,6 +64,17 @@ checkChecked=url(":/controls/checkbox-checked-selectionmode@2.png")
 
 新增一个颜色的完整步骤：两个 `.theme` 各加一行 → CSS 里用 `@@新名字@@`。
 
+## 配色约定
+
+令牌按屏幕上实际看到的效果定值，改色时守四条底线：
+
+1. **三层底面要有明度差**：`window` < `surfaceAlt` < `surface`，卡片靠明度差浮起来，光有 1px 边框不够。
+2. **边框分两档**：容器用 `border`，可交互控件用 `borderStrong`（输入框底色同卡片，边框是唯一能说明“这里能打字”的线索）。
+3. **1px 横线用 `divider`**，比 `border` 深一档，否则等于没画。
+4. **四档文字都要能读**：`text` ≥14:1、`textMuted` ≥5.5:1、`textSubtle` ≥4.5:1、`textDisabled` ≈3:1。
+
+字号见 `base.css` 顶部：档位要少、层级用字重和颜色拉，12px 只给拉丁字母。自绘控件同样从 `QPalette` 取色、沿用这套字号（`paintOverlay` / `paintBoardFrame`）。强调色别改——`*@2x` 勾选框图标是按它画的。
+
 ## 代码入口
 
 ```cpp
