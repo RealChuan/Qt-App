@@ -64,6 +64,7 @@ auto buildPalette(const QHash<QString, QString> &tokens) -> QPalette
     palette.setColor(QPalette::ToolTipText, colorOf(tokens, u"tooltipText"_s));
     palette.setColor(QPalette::PlaceholderText, colorOf(tokens, u"textSubtle"_s));
     palette.setColor(QPalette::Mid, colorOf(tokens, u"border"_s));
+    palette.setColor(QPalette::Midlight, colorOf(tokens, u"divider"_s));
     palette.setColor(QPalette::Dark, colorOf(tokens, u"borderStrong"_s));
     palette.setColor(QPalette::Light, colorOf(tokens, u"surface"_s));
 
@@ -92,8 +93,7 @@ auto uiFont() -> QFont
         u"Noto Sans CJK SC"_s,
         u"Noto Sans"_s,
     });
-    // 与 base.css 的 QWidget 字号保持一致：没有单独写 font-size 的控件
-    // 走这个字号，两处不一致会出现同一窗口里大小混排。
+    // 与 base.css 的 QWidget 同字号，否则同窗里大小混排；14px 靠对比度而非放大。
     font.setPixelSize(14);
     return font;
 }

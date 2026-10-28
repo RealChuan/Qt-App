@@ -50,10 +50,11 @@ bool DanmakuOverlay::eventFilter(QObject *watched, QEvent *event)
 void DanmakuOverlay::push(const QString &text, const QColor &color)
 {
     auto *label = new QLabel(text, this);
+    // 弹幕浮层：字号跟正文一档，底色固定半透明黑（背景可能是任何页面）。
     label->setStyleSheet(
         u"QLabel { color: %1; background: rgba(0, 0, 0, 110);"
-        u" border-radius: 10px; padding: 4px 12px;"
-        u" font-size: 15px; font-weight: 600; }"_s.arg(
+        u" border-radius: 8px; padding: 3px 10px;"
+        u" font-size: 14px; font-weight: 600; }"_s.arg(
             (color.isValid() ? color : QColor(255, 255, 255)).name()));
 
     label->adjustSize();

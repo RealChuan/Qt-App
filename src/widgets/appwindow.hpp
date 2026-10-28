@@ -29,6 +29,10 @@ public:
     // false 时四周不再响应拉伸：固定尺寸的外壳（模态对话框）用。
     void setResizable(bool resizable);
 
+    // 主体改用卡片面 + 一圈描边：对话框没有页面层，直接铺画布色会和背后的
+    // 主界面糊在一起。规则在 shell.css 的 #Frame[card="true"]。
+    void setBodyAsCard(bool card);
+
     // 重复调用会替换上一个内容控件，不会叠加布局。
     void setCentralWidget(QWidget *centralWidget);
 
@@ -81,6 +85,8 @@ public:
     void setTitleBarWidget(QWidget *widget);
     void addChromeAction(QAction *action);
     void addMenu(QMenu *menu);
+    // 原生装饰下主体本来就是系统画的窗口底色，这里无事可做。
+    void setBodyAsCard(bool card);
     [[nodiscard]] auto shadowPadding() const -> int;
 };
 #endif

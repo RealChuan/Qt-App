@@ -48,9 +48,8 @@ UTILS_EXPORT void setMacComboBoxStyle(QWidget *parent);
 // 不设具体数值，而是按设备像素比的平方放大现有上限。
 UTILS_EXPORT void scalePixmapCacheForDpr();
 
-// 在自绘区域上盖一层随主题变化的遮罩，并居中排三行：标题、数字（可空）、提示（可空）。
-// 字号对齐 shell 的排版语汇（HeroTitle 17 / 数字 40 / Placeholder 13），
-// 让贪吃蛇、俄罗斯方块这类游戏页的"暂停 / 结束"长得一模一样。
+// 在自绘区域上盖一层随主题的遮罩，居中排三行：标题、数字（可空）、提示（可空）；
+// 字号对齐 base.css 阶梯，让游戏页的"暂停 / 结束"长得一致。
 UTILS_EXPORT void paintOverlay(
     QPainter &painter,
     const QRectF &area,
@@ -85,12 +84,12 @@ struct GridMetrics
     const QSize &available, int columns, int rows, int padding = 0) -> GridMetrics;
 
 // 棋盘底：1px 圆角描边 + AlternateBase 填充，返回路径供调用方 setClipPath。
-// borderRole 默认 Mid；井这类要和卡片底色拉开的地方传 Dark。
+// 默认 Dark（borderStrong）：两个游戏必须用同一档，否则切页面时边框会跳一档。
 UTILS_EXPORT auto paintBoardFrame(
     QPainter &painter,
     const QRectF &area,
     const QPalette &palette,
-    QPalette::ColorRole borderRole = QPalette::Mid) -> QPainterPath;
+    QPalette::ColorRole borderRole = QPalette::Dark) -> QPainterPath;
 
 // 圆角下限：小格子上按比例算出的圆角会小到看不出来，实心块和描边块共用这个底。
 constexpr qreal kCellMinRadius = 2.0;

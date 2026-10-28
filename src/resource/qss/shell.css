@@ -10,7 +10,7 @@
    1.5 倍缩放下标题栏下沿落在半个物理像素上，透明窗口会漏出一条缝。 */
 #TitleWidget {
     background: @@surface@@;
-    border-bottom: 1px solid @@border@@;
+    border-bottom: 1px solid @@divider@@;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     min-height: 43px;
@@ -33,6 +33,17 @@
     border-bottom-right-radius: 10px;
 }
 
+/* 对话框没有页面层，主体直接铺在壳上：改用卡片面 + 一圈描边，
+   否则露出的画布色会和背后的主界面糊成一片，深色下几乎看不出窗口边界。 */
+#Frame[card="true"] {
+    background: @@surface@@;
+    border: 1px solid @@borderStrong@@;
+}
+
+#CentralWidget[card="true"] {
+    background: @@surface@@;
+}
+
 /* 左上角是应用图标 + 名称，做成一个可点击的弱按钮 */
 #AppButton {
     color: @@text@@;
@@ -41,7 +52,7 @@
     border-radius: 6px;
     min-width: 0;
     min-height: 0;
-    padding: 0 8px;
+    padding: 0 9px;
     font-size: 14px;
     font-weight: 600;
 }
@@ -98,7 +109,7 @@
 
 #MenuWidget {
     background: @@surface@@;
-    border-right: 1px solid @@border@@;
+    border-right: 1px solid @@divider@@;
     border-bottom-left-radius: 10px;
     min-width: 216px;
     max-width: 216px;
@@ -114,7 +125,7 @@
 /* 命令面板入口：看起来像输入框，实际是按钮 */
 #CommandButton {
     background: @@surfaceAlt@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@borderStrong@@;
     border-radius: 8px;
     min-width: 0;
     min-height: 32px;
@@ -140,7 +151,7 @@
 #CommandShortcut {
     color: @@textSubtle@@;
     background: @@surface@@;
-    border: 1px solid @@border@@;
+    border: 1px solid @@divider@@;
     border-radius: 4px;
     padding: 1px 5px;
     font-size: 12px;
@@ -149,7 +160,7 @@
 /* 分组标题：只是一个说明，不再折叠 */
 #SidebarSection {
     color: @@textSubtle@@;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     padding: 16px 12px 6px 12px;
 }
@@ -215,7 +226,7 @@ QStackedWidget {
 #StatusLabel {
     color: @@textMuted@@;
     background: @@surface@@;
-    border-top: 1px solid @@border@@;
+    border-top: 1px solid @@divider@@;
     padding: 0 18px;
     min-height: 28px;
     max-height: 28px;

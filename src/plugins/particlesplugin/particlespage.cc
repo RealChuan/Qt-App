@@ -39,7 +39,7 @@ constexpr qreal kCoreRadius = 1.2;
 constexpr qreal kCoreRadiusPerLife = 2.0;
 constexpr qreal kGlowScale = 3.0;
 constexpr qreal kGlowAlpha = 0.45;
-constexpr int kHintFontSize = 13; // 与 pages.css 的 #Placeholder 同级
+constexpr int kHintFontSize = 14; // 对齐 pages.css 的 #Placeholder
 
 auto hueOf(const QColor &color) -> qreal
 {

@@ -29,12 +29,12 @@ QWidget *(*s_dialogParentGetter)() = nullptr;
 
 // Qt 6 的 QColor 浮点接口用 float，常量也保持 float，避免 double→float 截断。
 constexpr float kScrimAlpha = 0.80F;
-// 遮罩上的字是游戏里最该被看见的东西，字号按"一眼能读"给，不跟着正文的 13px 走。
-constexpr int kTitlePixelSize = 26;
-constexpr int kNumberPixelSize = 46;
-constexpr int kHintPixelSize = 15;
-// 开局提示比正文大一档，字重跟标题一致：它是"该按键了"的号召，不是占位符。
-constexpr int kIdlePixelSize = 16;
+// 遮罩字号对齐 base.css 阶梯：标题 16 / 数字 36 / 提示 13 / 开局 15。
+constexpr int kTitlePixelSize = 16;
+constexpr int kNumberPixelSize = 36;
+constexpr int kHintPixelSize = 13;
+// 开局提示比正文大一档、字重同标题：它是"该按键了"的号召，不是占位符。
+constexpr int kIdlePixelSize = 15;
 // 棋盘外框两个游戏必须一样，否则切换页面时边框会"跳"一下。
 constexpr int kBoardBorderWidth = 1;
 constexpr qreal kBoardRadius = 10.0;
