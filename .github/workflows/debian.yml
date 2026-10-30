@@ -13,7 +13,6 @@ on:
       - "**/*.pri"
       - "**/LICENSE*"
       - "**/*.pro"
-      - "**/README*"
   pull_request:
     paths-ignore:
       - "docs/**"
@@ -26,7 +25,6 @@ on:
       - "**/*.pri"
       - "**/LICENSE*"
       - "**/*.pro"
-      - "**/README*"
 
 env:
   RELEASES_DIR: ./packaging/releases

@@ -17,7 +17,6 @@ on:
       - "**/*.pri"
       - "**/LICENSE*"
       - "**/*.pro"
-      - "**/README*"
   pull_request:
     paths-ignore:
       - "docs/**"
@@ -30,7 +29,6 @@ on:
       - "**/*.pri"
       - "**/LICENSE*"
       - "**/*.pro"
-      - "**/README*"
 
 env:
   MACOSX_DEPLOYMENT_TARGET: "14.4"
