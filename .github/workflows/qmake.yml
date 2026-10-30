@@ -13,7 +13,6 @@ on:
       - "**/.clang-*"
       - "**/.gitignore"
       - "**/LICENSE*"
-      - "**/README*"
       - "vcpkg.json"
   pull_request:
     paths-ignore:
@@ -27,7 +26,6 @@ on:
       - "**/.clang-*"
       - "**/.gitignore"
       - "**/LICENSE*"
-      - "**/README*"
       - "vcpkg.json"
 
 env:

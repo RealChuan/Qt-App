@@ -13,7 +13,6 @@ on:
       - "**/*.pri"
       - "**/LICENSE*"
       - "**/*.pro"
-      - "**/README*"
     branches-ignore:
       - "dependabot/**"
   pull_request:
@@ -28,7 +27,6 @@ on:
       - "**/*.pri"
       - "**/LICENSE*"
       - "**/*.pro"
-      - "**/README*"
     branches-ignore:
       - "dependabot/**"
 
