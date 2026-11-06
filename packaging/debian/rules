@@ -32,7 +32,7 @@ override_dh_auto_install:
 override_dh_install:
 	install -d debian/$(BINARY_PKG)/opt
 	cp -a $(PACKET_DIR) debian/$(BINARY_PKG)/opt/$(APP_NAME)
-	install -Dm644 packaging/ubuntu/usr/share/applications/$(APP_NAME).desktop \
+	install -Dm644 packaging/ubuntu/deb/usr/share/applications/$(APP_NAME).desktop \
 		debian/$(BINARY_PKG)/usr/share/applications/$(APP_NAME).desktop
 	install -Dm644 src/resource/icon/app.png \
 		debian/$(BINARY_PKG)/usr/share/icons/hicolor/1024x1024/apps/qt-app.png

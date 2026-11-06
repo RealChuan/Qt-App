@@ -1,11 +1,11 @@
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=Qt-App
 GenericName=Application Template
 Comment=Small Qt-based demo utility
-Exec="/opt/Qt-App/Qt-App" %F
-Icon=qt-app
-Terminal=false
+Exec=Qt-App %F
+Icon=app
 StartupNotify=true
 StartupWMClass=Qt-App
 Categories=Utility;

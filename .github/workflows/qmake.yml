@@ -42,6 +42,7 @@ jobs:
         os:
           - windows-latest
           - ubuntu-latest
+          - ubuntu-26.04-arm
           - macos-latest
 
     steps:
@@ -71,7 +72,13 @@ jobs:
         working-directory: ${{ env.BUILD_DIR }}
         shell: bash
         run: |
+          echo "runner.arch=${RUNNER_ARCH} uname=$(uname -m)"
+          echo "qmake=$(command -v qmake)"
+          qmake -query QT_VERSION
+          qmake -query QT_INSTALL_PREFIX
           qmake ../.
+          echo "---- Makefile 生成后的架构相关变量 ----"
+          grep -E "^(QMAKE_HOST.arch|QMAKE_HOST.os)" Makefile 2>/dev/null || true
           make -j $(nproc)
 
       # 一台机器连续编两个架构：依赖本来就按架构装了两套（x64-osx / arm64-osx），

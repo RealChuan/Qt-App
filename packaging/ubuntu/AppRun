@@ -1,0 +1,5 @@
+#!/bin/sh
+# AppImage 入口。不用 linuxdeploy 默认的符号链接：那样启动时
+# /proc/self/exe 落在挂载根，applicationDirPath() 就找不到 usr/bin 下的东西。
+HERE=$(dirname "$(readlink -f "$0")")
+exec "$HERE/usr/bin/Qt-App" "$@"

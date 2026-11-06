@@ -36,13 +36,10 @@ function(add_translations TARGET_NAME)
   # 转换目标名称为小写用于翻译文件基名
   string(TOLOWER "${TARGET_NAME}" TS_FILE_BASE)
 
-  if(APPLE)
-    set(TRANSLATIONS_OUTPUT_DIR
-        "${PROJECT_RUNTIME_BASE}/${TARGET_NAME}.app/Contents/Resources/translations"
-    )
-  else()
-    set(TRANSLATIONS_OUTPUT_DIR "${PROJECT_RUNTIME_BASE}/translations")
-  endif()
+  # 构建输出目录与安装目录共用同一个子路径定义（cmake/InstallConfig.cmake），
+  # 所以构建树里的 .qm 就在可执行文件旁，install 之后的相对位置也一样。
+  set(TRANSLATIONS_OUTPUT_DIR
+      "${PROJECT_RUNTIME_BASE}/${TRANSLATION_RUNTIME_SUBDIR}")
 
   qt_add_translations(
     ${TARGET_NAME}

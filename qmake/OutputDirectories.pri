@@ -18,7 +18,16 @@ OUTPUT_ROOT = $$PWD/../binaries/qmake/$$ARCH_DIR
 RUNTIME_OUTPUT_DIRECTORY = $$OUTPUT_ROOT/bin/$$BUILD_TYPE_DIR
 LIBRARY_OUTPUT_DIRECTORY = $$OUTPUT_ROOT/lib/$$BUILD_TYPE_DIR
 
+# 插件落点：与 cmake/InstallConfig.cmake 的 PLUGIN_RUNTIME_SUBDIR 保持一致，
+# 否则用其中一条链编出来的目录跑不起来（应用按 applicationDirPath() 找插件）。
+macx {
+    PLUGIN_RUNTIME_SUBDIR = $${PROJECT_NAME}.app/Contents/PlugIns/$$lower($$PROJECT_NAME)
+} else {
+    PLUGIN_RUNTIME_SUBDIR = plugins/$$lower($$PROJECT_NAME)
+}
+
 !isEmpty(VERBOSE): message("RUNTIME_OUTPUT_DIRECTORY: $$RUNTIME_OUTPUT_DIRECTORY")
+!isEmpty(VERBOSE): message("PLUGIN_RUNTIME_SUBDIR: $$PLUGIN_RUNTIME_SUBDIR")
 
 INCLUDEPATH += $$PWD/../src
 DEPENDPATH  += $$PWD/../src

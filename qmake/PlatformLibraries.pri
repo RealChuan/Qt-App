@@ -15,11 +15,6 @@ include(ProjectSettings.pri)
 TEMPLATE = lib
 LIBS += -L$$LIBRARY_OUTPUT_DIRECTORY
 
-# 函数：获取小写的项目名称
-defineReplace(getProjectNameLower) {
-    return($$lower($$PROJECT_NAME))
-}
-
 # 函数：为库名称添加调试后缀
 #   debug_and_release 的 meta 轮次只生成 Makefile，不加后缀
 defineReplace(replaceLibName) {
@@ -75,20 +70,22 @@ defineReplace(add_app_plugin) {
     export(DEFINES)
     export(CONFIG)
 
+    # 插件落点统一取 PLUGIN_RUNTIME_SUBDIR（定义在 OutputDirectories.pri），
+    # 与 CMake 侧的 PLUGIN_RUNTIME_SUBDIR 是同一个相对位置。
     win32 {
         DESTDIR = $$LIBRARY_OUTPUT_DIRECTORY
-        DLLDESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/plugins/$$getProjectNameLower()
+        DLLDESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/$$PLUGIN_RUNTIME_SUBDIR
         export(DESTDIR)
         export(DLLDESTDIR)
     }
 
     macx {
-        DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/$$member(PROJECT_NAME, 0).app/Contents/PlugIns/$$getProjectNameLower()
+        DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/$$PLUGIN_RUNTIME_SUBDIR
         export(DESTDIR)
     }
 
     unix:!macx {
-        DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/plugins/$$getProjectNameLower()
+        DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY/$$PLUGIN_RUNTIME_SUBDIR
         export(DESTDIR)
     }
 

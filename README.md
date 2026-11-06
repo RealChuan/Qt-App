@@ -99,7 +99,7 @@ cmake --build build
 cmake --install build --prefix dist   # 可选：安装到前缀目录（Windows/macOS 顺带部署 Qt 依赖）
 ```
 
-产物在 `binaries/cmake/<arch>/bin/<config>/`（主程序 + `plugins/qt-app/` + `resources/` + `translations/`），布局见 [OutputDirectories.cmake](cmake/OutputDirectories.cmake)。
+产物在 `binaries/cmake/<arch>/bin/<config>/`（主程序 + `plugins/qt-app/` + `translations/`），布局见 [OutputDirectories.cmake](cmake/OutputDirectories.cmake)。Linux 的 `cmake --install` 产出 FHS 布局，具体目录见 [InstallConfig.cmake](cmake/InstallConfig.cmake)。
 
 > Windows 本机用 [scripts/windows/dev.ps1](scripts/windows/dev.ps1) 即可，参数、产物路径与 `.ps1` 编码约定见 [scripts/windows/README.md](scripts/windows/README.md)。
 
@@ -147,6 +147,8 @@ qmake ../. && make -j
 | Ubuntu/Debian 官方包 | debhelper 流程产出的 `.deb`                         | [packaging/debian/rules](packaging/debian/rules) + [debian.yml](.github/workflows/debian.yml)                                                               |
 | 自建更新源           | 各平台产物 + `update.json`                          | [packaging/upload.py](packaging/upload.py)                                                                                                                  |
 
+> Linux 不做交叉编译：x64 / arm64 各用一台原生 runner（`ubuntu-latest` / `ubuntu-26.04-arm`）。
+
 三个平台的脚本都把产物写进 `packaging/releases/`，由 [flatten_releases.sh](packaging/flatten_releases.sh) 平铺后发布。CI 按职责分工：[cmake.yml](.github/workflows/cmake.yml) 并行跑单测与构建打包，打 tag 时两者全绿才发布、[qmake.yml](.github/workflows/qmake.yml) 验证备用链、[debian.yml](.github/workflows/debian.yml) 出官方包、[toolchain.yml](.github/workflows/toolchain.yml) 缓存依赖。
 
 ## 主题与国际化
@@ -166,7 +168,7 @@ Crashpad 以「进程内客户端 + 独立 handler」的方式接入，见 [src/
 
 ## 常见问题
 
-- **插件没被加载**：看 `*.json` 的 `Id` 是否等于库文件名、`Version` 是否与 [version.txt](packaging/version.txt) 一致；插件目录应位于可执行文件旁的 `plugins/qt-app/`。
+- **插件没被加载**：看 `*.json` 的 `Id` 是否等于库文件名、`Version` 是否与 [version.txt](packaging/version.txt) 一致；插件目录是 `<prefix>/plugins/qt-app/`——Windows / macOS 就是可执行文件旁，Linux 安装后是 `/opt/Qt-App/usr/plugins/qt-app/`。
 - **Windows 打包**：需要 `7z` 在 `PATH`、已安装 Inno Setup，并通过 [Enter-VsDevShell.ps1](packaging/windows/Enter-VsDevShell.ps1) 进入 MSVC 环境。
 - **Ubuntu 运行**：需要 `libfuse2`、`libxcb-cursor0`；Wayland 下窗口行为异常时设 `QT_QPA_PLATFORM=xcb`。
 - **macOS 未签名**：安装包默认不做签名/公证，本地运行需 ad-hoc 签名：`codesign --force --deep --sign - Qt-App.app`。

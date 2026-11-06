@@ -8,7 +8,10 @@ DESK="/usr/share/applications/${APP_NAME}.desktop"
 case "$1" in
     configure)
         # 二进制、脚本、图标、desktop：只改权限，文件由 deb 包提供。
-        [ -f "${APP_DIR}/${APP_NAME}" ]    && chmod 0755 "${APP_DIR}/${APP_NAME}"
+        # APP_DIR 下是标准 FHS 布局，可执行文件在 usr/bin；
+        # 启动脚本与根图标留在 APP_DIR 本身。
+        [ -f "${APP_DIR}/usr/bin/${APP_NAME}" ] && chmod 0755 "${APP_DIR}/usr/bin/${APP_NAME}"
+        [ -f "${APP_DIR}/usr/bin/crashpad_handler" ] && chmod 0755 "${APP_DIR}/usr/bin/crashpad_handler"
         [ -f "${APP_DIR}/${APP_NAME}.sh" ] && chmod 0755 "${APP_DIR}/${APP_NAME}.sh"
         [ -f "${APP_DIR}/app.png" ]        && chmod 0644 "${APP_DIR}/app.png"
         [ -f "${DESK}" ]                   && chmod 0644 "${DESK}"

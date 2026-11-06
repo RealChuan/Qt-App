@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest, ubuntu-26.04-arm]
 
     steps:
       - uses: actions/checkout@v7
@@ -76,6 +76,14 @@ jobs:
         run: |
           echo "=== ${{ matrix.os }} release files ==="
           ls -lh "${{ env.RELEASES_DIR }}"
+          echo "=== 产物架构自检（Linux）==="
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            for f in "${{ env.RELEASES_DIR }}"/*.AppImage; do
+              [ -e "$f" ] || continue
+              # AppImage 是 ELF 头 + 附加段，file 能读出目标架构
+              echo "$f -> $(file -b "$f" | cut -d, -f2)"
+            done
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
@@ -97,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest, ubuntu-26.04-arm]
     env:
       BUILD_DIR: build
       BUILD_TYPE: Debug
@@ -138,10 +146,17 @@ jobs:
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
+          echo "runner.arch=${RUNNER_ARCH} uname=$(uname -m)"
+          echo "QT_ROOT_DIR=${QT_ROOT_DIR:-<unset>}"
+          qmake -query QT_VERSION 2>/dev/null || echo "qmake 不可用"
           cmake -S . -B "$BUILD_DIR" -G "$CMAKE_GENERATOR" \
             -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
             -DBUILD_TESTS=ON
+          echo "---- 产物架构（Linux 上应为本机架构）----"
+          grep -E "^TARGET_ARCH:" "$BUILD_DIR/CMakeCache.txt" 2>/dev/null || true
           cmake --build "$BUILD_DIR"
+          echo "---- 测试可执行文件 ----"
+          find "$BUILD_DIR" -name "tst_*" -type f 2>/dev/null | head -n 20 || true
           ctest --test-dir "$BUILD_DIR" --output-on-failure
 
   # ============================================================

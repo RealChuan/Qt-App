@@ -145,37 +145,30 @@ function(add_app_plugin target_name)
   set_target_properties(${target_name} PROPERTIES PREFIX "" OUTPUT_NAME
                                                             "${target_name}")
 
-  string(TOLOWER "${PROJECT_NAME}" _project_name_lowercase)
-
   # 平台差异集中在这里分叉，下面只走通用流程
   if(APPLE)
     # CMake 对 MODULE 的默认后缀是 .so，而 Qt 自身插件、qmake 的 CONFIG += plugin 与 macdeployqt
     # 的插件枚举（只认 *.dylib）都以 .dylib 为准。QPluginLoader
     # 两种都接受（QLibrary::isLibrary），这里对齐后缀， 免得按 *.dylib 过滤的部署/打包逻辑静默漏掉插件。
     set_target_properties(${target_name} PROPERTIES SUFFIX ".dylib")
-
-    # 插件随 .app 一起分发：与主可执行文件同级
-    set(_plugin_dest_dir
-        "${PROJECT_RUNTIME_BASE}/${PROJECT_NAME}.app/Contents/PlugIns/${_project_name_lowercase}"
-    )
   else()
-    set(_plugin_dest_dir
-        "${PROJECT_RUNTIME_BASE}/plugins/${_project_name_lowercase}")
-
     # 只有非 Apple 平台才加版本号：macOS 的 MODULE 以 -bundle 链接，clang 只允许 -dynamiclib 带
     # -current_version，而 VERSION 恰好会转成该标志； 插件不参与链接，本来也没有 install_name / ABI
     # 版本的概念。
     set_target_version(${target_name})
-
-    if(UNIX)
-      # 运行期要从 plugins/<project>/ 找到 ../../lib 里的依赖（Windows 无 RPATH）
-      set_target_properties(${target_name} PROPERTIES INSTALL_RPATH
-                                                      "$ORIGIN/../../lib")
-    endif()
   endif()
 
-  # 直接输出到插件目录，省掉每次构建的 POST_BUILD 复制
-  set_target_output_dir(${target_name} "${_plugin_dest_dir}")
+  # 构建产物直接落在运行时位置，cmake --build 完就能运行
+  set_target_output_dir(${target_name}
+                        "${PROJECT_RUNTIME_BASE}/${PLUGIN_RUNTIME_SUBDIR}")
+
+  if(UNIX AND NOT APPLE)
+    # 插件要加载 libextensionsystem / libshell，RPATH 按安装树的真实相对位置算
+    file(RELATIVE_PATH _plugin_to_lib "/${PLUGIN_INSTALL_DIR}"
+         "/${LIB_INSTALL_DIR}")
+    set_target_properties(${target_name} PROPERTIES INSTALL_RPATH
+                                                    "$ORIGIN/${_plugin_to_lib}")
+  endif()
 
   install(
     TARGETS ${target_name}

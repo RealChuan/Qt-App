@@ -3,7 +3,7 @@ set -e
 
 APP_NAME="Qt-App"
 
-# 与 packaging/ubuntu/DEBIAN/postrm 保持一致：两边打的都是同一个应用，
+# 与 packaging/ubuntu/deb/DEBIAN/postrm 保持一致：两边打的都是同一个应用，
 # 用户数据落点相同，卸载时的删除清单也必须相同。
 #
 # 需要清理的三个根（对应 C++ 侧 configPath()/logPath()/cachePath()）：

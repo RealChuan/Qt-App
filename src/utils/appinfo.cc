@@ -4,8 +4,12 @@
 #include "appinfo.hpp"
 
 #include <QCoreApplication>
+#include <QFileInfo>
+#include <QLibraryInfo>
 #include <QStandardPaths>
 #include <QString>
+
+using namespace Qt::StringLiterals;
 
 namespace Utils {
 
@@ -16,22 +20,45 @@ auto appDirPath() -> FilePath
     return FilePath::fromUserInput(QCoreApplication::applicationDirPath());
 }
 
+auto appNameLower() -> QString
+{
+    return QString::fromLatin1(AppInfo::appName).toLower();
+}
+
+// 安装前缀。规则与 Qt 自己找插件一致：可执行文件旁的 qt.conf 优先，
+// 没有就退回可执行文件目录（构建树）。Windows 的 qt.conf 写 Prefix=.，
+// 解出来同样是可执行文件目录。
+auto buildPrefixPath() -> FilePath
+{
+#ifdef Q_OS_MACOS
+    // .app/Contents（bundle 里的 qt.conf 不写 Prefix，不能拿来当依据）
+    return (appDirPath() / "..").cleanPath();
+#else
+    if (QFileInfo::exists(QCoreApplication::applicationDirPath() + u"/qt.conf"_s)) {
+        // Prefix 是相对 qt.conf 所在目录解析的，QLibraryInfo 已经算好了
+        return FilePath::fromUserInput(QLibraryInfo::path(QLibraryInfo::PrefixPath));
+    }
+    return appDirPath();
+#endif
+}
+
 auto buildPluginsPath() -> FilePath
 {
-    const QString pluginDirName = QString::fromLatin1(AppInfo::appName).toLower();
 #ifdef Q_OS_MACOS
-    return (appDirPath() / "../PlugIns" / pluginDirName).cleanPath();
+    return (AppInfo::prefix() / "PlugIns" / appNameLower()).cleanPath();
 #else
-    return (appDirPath() / "plugins" / pluginDirName).cleanPath();
+    return (AppInfo::prefix() / "plugins" / appNameLower()).cleanPath();
 #endif
 }
 
 auto buildResourcesPath() -> FilePath
 {
 #ifdef Q_OS_MACOS
-    return (appDirPath() / "../Resources").cleanPath();
+    return (AppInfo::prefix() / "Resources").cleanPath();
+#elif defined(Q_OS_LINUX)
+    return (AppInfo::prefix() / "share" / appNameLower() / "resources").cleanPath();
 #else
-    return (appDirPath() / "resources").cleanPath();
+    return (AppInfo::prefix() / "resources").cleanPath();
 #endif
 }
 
@@ -43,6 +70,12 @@ auto ensureDirectory(const FilePath &path) -> FilePath
 }
 
 } // namespace
+
+auto AppInfo::prefix() -> const FilePath &
+{
+    static const FilePath path = buildPrefixPath();
+    return path;
+}
 
 auto AppInfo::plugins() -> const FilePath &
 {

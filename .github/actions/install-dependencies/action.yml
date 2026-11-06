@@ -32,23 +32,23 @@ runs:
 
     - name: Cache windows vcpkg
       if: runner.os == 'Windows'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: C:\vcpkg\installed
-        key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
+        key: ${{ runner.os }}-${{ runner.arch }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-vcpkg-installed-
-          ${{ runner.os }}-vcpkg-
+          ${{ runner.os }}-${{ runner.arch }}-vcpkg-installed-
+          ${{ runner.os }}-${{ runner.arch }}-vcpkg-
 
     - name: Cache macos or linux vcpkg
       if: runner.os == 'macOS' || runner.os == 'Linux'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: /usr/local/share/vcpkg/installed
-        key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
+        key: ${{ runner.os }}-${{ runner.arch }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-vcpkg-installed-
-          ${{ runner.os }}-vcpkg-
+          ${{ runner.os }}-${{ runner.arch }}-vcpkg-installed-
+          ${{ runner.os }}-${{ runner.arch }}-vcpkg-
 
     - name: Install dependencies on windows
       if: runner.os == 'Windows'
@@ -77,23 +77,84 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang lintian tree fakeroot p7zip-full
-        ninja --version
-        cmake --version
-        gcc --version
-        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+        set -euo pipefail
 
-    - name: Setup Linux deployment tools
+        # x64 与 arm64 是两台机器，各自原生编译，不走交叉编译；
+        # vcpkg triplet 必须跟着 runner 架构走，否则会在 arm64 上找 x64 的库。
+        case "${{ runner.arch }}" in
+          ARM64) triplet=arm64-linux ;;
+          X64)   triplet=x64-linux ;;
+          *)
+            echo "::error::不支持的 runner 架构: ${{ runner.arch }}"
+            exit 1
+            ;;
+        esac
+        sudo add-apt-repository -y universe
+        sudo apt-get update
+        # patchelf / squashfs-tools / desktop-file-utils：linuxdeploy 与
+        # appimagetool 运行时的硬依赖（appimagetool 启动时会检查它们是否在 PATH 上）
+        sudo apt-get install -y \
+          ninja-build build-essential libgl1-mesa-dev clang \
+          lintian tree fakeroot p7zip-full \
+          curl zip unzip tar pkg-config \
+          patchelf squashfs-tools desktop-file-utils file \
+          libxcb-cursor0
+        # libxcb-cursor0 必须留着：Qt6 的 xcb 平台插件依赖它，缺了会让
+        # verify_no_missing_libs 的 ldd 检查直接报「not found」。
+        # FUSE 只是兜底（打包脚本优先用 --appimage-extract-and-run）：
+        # Ubuntu 24.04 起包名从 libfuse2 变成 libfuse2t64，两个都试一下。
+        sudo apt-get install -y libfuse2t64 || sudo apt-get install -y libfuse2 || true
+
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet "${triplet}" \
+          || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+
+    # Linux 打包工具，全部按 runner 架构取。部署用 linuxdeploy 而非
+    # `appimagetool deploy`：后者在 Qt 6.12 上因缺少 qt_prfxpath 锚点会直接退出。
+    - name: Setup Linux packaging tools (linuxdeploy / appimagetool)
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        sudo add-apt-repository universe
-        sudo apt update
-        sudo apt install -y libfuse2 libxcb-cursor0
-        wget -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" \
-          -O /usr/local/bin/linuxdeployqt
-        sudo chmod +x /usr/local/bin/linuxdeployqt
+        set -euo pipefail
+
+        case "${{ runner.arch }}" in
+          ARM64) tool_arch=aarch64 ;;
+          X64)   tool_arch=x86_64 ;;
+          *)
+            echo "::error::不支持的 runner 架构: ${{ runner.arch }}"
+            exit 1
+            ;;
+        esac
+
+        # linuxdeploy 与它的 Qt 插件文件名稳定，直接按架构拼。
+        for tool in linuxdeploy linuxdeploy-plugin-qt; do
+          echo "下载 ${tool}-${tool_arch}.AppImage"
+          sudo curl -fL -o "/usr/local/bin/${tool}" \
+            "https://github.com/linuxdeploy/${tool}/releases/download/continuous/${tool}-${tool_arch}.AppImage"
+          sudo chmod +x "/usr/local/bin/${tool}"
+        done
+
+        # appimagetool 的发布文件名带 build number（如 appimagetool-951-aarch64.AppImage），
+        # 不能写死；从 expanded_assets 里取最新的一条。
+        assets="https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous"
+        curl -fsSL "$assets" -o /tmp/appimagetool-assets.html
+        grep -o "appimagetool-[0-9]*-${tool_arch}\.AppImage" /tmp/appimagetool-assets.html \
+          | sort -u > /tmp/appimagetool-candidates.txt || true
+
+        asset="$(head -n 1 /tmp/appimagetool-candidates.txt)"
+        if [ -z "$asset" ]; then
+          echo "::error::未在 ${assets} 中找到 appimagetool-*-${tool_arch}.AppImage"
+          exit 1
+        fi
+
+        echo "下载 ${asset}"
+        sudo curl -fL -o /usr/local/bin/appimagetool \
+          "https://github.com/probonopd/go-appimage/releases/download/continuous/${asset}"
+        sudo chmod +x /usr/local/bin/appimagetool
+
+        # 不装 FUSE（Ubuntu 24.04+ 把 libfuse2 换成了 libfuse2t64），
+        # 只确认 linuxdeploy 能发现 qt 插件（--plugin qt 的前提）。插件是
+        # linuxdeploy 自己 exec 的，不受我们的 --appimage-extract-and-run 影响。
+        linuxdeploy --appimage-extract-and-run --list-plugins || true
 
     # ---------------- Qt ----------------
     - name: Install Qt
@@ -126,3 +187,21 @@ runs:
     #   shell: pwsh
     #   run: |
     #     "QT_ROOT_ARM64=$env:QT_ROOT_DIR" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    # 环境摘要：架构装错是最常见的失败原因（arm64 runner 上装到 x64 的 Qt），
+    # 把这几项固定留在日志里，其余细节出问题时再临时加。
+    - name: Environment summary
+      shell: bash
+      run: |
+        echo "runner   : ${RUNNER_OS}/${RUNNER_ARCH} $(uname -m)"
+        echo "Qt       : ${QT_ROOT_DIR:-<unset>} $(qmake -query QT_VERSION 2>/dev/null || echo '<无 qmake>')"
+        echo "cmake    : $(cmake --version | head -n 1)"
+        if [ "${RUNNER_OS}" = "Linux" ]; then
+          echo "packaging: $(command -v linuxdeploy || echo '-') | $(command -v linuxdeploy-plugin-qt || echo '-') | $(command -v appimagetool || echo '-')"
+          # Qt 主库的目标架构，与 runner 不一致说明 host/arch 没生效
+          for f in "${QT_ROOT_DIR:-/nonexistent}"/lib/libQt6Core.s*; do
+            [ -e "$f" ] || continue
+            echo "Qt core  : $(file -b "$f" | cut -d, -f2)"
+            break
+          done
+        fi

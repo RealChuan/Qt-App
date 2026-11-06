@@ -32,9 +32,15 @@ struct UTILS_EXPORT AppInfo
     // 因此必须在 QCoreApplication 构造之后调用（插件加载时已满足）。
     // -------------------------------------------------------------------------
 
-    // <exe>/plugins/<appName>（macOS: <app>.app/Contents/PlugIns/<appName>）
+    // 安装前缀：插件 / 翻译 / 资源都以它为基准
+    //   macOS   <app>.app/Contents
+    //   Windows 可执行文件目录
+    //   Linux   有 qt.conf 时取它解析出的 Prefix（安装树/AppImage 是 usr/），
+    //           没有时退回可执行文件目录（构建树）
+    [[nodiscard]] static auto prefix() -> const FilePath &;
+    // <prefix>/plugins/<appName>（macOS: <prefix>/PlugIns/<appName>）
     [[nodiscard]] static auto plugins() -> const FilePath &;
-    // <exe>/resources（macOS: <app>.app/Contents/Resources）
+    // <prefix>/share/<appName>/resources（macOS: <prefix>/Resources）
     [[nodiscard]] static auto resources() -> const FilePath &;
 
     // -------------------------------------------------------------------------

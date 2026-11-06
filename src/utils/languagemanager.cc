@@ -32,11 +32,14 @@ namespace {
 
 [[nodiscard]] auto translationsPath() -> QString
 {
+    // 与 Qt 自己的翻译同目录：
+    //   安装树/AppImage  usr/translations
+    //   构建树           <可执行文件目录>/translations
+    // macOS 下随 App Bundle 分发，位于 Contents/Resources/translations。
 #ifdef Q_OS_MACOS
-    // macOS 下 qm 随 App Bundle 分发，位于 Contents/Resources/translations。
-    return QCoreApplication::applicationDirPath() + u"/../Resources/translations"_s;
+    return (AppInfo::prefix() / "Resources" / "translations").cleanPath().path();
 #else
-    return QCoreApplication::applicationDirPath() + u"/translations"_s;
+    return (AppInfo::prefix() / "translations").cleanPath().path();
 #endif
 }
 
