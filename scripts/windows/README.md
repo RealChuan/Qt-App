@@ -20,7 +20,7 @@
 | `-Target`    | `all`（`clean`、`extensionsystem`、`Qt-App` 等）  |
 | `-BuildType` | `Debug`                                           |
 | `-BuildDir`  | `build`                                           |
-| `-QtDir`     | `C:\Qt\6.12.0\msvc2022_64`                        |
+| `-QtDir`     | `C:\Qt\6.12.1\msvc2022_64`                        |
 | `-AppArgs`   | 空，仅 `run` 使用                                 |
 
 产物在 `binaries/cmake/x64/bin/<config>/`：`Qt-App.exe`、`plugins/qt-app/`、`resources/`、`translations/`。

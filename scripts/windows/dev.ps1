@@ -20,7 +20,7 @@ param(
   [string]$Target = 'all',
   [string]$BuildType = 'Debug',
   [string]$BuildDir = 'build',
-  [string]$QtDir = 'C:\Qt\6.12.0\msvc2022_64',
+  [string]$QtDir = 'C:\Qt\6.12.1\msvc2022_64',
   [string[]]$AppArgs = @()
 )
 

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.25.1)
 # 构建系统入口
 #
 # 对外契约（packaging/ 与 CI 依赖，勿随意改动）：
-#   -DTARGET_ARCH=<x86_64|arm64|x86|universal>
+#   -DTARGET_ARCH=<x64|arm64|x86|universal>
 #   -DVCPKG_TARGET_TRIPLET=<triplet>
 #   产物：binaries/<arch-dir>/bin/<config>/ 与 binaries/<arch-dir>/lib/<config>/
 # cmake-format: on

@@ -1,8 +1,8 @@
 # cmake-format: off
 # Target Architecture Detection
 #
-# 对外统一输出：x86_64 / arm64 / x86 / universal / unknown
-# （目录名 x64 由 OutputDirectories.cmake 负责映射，这里不做改名）
+# 对外统一输出：x64 / arm64 / x86 / universal / unknown
+# （归一化结果同时就是产物目录名，OutputDirectories.cmake 不再做映射）
 #
 # 优先级（全部来自环境，不接受外部指定）：
 #   1. APPLE 下的 CMAKE_OSX_ARCHITECTURES（含通用二进制）
@@ -20,7 +20,7 @@
 function(normalize_architecture value out_var)
   string(TOLOWER "${value}" _raw)
   if(_raw MATCHES "^(x64|x86_64|amd64)$")
-    set(_result "x86_64")
+    set(_result "x64")
   elseif(_raw MATCHES "^(arm64|aarch64)$")
     set(_result "arm64")
   elseif(_raw MATCHES "^(x86|i[3-6]86|win32)$")
@@ -48,7 +48,7 @@ function(detect_architecture out_var)
     elseif(_has_arm64 GREATER_EQUAL 0)
       set(_result "arm64")
     elseif(_has_x86_64 GREATER_EQUAL 0)
-      set(_result "x86_64")
+      set(_result "x64")
     endif()
   endif()
 
@@ -66,7 +66,7 @@ function(detect_architecture out_var)
     elseif(CMAKE_CXX_COMPILER MATCHES "[/\\\\]x86[/\\\\]cl\\.exe$")
       set(_result "x86")
     elseif(CMAKE_CXX_COMPILER MATCHES "[/\\\\](x64|amd64)[/\\\\]cl\\.exe$")
-      set(_result "x86_64")
+      set(_result "x64")
     endif()
   endif()
 
@@ -107,5 +107,5 @@ endfunction()
 detect_architecture(_arch_detected)
 set(TARGET_ARCH
     "${_arch_detected}"
-    CACHE STRING "Target architecture (x86_64/arm64/x86/universal)" FORCE)
+    CACHE STRING "Target architecture (x64/arm64/x86/universal)" FORCE)
 message(STATUS "Target architecture (detected): ${TARGET_ARCH}")

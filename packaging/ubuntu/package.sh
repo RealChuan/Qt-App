@@ -6,9 +6,9 @@
 #     Qt-App_<ver>_<date>_<suffix>.{AppImage,deb}
 #     Qt-App_<ver>_<date>_linux_<suffix>.7z（7z 带 OS 名，避免与 macOS 同名）
 #
-#   x86_64 与 arm64 都支持，但 Ubuntu 侧不做交叉编译：
-#     - x86_64 在 ubuntu-latest 上原生构建
-#     - arm64   在 ubuntu-26.04-arm 上原生构建
+#   x64 与 arm64 都支持，但 Ubuntu 侧不做交叉编译：
+#     - x64   在 ubuntu-latest 上原生构建
+#     - arm64 在 ubuntu-26.04-arm 上原生构建
 #   因此每个 runner 只会构建与自身架构一致的那一条，BUILD_LIST 里两条都
 #   enabled=true，实际由宿主机架构过滤（见 main 的 host_arch）。在一台 x64
 #   机器上跑，arm64 会被跳过而不是失败。
@@ -39,8 +39,8 @@ version="$(tr -d '[:space:]' <"$version_file")"
 # 字段：name|release_suffix|deb_arch|enabled
 #   enabled=false 表示不发这个架构；能不能建由宿主机架构决定（不交叉编译）
 BUILD_LIST=(
-	"x86_64|x86_64|amd64|true"
-	"arm64|aarch64|arm64|true"
+	"x64|x64|amd64|true"
+	"arm64|arm64|arm64|true"
 )
 
 [ ${#BUILD_LIST[@]} -gt 0 ] || die "BUILD_LIST 为空"
@@ -50,7 +50,7 @@ mkdir -p "$releases_dir"
 # arm64 上用，所以只构建与宿主机一致的架构。
 host_arch_raw="$(uname -m)"
 case "$host_arch_raw" in
-x86_64 | amd64) host_arch="x86_64" ;;
+x86_64 | amd64) host_arch="x64" ;;
 aarch64 | arm64) host_arch="arm64" ;;
 *)
 	log_warn "无法识别的宿主机架构: ${host_arch_raw}，将跳过所有架构"

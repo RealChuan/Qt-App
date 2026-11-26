@@ -86,7 +86,7 @@ plugins/<模块名>.dll|so|dylib
 
 | 依赖   | 要求                                                                                                                     |
 | ------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Qt     | 6.12（默认查找各平台的 6.12.0 路径），可用 `-DQT_ROOT=<dir>` 或环境变量 `QT_ROOT` 覆盖                                   |
+| Qt     | 6.12（默认查找各平台的 6.12.1 路径），可用 `-DQT_ROOT=<dir>` 或环境变量 `QT_ROOT` 覆盖                                   |
 | 编译器 | C++23：MSVC 19.34+ / GCC 12+ / Clang 15+                                                                                 |
 | CMake  | ≥ 3.25.1，搭配 Ninja                                                                                                     |
 | vcpkg  | 默认 `C:/vcpkg` 或 `/usr/local/share/vcpkg`，可用 `-DVCPKG_DEFAULT_ROOT` 改；依赖见 [vcpkg.json](vcpkg.json)（crashpad） |
@@ -94,7 +94,7 @@ plugins/<模块名>.dll|so|dylib
 ### CMake（主链，打包与 CI 都用它）
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DQT_ROOT=/opt/Qt/6.12.0/gcc_64
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DQT_ROOT=/opt/Qt/6.12.1/gcc_64
 cmake --build build
 cmake --install build --prefix dist   # 可选：安装到前缀目录（Windows/macOS 顺带部署 Qt 依赖）
 ```
@@ -139,13 +139,13 @@ qmake ../. && make -j
 
 > [vcpkg.json](vcpkg.json) 里的 `version` 与它不一致时，配置阶段会告警。
 
-| 平台                 | 产物                                                | 入口                                                                                                                                                        |
-| -------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows              | `*.7z` 便携包 + Inno Setup 安装程序                 | [packaging/windows/package.ps1](packaging/windows/package.ps1)、[app.iss](packaging/windows/app.iss)                                                        |
-| macOS                | x86_64 / arm64 / universal 的 `.dmg`、`.pkg`、`.7z` | [packaging/macos/package.sh](packaging/macos/package.sh)，通用二进制由 [merge_universal_app.sh](packaging/macos/app_arch_tools/merge_universal_app.sh) 合并 |
-| Ubuntu               | `.AppImage`、`.deb`、`.7z`                          | [packaging/ubuntu/package.sh](packaging/ubuntu/package.sh)                                                                                                  |
-| Ubuntu/Debian 官方包 | debhelper 流程产出的 `.deb`                         | [packaging/debian/rules](packaging/debian/rules) + [debian.yml](.github/workflows/debian.yml)                                                               |
-| 自建更新源           | 各平台产物 + `update.json`                          | [packaging/upload.py](packaging/upload.py)                                                                                                                  |
+| 平台                 | 产物                                             | 入口                                                                                                                                                        |
+| -------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows              | `*.7z` 便携包 + Inno Setup 安装程序              | [packaging/windows/package.ps1](packaging/windows/package.ps1)、[app.iss](packaging/windows/app.iss)                                                        |
+| macOS                | x64 / arm64 / universal 的 `.dmg`、`.pkg`、`.7z` | [packaging/macos/package.sh](packaging/macos/package.sh)，通用二进制由 [merge_universal_app.sh](packaging/macos/app_arch_tools/merge_universal_app.sh) 合并 |
+| Ubuntu               | `.AppImage`、`.deb`、`.7z`                       | [packaging/ubuntu/package.sh](packaging/ubuntu/package.sh)                                                                                                  |
+| Ubuntu/Debian 官方包 | debhelper 流程产出的 `.deb`                      | [packaging/debian/rules](packaging/debian/rules) + [debian.yml](.github/workflows/debian.yml)                                                               |
+| 自建更新源           | 各平台产物 + `update.json`                       | [packaging/upload.py](packaging/upload.py)                                                                                                                  |
 
 > Linux 不做交叉编译：x64 / arm64 各用一台原生 runner（`ubuntu-latest` / `ubuntu-26.04-arm`）。
 

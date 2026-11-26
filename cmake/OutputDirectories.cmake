@@ -2,7 +2,7 @@
 # Output Directory Configuration
 #
 #   TARGET_ARCH 由 ArchitectureDetection.cmake 统一检测产出（已归一化为
-#   x86_64/arm64/x86/universal）。这里只做「目录映射」。
+#   x64/arm64/x86/universal），归一化结果即 ARCH_DIR，这里只负责落目录。
 #
 #   产物布局（packaging/ 与 CI 依赖，勿改）：
 #     binaries/cmake/<ARCH_DIR>/bin/<config>/
@@ -12,14 +12,8 @@
 #   合到一个目录会互相覆盖，隔离后也便于确认产物来自哪条链。
 # cmake-format: on
 
-if(TARGET_ARCH STREQUAL "x86_64")
-  set(ARCH_DIR "x64")
-elseif(TARGET_ARCH STREQUAL "arm64")
-  set(ARCH_DIR "arm64")
-elseif(TARGET_ARCH STREQUAL "universal")
-  set(ARCH_DIR "universal")
-elseif(TARGET_ARCH STREQUAL "x86")
-  set(ARCH_DIR "x86")
+if(TARGET_ARCH MATCHES "^(x64|arm64|x86|universal)$")
+  set(ARCH_DIR "${TARGET_ARCH}")
 else()
   set(ARCH_DIR "unknown")
   message(

@@ -43,7 +43,7 @@ INCLUDEPATH += \
 
 # for crashpad
 win32 {
-    LIBS += -lzs$$suffix -lAdvapi32
+    LIBS += -llibzs$$suffix -lAdvapi32
     DEFINES += NOMINMAX
 }
 

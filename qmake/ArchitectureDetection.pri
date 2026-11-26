@@ -1,8 +1,8 @@
 # =============================================================================
 # ArchitectureDetection.pri - 目标架构检测（与 cmake/ArchitectureDetection.cmake 对齐）
 #
-#   TARGET_ARCH : 统一命名 x86_64 / arm64 / x86 / universal / unknown
-#   ARCH_DIR    : 目录名   x64 / arm64 / x86 / universal / unknown
+#   TARGET_ARCH : 统一命名 x64 / arm64 / x86 / universal / unknown
+#   ARCH_DIR    : 目录名，与 TARGET_ARCH 同名
 #
 # 本文件被 ProjectSettings.pri 与 VcpkgToolchain.pri 重复 include，
 # 用 isEmpty() 守卫保证幂等（qmake 的 include 没有内置防重入）。
@@ -13,7 +13,7 @@ defineReplace(normalize_arch_name) {
     arch = $$1
 
     contains(arch, "x86_64")|contains(arch, "x64")|contains(arch, "amd64")|contains(arch, "AMD64") {
-        return(x86_64)
+        return(x64)
     }
     contains(arch, "arm64")|contains(arch, "aarch64")|contains(arch, "ARM64") {
         return(arm64)
@@ -28,11 +28,11 @@ defineReplace(normalize_arch_name) {
     return()
 }
 
-# 目录名 / vcpkg triplet 前缀
+# 目录名 / vcpkg triplet 前缀：归一化后即目录名，这里只做合法性校验
 defineReplace(arch_dir_name) {
     arch = $$1
 
-    equals(arch, "x86_64"): return(x64)
+    equals(arch, "x64"): return(x64)
     equals(arch, "arm64"): return(arm64)
     equals(arch, "x86"): return(x86)
     equals(arch, "universal"): return(universal)
@@ -51,7 +51,7 @@ defineReplace(detect_architecture) {
             }
 
             !isEmpty(archs) {
-                contains(archs, "x86_64"):contains(archs, "arm64"): return(universal)
+                contains(archs, "x64"):contains(archs, "arm64"): return(universal)
                 return($$first(archs))
             }
         }

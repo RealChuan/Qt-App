@@ -12,7 +12,7 @@ CONFIG += c++23 strict_c++
 
 # Qt 弃用控制（与 cmake/QtSetup.cmake 完全一致）
 #   DISABLE = 6.5.0  : 以 Qt 6.5 LTS 为基线，更早弃用的 API 直接编译报错
-#   WARN    = 6.12.0 : 告警上限对齐实际构建版本
+#   WARN    = 6.12.1 : 告警上限对齐实际构建版本
 DEFINES += \
     QT_DISABLE_DEPRECATED_UP_TO=0x060500 \
     QT_WARN_DEPRECATED_UP_TO=0x060C00

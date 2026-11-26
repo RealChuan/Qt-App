@@ -9,7 +9,7 @@ Qt 6 / C++23 桌面应用模板。`src/extensionsystem/` 是改自 Qt Creator �
 
 ## 常用命令
 
-Windows 本机（脚本自动进 MSVC 环境，默认 Debug、`C:\Qt\6.12.0\msvc2022_64`）：
+Windows 本机（脚本自动进 MSVC 环境，默认 Debug、`C:\Qt\6.12.1\msvc2022_64`）：
 
 ```powershell
 .\scripts\windows\dev.ps1 -Action configure   # 生成 build\ 与 compile_commands.json
@@ -23,7 +23,7 @@ Windows 本机（脚本自动进 MSVC 环境，默认 Debug、`C:\Qt\6.12.0\msvc
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DQT_ROOT=/opt/Qt/6.12.0/gcc_64 -DBUILD_TESTS=ON
+      -DQT_ROOT=/opt/Qt/6.12.1/gcc_64 -DBUILD_TESTS=ON
 cmake --build build && ctest --test-dir build --output-on-failure
 ```
 

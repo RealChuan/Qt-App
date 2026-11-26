@@ -2,9 +2,9 @@
 # ============================================================
 # Qt-App macOS 打包入口
 #
-#   单机完成 x86_64 + arm64 + universal，共 9 个产物：
-#     Qt-App_<ver>_<date>_{x86_64|aarch64|universal}.{dmg,pkg}
-#     Qt-App_<ver>_<date>_macos_{x86_64|aarch64|universal}.7z（带 OS 名，避免与 Linux 同名）
+#   单机完成 x64 + arm64 + universal，共 9 个产物：
+#     Qt-App_<ver>_<date>_{x64|arm64|universal}.{dmg,pkg}
+#     Qt-App_<ver>_<date>_macos_{x64|arm64|universal}.7z（带 OS 名，避免与 Linux 同名）
 #
 #   签名 / 公证：默认关闭，启用方法见 utils.sh 顶部注释
 #
@@ -37,14 +37,16 @@ build_type="RelWithDebInfo"
 # BuildList：架构配置中心（改这里即可增删架构 / 启停）
 #
 # 字段：name|cmake_arch|release_suffix|enabled
+#   name 是内部目录名与产物后缀（x64 / arm64）；
+#   cmake_arch 必须是 Apple / lipo 拼写（x86_64 / arm64），直通 CMAKE_OSX_ARCHITECTURES。
 #
 # 为什么不直接编 universal：vcpkg 没有 universal triplet，依赖只能按单架构编译。
 # 因此每个架构单独 configure/build，再用 app_arch_tools 把 universal 的 Qt 库
 # 瘦身成单架构，最后由 merge_universal_app.sh 合成 universal。
 # ============================================================
 BUILD_LIST=(
-	"x86_64|x86_64|x86_64|true"
-	"arm64|arm64|aarch64|true"
+	"x64|x86_64|x64|true"
+	"arm64|arm64|arm64|true"
 )
 BUILD_UNIVERSAL=true
 BUILD_PKG=true
@@ -82,8 +84,8 @@ make_7z() {
 
 # ============================================================
 # 单架构：编译 + macdeployqt + 分离纯单架构 + 验证 + 签名
-#   $1 arch          : 架构名（x86_64 / arm64）
-#   $2 cmake_arch    : CMAKE_OSX_ARCHITECTURES
+#   $1 arch          : 架构名 / 目录名（x64 / arm64）
+#   $2 cmake_arch    : CMAKE_OSX_ARCHITECTURES，同时是 lipo/Mach-O 拼写（x86_64 / arm64）
 # ============================================================
 build_one_arch() {
 	local arch="$1" cmake_arch="$2"
@@ -137,9 +139,9 @@ build_one_arch() {
 	rm -rf "$app_path"
 	mv "$tmp_app" "$app_path"
 
-	# 5. 严格验证单架构
+	# 5. 严格验证单架构（-a 要 lipo 拼写，不能传目录名）
 	"${project_dir}/packaging/macos/app_arch_tools/verify_app_architecture.sh" \
-		"$app_path" -a "$arch" -v -s
+		"$app_path" -a "$cmake_arch" -v -s
 
 	# 6. 签名 .app —— 当前未启用，启用时取消下面这行注释
 	# sign_app "$app_path"
@@ -149,11 +151,12 @@ build_one_arch() {
 
 # ============================================================
 # 单架构：打包（dmg + 可选 pkg）
-#   $1 arch   : 架构名
-#   $2 suffix : 产物文件名后缀
+#   $1 arch        : 架构名 / 目录名（x64 / arm64）
+#   $2 cmake_arch  : Apple 拼写（x86_64 / arm64），写进 distribution.xml
+#   $3 suffix      : 产物文件名后缀
 # ============================================================
 package_one_arch() {
-	local arch="$1" suffix="$2"
+	local arch="$1" cmake_arch="$2" suffix="$3"
 	local inst_dir="${packet_dir}/macos-${arch}"
 	local app_path="${inst_dir}/${app_name}.app"
 	[ -d "$app_path" ] || die "打包时找不到 .app: $app_path"
@@ -184,7 +187,7 @@ package_one_arch() {
 	if [ "$BUILD_PKG" = "true" ]; then
 		local tmp_pkg_dir
 		tmp_pkg_dir=$(mktemp -d -t qtaapp_pkg_XXXXXX)
-		render_distribution "$arch" "${tmp_pkg_dir}/distribution.xml"
+		render_distribution "$cmake_arch" "${tmp_pkg_dir}/distribution.xml"
 
 		chmod -R +x "${project_dir}/packaging/macos/scripts"
 		pkgbuild --root "$app_path" --identifier "org.qt-app.client" \
@@ -215,14 +218,14 @@ package_one_arch() {
 build_and_package_universal() {
 	log "========== 合并 Universal =========="
 
-	local x86_app="${packet_dir}/macos-x86_64/${app_name}.app"
+	local x86_app="${packet_dir}/macos-x64/${app_name}.app"
 	local arm_app="${packet_dir}/macos-arm64/${app_name}.app"
 	local uni_dir="${packet_dir}/macos-universal"
 	local uni_app="${uni_dir}/${app_name}.app"
 
 	# 若某单架构被 enabled=false 跳过，则 universal 自动忽略，不报错
 	if [ ! -d "$x86_app" ] || [ ! -d "$arm_app" ]; then
-		log "⚠ 缺少单架构产物（x86_64 或 arm64），跳过 universal"
+		log "⚠ 缺少单架构产物（x64 或 arm64），跳过 universal"
 		return 0
 	fi
 
@@ -342,7 +345,7 @@ main() {
 		# 打包内容只展示一次：7z / dmg / pkg 都基于这份 .app
 		print_packet_tree "${packet_dir}/macos-${arch}" 5
 
-		package_one_arch "$arch" "$suffix"
+		package_one_arch "$arch" "$cmake_arch" "$suffix"
 	done
 
 	# ---------- universal ----------

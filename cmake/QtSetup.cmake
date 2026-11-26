@@ -19,11 +19,11 @@ elseif(DEFINED ENV{QT_ROOT} AND NOT "$ENV{QT_ROOT}" STREQUAL "")
 elseif(NOT CMAKE_PREFIX_PATH AND NOT Qt6_DIR)
   # 只有调用方完全没给路径时才用默认值，避免悄悄覆盖 -DCMAKE_PREFIX_PATH
   if(WIN32)
-    set(QT_DEFAULT_PREFIX "C:/Qt/6.12.0/msvc2022_64")
+    set(QT_DEFAULT_PREFIX "C:/Qt/6.12.1/msvc2022_64")
   elseif(APPLE)
-    set(QT_DEFAULT_PREFIX "/opt/Qt/6.12.0/macos")
+    set(QT_DEFAULT_PREFIX "/opt/Qt/6.12.1/macos")
   elseif(UNIX)
-    set(QT_DEFAULT_PREFIX "/opt/Qt/6.12.0/gcc_64")
+    set(QT_DEFAULT_PREFIX "/opt/Qt/6.12.1/gcc_64")
   else()
     set(QT_DEFAULT_PREFIX "")
   endif()
@@ -43,7 +43,7 @@ endif()
 #
 #   DISABLE = 6.5.0：以 Qt 6.5 LTS 为基线，比它更早被弃用的 API 一律编译报错，
 #                    迫使新代码不用「已被 LTS 判死刑」的写法
-#   WARN    = 6.12.0：告警上限对齐实际构建版本，6.12 新弃用的 API 也能提前发现
+#   WARN    = 6.12.1：告警上限对齐实际构建版本，6.12 新弃用的 API 也能提前发现
 #   编码格式为 0xMMNNPP（QT_VERSION_CHECK）
 # -----------------------------------------------------------------------------
 set(QT_DEPRECATED_DISABLE_UP_TO
@@ -51,7 +51,7 @@ set(QT_DEPRECATED_DISABLE_UP_TO
     CACHE STRING "禁用此版本之前废弃的 Qt API（默认 6.5.0）")
 set(QT_DEPRECATED_WARN_UP_TO
     "0x060C00"
-    CACHE STRING "对此版本之前废弃的 Qt API 给出告警（默认 6.12.0）")
+    CACHE STRING "对此版本之前废弃的 Qt API 给出告警（默认 6.12.1）")
 
 add_compile_definitions(
   QT_DISABLE_DEPRECATED_UP_TO=${QT_DEPRECATED_DISABLE_UP_TO}
